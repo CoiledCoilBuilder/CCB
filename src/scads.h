@@ -11,8 +11,6 @@
 
 #include "mpi.h"
 #include "stdio.h"
-#include "tcl.h"
-
 
 /**
  * @namespace SCADS_NS
@@ -45,20 +43,12 @@ namespace SCADS_NS {
           class Error *error; /**< Error handling: error.cpp/error.h,	taken from LAMMPS */
           class Universe *universe; /**< Universe of Processors: universe.cpp/universe.h, taken from LAMMPS */
           class Scadsio *scadsio; /**< Input and output styles for reading and outputting files */
-          class Opthandler *opthandler; /**< manages optimizers */
 
           // Pointers to top-level SCADS classes
 
-          class Comm *comm; /**< Custom MPI communication routines: comm.cpp/comm.h */
-          class Compute *compute; /**< Any quantity that needs to be computed internally: potentials, center of mass, RMSD, supports styles: compute.cpp/compute.h */
           class Domain *domain; /**< All atomistic/coarse-grain propertities and quantities related to the system: domain.cpp/domain.h */
-          class AnalysisHandler *analysis; /**< Analysis utilities for post-processing results, suports styles: analysis.cpp/analysis.h */
-          class Opt *opt; /**< Optimization routines, linear/non-linear solvers, entropy calculation: opt.cpp/opt.h */
-          class Timer *timer; /**< Timing routines timing.cpp/timing.h */
           class Bitmask *bitmask; /**< Dynamic collections of atoms... */
-          class AtomSelectHandler *atomselect; /** <manages atomselections */
           class BackboneHandler *backbone; /** <manages backbone modeler styles */
-          class Tables *tables; /**< Manages Lookup Tables */
 
           // Output and Communication
           FILE *screen; /**< Output to Screen, "what am I doing at this very moment?" */
@@ -75,14 +65,9 @@ namespace SCADS_NS {
           void run(); /**< The main running routine, this is called after everything is setup */
 
           void cmdline(int argc, char **argv); /**< Parses the command line */
-          void read_ctl_file(); /**< Reads the control file */
-          void writeOutput();
-
-          Tcl_Interp *tcl_interp; /** < The TCL interpretor */
 
      private:
           char *ctlfile; /**< The Input Control File */
-          void sorttest(SCADS *scads);
 	};
 
 }

@@ -37,8 +37,6 @@ namespace SCADS_NS {
         unsigned int resid; /**< Site/Resid  number */
         char chain[10]; /**< Chain name */
         char seg[10]; /**< Segment Identifier */
-        double com_cart[3];
-        double com_frac[3];
 
         // Functions to manage rotamers (dynamic groups);
         int add_rotamer();
@@ -47,14 +45,9 @@ namespace SCADS_NS {
         void delete_rotamer(int id);
         int find_rotamer(int id);
         void delete_all_rotamers();
-        void put_com_cart(double v[3]); /**< Residue position in Cartesian coordinates. */
-        void put_com_frac(double v[3]); /**< Residue position in fractional coordinates. */
 
-        int build_site(); /**< Builds all rotamers at this site */
         int mask;           /** < The site mask, used for build specifications. All atoms in this site inherit the site mask */
 
-        void make_global();     /**< Make all atoms in this site global */
-        void get_most_probable(); /**< determins the most probable monomer at this site */
         double memory_usage();
 
     private:

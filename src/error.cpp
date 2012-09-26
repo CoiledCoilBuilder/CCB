@@ -29,7 +29,6 @@
 #include "error.h"
 #include "universe.h"
 #include "memory.h"
-//#include "output.h"
 
 using namespace SCADS_NS;
 
@@ -103,43 +102,6 @@ void Error::one(const char *file, int line, const char *str) {
 	}
 
 	MPI_Abort(universe->world, 1);
-}
-
-/** 
- * error->all_tcl called by all procs in universe, returns TCL stacktrace
- *
- * close all output, screen, and log files in world and universe and 
- * unravel
- *
- * @param code TCL_OK, TCL_ERROR, TCL_CONTINUE or TCL_BREAK
- */
-
-void Error::all_tcl(int code) {
-	Tcl_Obj *options = Tcl_GetReturnOptions(tcl_interp, code);
-	Tcl_Obj *key = Tcl_NewStringObj("-errorinfo", -1);
-	Tcl_Obj *stackTrace;
-	Tcl_IncrRefCount(key);
-	Tcl_DictObjGet(NULL, options, key, &stackTrace);
-	Tcl_DecrRefCount(key);
-	char *tclerrorstr = Tcl_GetStringFromObj(stackTrace, NULL);
-	error->all(tclerrorstr);
-}
-
-/** 
- * error->one: called by one proc in universe, returns TCL stacktrace
- *
- * @param str error message 
- */
-
-void Error::one_tcl(int code) {
-	Tcl_Obj *options = Tcl_GetReturnOptions(tcl_interp, code);
-	Tcl_Obj *key = Tcl_NewStringObj("-errorinfo", -1);
-	Tcl_Obj *stackTrace;
-	Tcl_IncrRefCount(key);
-	Tcl_DictObjGet(NULL, options, key, &stackTrace);
-	Tcl_DecrRefCount(key);
-	char *tclerrorstr = Tcl_GetStringFromObj(stackTrace, NULL);
-	error->one(tclerrorstr);
 }
 
 /** 

@@ -17,7 +17,6 @@
 #include "atom.h"
 #include "group.h"
 #include "domain.h"
-#include "hashtable.h"
 
 /**
  * @def ATOM_DELTA
@@ -38,13 +37,10 @@ Group::Group(SCADS *scads, int i) :
     strcpy(name, "");
     strcpy(type, "");
     natom = maxatom = 0;
-    totalcharge = 0.0;
     atom = NULL;
     site = NULL;
-
-    probability = 0.0;
+    
     natom_iter = 0;
-
 }
 
 /**
@@ -68,8 +64,6 @@ Group::Group(const Group &g) : Pointers(g) {
     id = g.id;
     strcpy(name, g.name);
     strcpy(type, g.type);
-    totalcharge = g.totalcharge;
-    probability = g.probability;
     natom_iter = g.natom_iter;
 
     // Deep-copy the atoms;
@@ -109,8 +103,6 @@ Group& Group::operator= (Group const& g) {
     id = g.id;
     strcpy(name, g.name);
     strcpy(type, g.type);
-    totalcharge = g.totalcharge;
-    probability = g.probability;
     natom_iter = g.natom_iter;
 
     // Deep-copy the atoms;
@@ -202,64 +194,10 @@ int Group::add_atom(Atom *a) {
     curAtom->o = a->o;
     curAtom->b = a->b;
 
-    curAtom->mass = a->mass;
-    curAtom->charge = a->charge;
-    curAtom->rmin = a->rmin;
-    curAtom->epsilon = a->epsilon;
-    curAtom->user3 = a->user3;
-    curAtom->user4 = a->user4;
-
     curAtom->fixed = a->fixed;
     curAtom->backbone = a->backbone;
-    curAtom->interresidue_atom = a->interresidue_atom;
-    curAtom->build_flag = a->build_flag;
 
     return (natom - 1);
-}
-
-/**
- * Create a new atom to add to the group, and
- * copy in all fields of atom pointer in argument
- *
- * @param   atom to copy into group
- */
-int Group::overwrite_atom(Atom *a) {
-
-    // Check to see if we already have this atom
-    int aid = find_atom_name(a->name);
-    if (aid < 0) {
-        char str[128];
-        sprintf(str, "Cannot find atom %s to overwrite in group %s(%s)", a->name, name, type);
-        error->one(FLERR, str);
-    }
-
-    Atom *curAtom = atom[aid];
-
-    curAtom->serial = a->serial;
-
-    strcpy(curAtom->name, a->name);
-    strcpy(curAtom->type, a->type);
-    strcpy(curAtom->element, a->element);
-
-    curAtom->x = a->x;
-    curAtom->y = a->y;
-    curAtom->z = a->z;
-    curAtom->o = a->o;
-    curAtom->b = a->b;
-
-    curAtom->mass = a->mass;
-    curAtom->charge = a->charge;
-    curAtom->rmin = a->rmin;
-    curAtom->epsilon = a->epsilon;
-    curAtom->user3 = a->user3;
-    curAtom->user4 = a->user4;
-
-    curAtom->fixed = a->fixed;
-    curAtom->backbone = a->backbone;
-    curAtom->interresidue_atom = a->interresidue_atom;
-    curAtom->build_flag = a->build_flag;
-
-    return aid;
 }
 
 /**
@@ -349,48 +287,3 @@ double Group::memory_usage() {
 
     return bytes;
 }
-
-void Group::check_parameters() {
-
-    //Check obvious non-zero quantities:
-    //All atoms in the domain must have a nonzero mass, nonzero radius, and assigned type
-    for (int i = 0; i < natom; i++) {
-
-        if (atom[i]->interresidue_atom) //Ignore interreside atom holders
-            continue;
-
-        if (atom[i]->mass <= 0.0) {
-            char str[128];
-            sprintf(str, "Problem with atom %s in %s: mass = 0.0", atom[i]->name, name);
-            error->one(FLERR, str);
-        }
-        if (atom[i]->rmin <= 0.0) {
-            char str[128];
-            sprintf(str, "Problem with atom %s in %s: radius = 0.0", atom[i]->name, name);
-            error->one(FLERR, str);
-        }
-        if (!strcmp(atom[i]->type, "")) {
-            char str[128];
-            sprintf(str, "Problem with atom %s in %s: type (%s) not assigned", atom[i]->name, name, atom[i]->type);
-            error->one(FLERR, str);
-        }
-    }
-}
-
-/**
- * @brief Make all atoms in the group available for atomselection
- *
- * Adds atoms to the global lookup "GID" table. Also assigns the atoms
- * a Global IDentifier.
- *
- */
-
-void Group::make_global() {
-
-    for (int i = 0; i < natom; i++)
-        atom[i]->make_global();
-
-}
-
-
-

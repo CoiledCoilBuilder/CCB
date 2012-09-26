@@ -129,24 +129,3 @@ void Bitmask::delete_bitmask(const char *name) {
 
   delete [] names[imask]; 
 }
-
-void Bitmask::print() { 
-
-  Atom *atom = NULL;
-
-  // iterate over all masks
-  for (int imask = 0; imask < nmask; imask++) {
-    fprintf(screen,"Bitmask %3d:\t%10s\t%12d\t%12d\n",
-        imask,names[imask],mask[imask],inversemask[imask]); 
-
-    // Iterate over all atoms in the domain, compare masks...  
-    for (int i = 0; i < domain->nsite; i++)
-      for (int j = 0; j < domain->site[i]->nrotamer; j++)
-        for (int k = 0; k < domain->site[i]->rotamer[j]->natom; k++) { 
-          atom = domain->site[i]->rotamer[j]->atom[k];
-          
-          if (atom->mask & mask[imask])
-              fprintf(screen,"%5ld\n",atom->gid);
-        }
-  }
-}

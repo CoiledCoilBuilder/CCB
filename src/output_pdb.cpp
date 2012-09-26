@@ -119,14 +119,8 @@ void OutputPDB::write_style() {
             // Loop over all sites
             for (int i = 0; i < domain->nsite; i++) {
 
-                // Determine the most probable type and rotamer at each site
-                domain->site[i]->get_most_probable();
-
-                if(!domain->site[i]->most_probable)
-                    continue;
-
-                for (int j = 0; j < domain->site[i]->most_probable->natom; j++) {
-                    atom = domain->site[i]->most_probable->atom[j];
+                for (int j = 0; j < domain->site[i]->fixed_atoms->natom; j++) {
+                    atom = domain->site[i]->fixed_atoms->atom[j];
 
                     // Copy stings
                     strcpy(name, atom->name);

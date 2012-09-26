@@ -28,7 +28,6 @@
 #include "mpi.h"
 #include "scads.h"
 #include "scadstype.h"
-#include "tcl.h"
 
 namespace SCADS_NS {
 
@@ -42,17 +41,9 @@ namespace SCADS_NS {
             error(ptr->error),
             universe(ptr->universe),
             scadsio(ptr->scadsio),
-            comm(ptr->comm),
-            compute(ptr->compute),
             domain(ptr->domain),
-            opt(ptr->opt),
             bitmask(ptr->bitmask),
-            atomselect(ptr->atomselect),
             backbone(ptr->backbone),
-            analysis(ptr->analysis),
-            timer(ptr->timer),
-            tables(ptr->tables),
-            tcl_interp(ptr->tcl_interp),
             screen(ptr->screen),
             world(ptr->world)  {}
         virtual ~Pointers() {}
@@ -69,17 +60,9 @@ namespace SCADS_NS {
         Universe *&universe;
         Scadsio *&scadsio;
 
-        Comm *&comm;
-        Compute *&compute;
         Domain *&domain;
-        Opt *&opt;
         Bitmask *&bitmask;
-        AtomSelectHandler *&atomselect;
         BackboneHandler *&backbone;
-        AnalysisHandler *&analysis;
-        Timer *&timer;
-        Tables *&tables;
-        Tcl_Interp *&tcl_interp;
 
         FILE *&screen;
         MPI_Comm &world;

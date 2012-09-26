@@ -18,7 +18,6 @@
 #define SCADS_ATOM_H
 
 #include "pointers.h"
-#include "tagdata.h"
 
 namespace SCADS_NS {
 
@@ -36,7 +35,6 @@ namespace SCADS_NS {
 
         // Atom quantities
         int id; /**< Local Internal indexing counter */
-        bigint gid; /**< An atoms global, unique ID, used in selection routines */
         int serial; /**< Atom serial number from input */
         int mask; /**< Bitmasking*/
 
@@ -52,17 +50,6 @@ namespace SCADS_NS {
 
         bool fixed; /**< Boolean to determine if the coordinates are fixed */
         bool backbone; /**< Boolean to determine if apart of the backbone */
-        int interresidue_atom; /**< Atom prefixed with + or - indicating interresidue connectivity */
-        int build_flag; /**< Flag used for build routines */
-
-        double mass; /**< Atom mass */
-        double charge; /**< Atom charge */
-        double rmin; /**< Atom radius, l/j sigma vdw param */
-        double rmin14; /**< Special rmin for 1-4 interactions */
-        double epsilon; /**< l/j epsilon param */
-        double epsilon14; /**< Special epsilon for 1-4 interactions */
-        double user3; /**< User double field 3 */
-        double user4; /**< User double field 4 */
 
         // Routines for manipulating atomic coordinates
         void get_xyz(double *v); /**< Return the atom coordinates in v*/
@@ -70,12 +57,6 @@ namespace SCADS_NS {
         void move(const double m[4][4]); /**< apply 4x4 matrix to atoms coordinates  */
         void move(const double m[3][3]); /**< apply 3x3 matrix to atoms coordinates  */
         void moveby(const double v[3]); /**< apply translation vector to atoms */
-
-        void make_global(); /**< Adds atom to global lookup table and assigns a global id (gid) */
-
-        void get_field(const char *field, TagData *&); /**< Retrieves value specified by field */
-        void set_field(const char *field, const char *val); /**< Sets value specified by field */
-
     };
 
     /* +----------------------------------------------------------+  */

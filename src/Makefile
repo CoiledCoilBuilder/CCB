@@ -4,7 +4,7 @@
 
 # Definitions
 
-ROOT =  compass
+ROOT =  ccb
 EXE =	$(ROOT)_$@
 SRC =	$(wildcard *.cpp)
 INC =	$(wildcard *.h)
@@ -14,7 +14,7 @@ OBJ = 	$(SRC:.cpp=.o)
 
 PACKAGE = 
 
-PACKUSER = user-coiledcoil user-backboner user-ccd 
+PACKUSER = user-coiledcoil
 
 PACKALL = $(PACKAGE) $(PACKUSER)
 
@@ -203,27 +203,27 @@ bench:
 	  for file in $$files; do head -1 $$file; done
 	@echo ''
 
-bench-%: $(INPUTS)
-	@test -f MAKE/Makefile.$(@:bench-%=%)
-	@if [ ! -d Obj_$(@:bench-%=%) ]; then mkdir Obj_$(@:bench-%=%); fi
-	@$(SHELL) Make.sh style
-	@cp -p *.cpp *.h Obj_$(@:bench-%=%)
-	@cp MAKE/Makefile.$(@:bench-%=%) Obj_$(@:bench-%=%)/Makefile
-	@if [ ! -e Makefile.package ]; \
-	  then cp Makefile.package.empty Makefile.package; fi
-	@if [ ! -e Makefile.package.settings ]; \
-	  then cp Makefile.package.settings.empty Makefile.package.settings; fi
-	@cp Makefile.package Makefile.package.settings Obj_$(@:bench-%=%)
-	@cd Obj_$(@:bench-%=%); \
-	$(MAKE) $(MFLAGS) "OBJ = $(OBJ)" "INC = $(INC)" \
-	  "EXE = ../$(ROOT)_$(@:bench-%=%)" ../$(ROOT)_$(@:bench-%=%)
-	@if [ -d Obj_$(@:bench-%=%) ]; then cd Obj_$(@:bench-%=%); rm -f $(SRC) $(INC) Makefile*; fi
-	@echo ========================================================  > compass.gcn4.time
-	@for p in $(NUMTHREADS); do \
-	echo OMP_NUM_THREADS=$$p compass_$(@:bench-%=%) ctlfile.gcn4   >> compass.gcn4.time; \
-	( time OMP_NUM_THREADS=$$p mpirun -np 1 ./compass_$(@:bench-%=%) ctlfile.gcn4 )  2>> compass.gcn4.time; \
-	echo ======================================================== >> compass.gcn4.time; \
-	done
+#bench-%: $(INPUTS)
+#	@test -f MAKE/Makefile.$(@:bench-%=%)
+#	@if [ ! -d Obj_$(@:bench-%=%) ]; then mkdir Obj_$(@:bench-%=%); fi
+#	@$(SHELL) Make.sh style
+#	@cp -p *.cpp *.h Obj_$(@:bench-%=%)
+#	@cp MAKE/Makefile.$(@:bench-%=%) Obj_$(@:bench-%=%)/Makefile
+#	@if [ ! -e Makefile.package ]; \
+#	  then cp Makefile.package.empty Makefile.package; fi
+#	@if [ ! -e Makefile.package.settings ]; \
+#	  then cp Makefile.package.settings.empty Makefile.package.settings; fi
+#	@cp Makefile.package Makefile.package.settings Obj_$(@:bench-%=%)
+#	@cd Obj_$(@:bench-%=%); \
+#	$(MAKE) $(MFLAGS) "OBJ = $(OBJ)" "INC = $(INC)" \
+#	  "EXE = ../$(ROOT)_$(@:bench-%=%)" ../$(ROOT)_$(@:bench-%=%)
+#	@if [ -d Obj_$(@:bench-%=%) ]; then cd Obj_$(@:bench-%=%); rm -f $(SRC) $(INC) Makefile*; fi
+#	@echo ========================================================  > compass.gcn4.time
+#	@for p in $(NUMTHREADS); do \
+#	echo OMP_NUM_THREADS=$$p compass_$(@:bench-%=%) ctlfile.gcn4   >> compass.gcn4.time; \
+#	( time OMP_NUM_THREADS=$$p mpirun -np 1 ./compass_$(@:bench-%=%) ctlfile.gcn4 )  2>> compass.gcn4.time; \
+#	echo ======================================================== >> compass.gcn4.time; \
+#	done
 
 docs: $(ROOT)-docs.pdf
 

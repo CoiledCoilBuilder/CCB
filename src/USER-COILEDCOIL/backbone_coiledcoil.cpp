@@ -25,8 +25,6 @@
 #include "math.h"
 #include "constants.h"
 
-#include "tcl.h"
-
 /**
  * @def SITE_DELTA
  *
@@ -173,7 +171,7 @@ void BackboneCoiledCoil::set_params(int argc, const char **argv, int n) {
             asymmetric_flag = true;
             n++;
             continue;
-
+/*
         } else if (strcmp(argv[n], "rpt") == 0) {
 
             int argc_list = 0;
@@ -252,7 +250,7 @@ void BackboneCoiledCoil::set_params(int argc, const char **argv, int n) {
             }
 
             Tcl_Free((char *) argv_list);
-
+*/
 
         } else {
             char str[128];

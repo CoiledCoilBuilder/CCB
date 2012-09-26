@@ -44,10 +44,6 @@ namespace SCADS_NS {
 			void all(const char *); /**< Error call for all processors */
 			void one(const char *); /**< Error call for one processor */
 
-			// Same as above, but produces a TCL stacktrace of the interpreter
-			void all_tcl(int code); /**< Error call for all processors */
-			void one_tcl(int code); /**< Error call for one processor */
-
 			void warning(const char *, int = 1); /**< Send a warning message */
 			void message(char *); /**< Send a message*/
 			void message(char *, int); /**< Send a message only if verbosity > */

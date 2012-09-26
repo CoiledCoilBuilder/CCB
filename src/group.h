@@ -32,13 +32,9 @@ namespace SCADS_NS {
         int id; /**< Internal indexing counter */
         char name[15]; /**< group name */
         char type[15]; /**< group type, ALA, ASP etc.. */
-        double totalcharge;
-
-        double probability; /**< Propensity of this group in the domain */
 
         class Atom **atom; /**< list of atoms */
         int natom; /**< Total number of atoms in static part */
-
 
         // Functions to manage atoms
         int add_atom();
@@ -49,11 +45,6 @@ namespace SCADS_NS {
         void delete_atom_name(const char *name);
         int find_atom(int id);
         int find_atom_name(const char *name);
-
-        //Globalize atoms in this group to make available for atomselections
-        void make_global();
-
-        void check_parameters();
 
         double memory_usage();
 

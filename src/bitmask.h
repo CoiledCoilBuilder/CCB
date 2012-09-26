@@ -30,7 +30,6 @@ namespace SCADS_NS {
           int find(const char *name);
           int find_unused();
           int find_mask(const char *name);
-          void print();
 
           void add_bitmask(const char *name);
           void delete_bitmask(const char *name);

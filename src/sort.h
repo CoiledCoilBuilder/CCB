@@ -71,13 +71,7 @@ namespace SCADS_NS {
             return strcmp(x->name, y->name);
         }
 
-        // Compare atoms gid
-        static int compare_atom_gid(Atom *x, Atom *y) {
-            if (x->gid == y->gid) return 0;
-            else return x->gid < y->gid ? -1 : 1;
-        }
-
-        // Compare atoms gid
+       // Compare atoms id 
         static int compare_atom_id(Atom *x, Atom *y) {
             if (x->id == y->id) return 0;
             else return x->id < y->id ? -1 : 1;
@@ -91,15 +85,6 @@ namespace SCADS_NS {
         // Compare group types
         static int compare_group_type(Group *x, Group *y) {
             return strcmp(x->type,y->type);
-        }
-
-        // Compare group probabilities
-        static int compare_group_prob(Group *x, Group *y) {
-            double p1 = x->probability;
-            double p2 = y->probability;
-
-            if (p1 == p2) return 0;
-            else return p1 < p2 ? -1 : 1;
         }
 
         // Compare physical address in memory

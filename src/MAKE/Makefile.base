@@ -36,24 +36,6 @@ MPI_INC =  -I${MPI_HOME}/include
 MPI_PATH = -L${MPI_HOME}/lib
 MPI_LIB =  -lmpi -lmpi_f77
 
-# TCL library, required
-# INC = 
-# PATH = 
-# LIB = 
-
-TCL_INC =  -I/usr/include
-TCL_PATH = -L/usr/lib64
-TCL_LIB =  -ltcl8.5
-
-# ACML library, required
-# INC = 
-# PATH = 
-# LIB = 
-
-ACML_INC = -I${ACML_HOME}/include
-ACML_PATH = -L${ACML_HOME}/lib
-ACML_LIB = -lacml_mp
-
 # ---------------------------------------------------------------------
 # build rules and dependencies
 # no need to edit this section
@@ -61,9 +43,9 @@ ACML_LIB = -lacml_mp
 include	Makefile.package.settings
 include	Makefile.package
 
-EXTRA_INC = $(SCADS_INC) $(PKG_INC) $(MPI_INC) $(TCL_INC) $(ACML_INC) $(PKG_SYSINC)
-EXTRA_PATH = $(PKG_PATH) $(MPI_PATH) $(TCL_PATH) $(ACML_PATH) $(PKG_SYSPATH)
-EXTRA_LIB =  $(PKG_LIB) $(MPI_LIB) $(TCL_LIB) $(ACML_LIB) $(PKG_SYSLIB)
+EXTRA_INC = $(SCADS_INC) $(PKG_INC) $(MPI_INC) $(PKG_SYSINC)
+EXTRA_PATH = $(PKG_PATH) $(MPI_PATH) $(PKG_SYSPATH)
+EXTRA_LIB =  $(PKG_LIB) $(MPI_LIB) $(PKG_SYSLIB)
 
 # Link target
 
