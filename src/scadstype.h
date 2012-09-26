@@ -68,9 +68,6 @@ typedef int64_t bigint;
 #define MAXTAGINT INT_MAX
 #define MAXBIGINT INT64_MAX
 
-#define MPI_LMP_TAGINT MPI_INT
-#define MPI_LMP_BIGINT MPI_LONG_LONG
-
 #define TAGINT_FORMAT "%d"
 #define BIGINT_FORMAT "%" PRId64
 

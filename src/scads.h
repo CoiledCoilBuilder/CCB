@@ -9,7 +9,6 @@
 #ifndef SCADS_SCADS_H
 #define SCADS_SCADS_H
 
-#include "mpi.h"
 #include "stdio.h"
 
 /**
@@ -52,10 +51,9 @@ namespace SCADS_NS {
 
           // Output and Communication
           FILE *screen; /**< Output to Screen, "what am I doing at this very moment?" */
-          MPI_Comm world; /**< MPI Communicator */
 
           // Constructor and Destructors
-          SCADS(int, char**, MPI_Comm);
+          SCADS(int, char**);
           ~SCADS();
 
           // Functions

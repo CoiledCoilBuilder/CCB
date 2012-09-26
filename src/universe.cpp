@@ -9,7 +9,6 @@
  * the partitioning of the processors etc..
  */
 
-#include "mpi.h"
 #include <omp.h>
 #include "universe.h"
 #include "version.h"
@@ -19,20 +18,12 @@ using namespace SCADS_NS;
 /** 
  * The universe constructor.
  *
- * Set the scads version, and define variables for the communicator, rank and size of
- * processor pool.
- *
  * @param scads The scads class pointer 
- * @param communicator the MPI communicator
  */
 
-Universe::Universe(SCADS *scads, MPI_Comm communicator) : Pointers(scads)
+Universe::Universe(SCADS *scads) : Pointers(scads)
 {
      version = (char *) SCADS_VERSION; 
-
-     world = communicator;
-     MPI_Comm_rank(world,&me);
-     MPI_Comm_size(world,&nprocs);
 
  	//Figure out how many threads running with
  	nthreads = 1;
@@ -43,6 +34,10 @@ Universe::Universe(SCADS *scads, MPI_Comm communicator) : Pointers(scads)
  			nthreads = omp_get_num_threads();
  		}
  	}
+
+        // Always rank 0 wrt the universe 
+        me = 0;
+
 }
 
 /** 

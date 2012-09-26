@@ -10,8 +10,10 @@
  * Journal of Molecular Structure: THEOCHEM. 460(1-3):53 - 66.
  */
 
-#include "stdlib.h"
-#include "string.h"
+#include <stdlib.h>
+#include <string.h>
+#include <ctype.h>
+#include <math.h>
 #include "error.h"
 #include "universe.h"
 #include "memory.h"
@@ -22,7 +24,6 @@
 #include "backbone_coiledcoil.h"
 #include "bitmask.h"
 #include "math_extra.h"
-#include "math.h"
 #include "constants.h"
 
 /**

@@ -9,10 +9,10 @@
 
 #include <string.h>
 #include <stdio.h>
+#include <ctype.h>
 #include "scadsio.h"
 #include "memory.h"
 #include "error.h"
-#include "mpi.h"
 #include "universe.h"
 #include "backbone.h"
 

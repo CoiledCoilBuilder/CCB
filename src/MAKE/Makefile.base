@@ -1,4 +1,4 @@
-# base  = minimal compiler flags, mpic++, OpenMPI-1.4.2, ACML, TCL  
+# base  = minimal compiler flags, c++
 #
 SHELL = /bin/sh
 
@@ -8,12 +8,12 @@ SHELL = /bin/sh
 
 OPENMP= -fopenmp
 
-CC =		mpic++ $(OPENMP) 
+CC =		c++ $(OPENMP) 
 CCFLAGS =       -O0 -mpc64 -g -Wall -W -Wno-uninitialized 
 DEPFLAGS =      -M
-LINK =		mpic++ $(OPENMP) 
+LINK =		c++ $(OPENMP) 
 LINKFLAGS =	-O -g -mpc64
-LIB =           -lstdc++ -lm -lgfortran -lgomp -lrt
+LIB =           -lstdc++ -lm -lgomp -lrt
 SIZE =		size
 
 # ---------------------------------------------------------------------
@@ -27,15 +27,6 @@ SIZE =		size
 SCADS_INC =
 
 
-# MPI library, REQUIRED
-# INC = path for mpi.h, MPI compiler settings
-# PATH = path for MPI library
-# LIB = name of MPI library
-
-MPI_INC =  -I${MPI_HOME}/include
-MPI_PATH = -L${MPI_HOME}/lib
-MPI_LIB =  -lmpi -lmpi_f77
-
 # ---------------------------------------------------------------------
 # build rules and dependencies
 # no need to edit this section
@@ -43,9 +34,9 @@ MPI_LIB =  -lmpi -lmpi_f77
 include	Makefile.package.settings
 include	Makefile.package
 
-EXTRA_INC = $(SCADS_INC) $(PKG_INC) $(MPI_INC) $(PKG_SYSINC)
-EXTRA_PATH = $(PKG_PATH) $(MPI_PATH) $(PKG_SYSPATH)
-EXTRA_LIB =  $(PKG_LIB) $(MPI_LIB) $(PKG_SYSLIB)
+EXTRA_INC = $(SCADS_INC) $(PKG_INC) $(PKG_SYSINC)
+EXTRA_PATH = $(PKG_PATH) $(PKG_SYSPATH)
+EXTRA_LIB =  $(PKG_LIB) $(PKG_SYSLIB)
 
 # Link target
 

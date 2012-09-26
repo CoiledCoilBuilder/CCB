@@ -24,7 +24,6 @@
  See the README file in the top-level LAMMPS directory.
  ------------------------------------------------------------------------- */
 
-#include "mpi.h"
 #include "stdlib.h"
 #include "error.h"
 #include "universe.h"
@@ -48,7 +47,6 @@ Error::Error(SCADS *scads) :
  */
 
 void Error::all(const char *str) {
-	MPI_Barrier(universe->world);
 
 	if (universe->me == 0) {
 		if (screen) {
@@ -59,13 +57,11 @@ void Error::all(const char *str) {
 
 	//if (output) delete output;
 
-	MPI_Finalize();
 	exit(1);
 }
 
 // New error function, overloaded  
 void Error::all(const char *file, int line, const char *str) {
-	MPI_Barrier(universe->world);
 
 	if (universe->me == 0) {
 		if (screen) {
@@ -76,7 +72,6 @@ void Error::all(const char *file, int line, const char *str) {
 
 	//if (output) delete output;
 
-	MPI_Finalize();
 	exit(1);
 }
 
@@ -92,7 +87,7 @@ void Error::one(const char *str) {
 		fflush(screen);
 	}
 
-	MPI_Abort(universe->world, 1);
+	exit(1);
 }
 
 void Error::one(const char *file, int line, const char *str) {
@@ -101,7 +96,7 @@ void Error::one(const char *file, int line, const char *str) {
 		fflush(screen);
 	}
 
-	MPI_Abort(universe->world, 1);
+	exit(1);
 }
 
 /** 

@@ -9,7 +9,6 @@
  */
 
 #include "math.h"
-#include "mpi.h"
 #include "string.h"
 #include "scads.h"
 #include "stdlib.h"
@@ -32,22 +31,18 @@ using namespace SCADS_NS;
  *
  * @param narg number of arguments passed
  * @param arg argument array
- * @param communicator the MPI communicator
  */
 
-SCADS::SCADS(int narg, char **arg, MPI_Comm communicator) {
+SCADS::SCADS(int narg, char **arg) {
 
 	/// Initialize fundamental classes
 	memory = new Memory(this);
 	error = new Error(this);
-	universe = new Universe(this, communicator);
+	universe = new Universe(this);
 	scadsio = new Scadsio(this);
 
 	/// Set screen to stdout
 	screen = stdout;
-
-	/// Set world comm.
-	world = communicator;
 
 	/// Create and initialize the top level classes
 	create();

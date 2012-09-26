@@ -11,7 +11,6 @@
 #ifndef SCADS_UNIVERSE_H
 #define SCADS_UNIVERSE_H
 
-#include "mpi.h"
 #include "pointers.h"
 
 namespace SCADS_NS {
@@ -22,18 +21,16 @@ namespace SCADS_NS {
 
      class Universe : protected Pointers {
        public:
-          
+ 
+         // Constructors and Destructors
+          Universe(class SCADS *); /**< The Universe Constructor */
+          ~Universe();                       /**< The Universe Deconstructor */
+         
           char *version;        /**< SCADS version */
-          
-          MPI_Comm world;       /**< MPI Communicator */
-          int me;               /**< What is my processor ID? */
-          int nprocs;           /**< How many processes started? */
-
           int nthreads;			/**< OMP_NUM_THREADS */
 
-          // Constructors and Destructors
-          Universe(class SCADS *, MPI_Comm); /**< The Universe Constructor */
-          ~Universe();                       /**< The Universe Deconstructor */
+          int me;
+
      };
 }
 

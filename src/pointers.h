@@ -25,7 +25,6 @@
 #ifndef SCADS_POINTERS_H
 #define SCADS_POINTERS_H
 
-#include "mpi.h"
 #include "scads.h"
 #include "scadstype.h"
 
@@ -44,8 +43,7 @@ namespace SCADS_NS {
             domain(ptr->domain),
             bitmask(ptr->bitmask),
             backbone(ptr->backbone),
-            screen(ptr->screen),
-            world(ptr->world)  {}
+            screen(ptr->screen) {}
         virtual ~Pointers() {}
 
         // We just need pointers to point...
@@ -65,7 +63,6 @@ namespace SCADS_NS {
         BackboneHandler *&backbone;
 
         FILE *&screen;
-        MPI_Comm &world;
     };
 }
 

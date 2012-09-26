@@ -8,13 +8,13 @@
  * The style implementation follows from that of LAMMPS.
  */
 
-#include "string.h"
-#include "stdio.h"
+#include <string.h>
+#include <stdio.h>
+#include <ctype.h>
 #include "scadsio.h"
 #include "memory.h"
 #include "error.h"
 #include "output.h"
-#include "mpi.h"
 #include "universe.h"
 
 using namespace SCADS_NS;
@@ -31,8 +31,6 @@ using namespace SCADS_NS;
 
 Output::Output(SCADS *scads, int /*narg*/, const char **arg) :
 		Pointers(scads) {
-
-	MPI_Comm_rank(world, &me);
 
 	//Set the name of the input style
 	int n = strlen(arg[1]) + 1;

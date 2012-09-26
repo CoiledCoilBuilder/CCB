@@ -29,8 +29,7 @@
 namespace SCADS_NS {
 
 	/**
-	 * Error Class, contains error routines compatible with MPI
-	 *
+	 * Error Class
 	 * these can be called like: error->all("Hey, this is broken")
 	 */
 
