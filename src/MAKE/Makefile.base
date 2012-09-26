@@ -1,0 +1,85 @@
+# base  = minimal compiler flags, mpic++, OpenMPI-1.4.2, ACML, TCL  
+#
+SHELL = /bin/sh
+
+# ---------------------------------------------------------------------
+# compiler/linker settings
+# specify flags and libraries needed for your compiler
+
+OPENMP= -fopenmp
+
+CC =		mpic++ $(OPENMP) 
+CCFLAGS =       -O0 -mpc64 -g -Wall -W -Wno-uninitialized 
+DEPFLAGS =      -M
+LINK =		mpic++ $(OPENMP) 
+LINKFLAGS =	-O -g -mpc64
+LIB =           -lstdc++ -lm -lgfortran -lgomp -lrt
+SIZE =		size
+
+# ---------------------------------------------------------------------
+# SCADS-specific settings
+# specify settings for SCADS features you will use
+# if you change any -D setting, do full re-compile after "make clean"
+
+# SCADS ifdef settings, OPTIONAL, include -D
+
+#SCADS_INC = -DSCADS_MEMALIGN=16 
+SCADS_INC =
+
+
+# MPI library, REQUIRED
+# INC = path for mpi.h, MPI compiler settings
+# PATH = path for MPI library
+# LIB = name of MPI library
+
+MPI_INC =  -I${MPI_HOME}/include
+MPI_PATH = -L${MPI_HOME}/lib
+MPI_LIB =  -lmpi -lmpi_f77
+
+# TCL library, required
+# INC = 
+# PATH = 
+# LIB = 
+
+TCL_INC =  -I/usr/include
+TCL_PATH = -L/usr/lib64
+TCL_LIB =  -ltcl8.5
+
+# ACML library, required
+# INC = 
+# PATH = 
+# LIB = 
+
+ACML_INC = -I${ACML_HOME}/include
+ACML_PATH = -L${ACML_HOME}/lib
+ACML_LIB = -lacml_mp
+
+# ---------------------------------------------------------------------
+# build rules and dependencies
+# no need to edit this section
+
+include	Makefile.package.settings
+include	Makefile.package
+
+EXTRA_INC = $(SCADS_INC) $(PKG_INC) $(MPI_INC) $(TCL_INC) $(ACML_INC) $(PKG_SYSINC)
+EXTRA_PATH = $(PKG_PATH) $(MPI_PATH) $(TCL_PATH) $(ACML_PATH) $(PKG_SYSPATH)
+EXTRA_LIB =  $(PKG_LIB) $(MPI_LIB) $(TCL_LIB) $(ACML_LIB) $(PKG_SYSLIB)
+
+# Link target
+
+$(EXE):	$(OBJ)
+	$(LINK) $(LINKFLAGS) $(EXTRA_PATH) $(OBJ) $(EXTRA_LIB) $(LIB) -o $(EXE)
+	$(SIZE) $(EXE) 
+
+# Compilation rules
+
+%.o:%.cpp
+	$(CC) $(CCFLAGS) $(EXTRA_INC) -c $<
+
+%.d:%.cpp
+	$(CC) $(CCFLAGS) $(EXTRA_INC) $(DEPFLAGS) $< > $@
+
+# Individual dependencies
+
+DEPENDS = $(OBJ:.o=.d)
+sinclude $(DEPENDS)
