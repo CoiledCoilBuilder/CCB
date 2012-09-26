@@ -49,7 +49,9 @@ SCADS::SCADS(int narg, char **arg) {
 	init();
 
 	/// Parse command line
-	cmdline(narg, arg);
+	/// cmdline(narg, arg);
+
+     run();
 }
 
 /**
@@ -106,7 +108,28 @@ void SCADS::destroy() {
  */
 void SCADS::run() {
 
-	// Check to see that the user specified an optimizaton problem
+     const char **newarg = new const char*[5];
+
+     /// Add the coiled-coil plugin 
+     newarg[0] = (char *) "backbone";
+     newarg[1] = (char *) "add";
+     newarg[2] = (char *) "coiledcoil";
+     newarg[3] = (char *) "bbcc1";
+     backbone->add_backbone(4,newarg);
+     backbone->init_backbone(newarg[3]);
+     backbone->update_backbone(newarg[3],4,newarg,4);
+     backbone->delete_backbone(newarg[3]);
+
+     /// Add an output
+     newarg[0] = (char *) "output";
+     newarg[1] = (char *) "pdb";
+     newarg[2] = (char *) "pdb1";
+     newarg[3] = (char *) "test.pdb";
+     newarg[4] = (char *) "all";
+     scadsio->add_output(5, newarg);
+     scadsio->init_output(newarg[2]);
+     scadsio->write_output(newarg[2]);
+     scadsio->delete_output(newarg[2]);
 
 	// Memory usage pre opt
 	scadsio->memory_usage();
