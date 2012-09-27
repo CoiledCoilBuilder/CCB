@@ -6,15 +6,19 @@ SHELL = /bin/sh
 # compiler/linker settings
 # specify flags and libraries needed for your compiler
 
-OPENMP= -fopenmp
-
-CC =		c++ $(OPENMP) 
-CCFLAGS =       -O0 -mpc64 -g -Wall -W -Wno-uninitialized 
+CC =		g++ 
+CCFLAGS =       -O0 -g -mpc64 -Wall -W -Wno-uninitialized
+SHFLAGS =       -fPIC
 DEPFLAGS =      -M
-LINK =		c++ $(OPENMP) 
+
+LINK =		g++ 
 LINKFLAGS =	-O -g -mpc64
-LIB =           -lstdc++ -lm -lgomp -lrt
+LIB =           -lstdc++ -lm
 SIZE =		size
+
+ARCHIVE =       ar
+ARFLAGS =       -rc
+SHLIBFLAGS =    -shared
 
 # ---------------------------------------------------------------------
 # SCADS-specific settings
@@ -26,6 +30,14 @@ SIZE =		size
 #SCADS_INC = -DSCADS_MEMALIGN=16 
 SCADS_INC =
 
+# TCL library, required
+# INC = 
+# PATH = 
+# LIB = 
+
+TCL_INC =  -I/usr/include
+TCL_PATH = -L/usr/lib64
+TCL_LIB =  -ltcl8.5
 
 # ---------------------------------------------------------------------
 # build rules and dependencies
@@ -34,9 +46,9 @@ SCADS_INC =
 include	Makefile.package.settings
 include	Makefile.package
 
-EXTRA_INC = $(SCADS_INC) $(PKG_INC) $(PKG_SYSINC)
-EXTRA_PATH = $(PKG_PATH) $(PKG_SYSPATH)
-EXTRA_LIB =  $(PKG_LIB) $(PKG_SYSLIB)
+EXTRA_INC = $(SCADS_INC) $(PKG_INC) $(TCL_INC) $(PKG_SYSINC)
+EXTRA_PATH = $(PKG_PATH) $(TCL_PATH) $(PKG_SYSPATH)
+EXTRA_LIB =  $(PKG_LIB) $(TCL_LIB) $(PKG_SYSLIB)
 
 # Link target
 
@@ -44,10 +56,19 @@ $(EXE):	$(OBJ)
 	$(LINK) $(LINKFLAGS) $(EXTRA_PATH) $(OBJ) $(EXTRA_LIB) $(LIB) -o $(EXE)
 	$(SIZE) $(EXE) 
 
+# Library targets
+
+lib:    $(OBJ)
+	$(ARCHIVE) $(ARFLAGS) $(EXE) $(OBJ)
+
+shlib:  $(OBJ)
+	$(CC) $(CCFLAGS) $(SHFLAGS) $(SHLIBFLAGS) $(EXTRA_PATH) -o $(EXE) \
+	$(OBJ) $(EXTRA_LIB) $(LIB)
+
 # Compilation rules
 
 %.o:%.cpp
-	$(CC) $(CCFLAGS) $(EXTRA_INC) -c $<
+	$(CC) $(CCFLAGS) $(SHFLAGS) $(EXTRA_INC) -c $<
 
 %.d:%.cpp
 	$(CC) $(CCFLAGS) $(EXTRA_INC) $(DEPFLAGS) $< > $@

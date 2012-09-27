@@ -1,4 +1,4 @@
-# COMPASS multiple-machine Makefile
+# CCB multiple-machine Makefile
 # More or less the same as the LAMMPS makefile
 # routines
 
@@ -42,6 +42,11 @@ help:
 	@echo 'make yes-user            install all user packages'
 	@echo 'make no-user             remove all user packages'
 	@echo ''
+	@echo 'make makelib             create Makefile.lib'
+	@echo 'make makeshlib           create Makefile.shlib'
+	@echo 'make -f Makefile.lib     compile static lib: libccb.a'
+	@echo 'make -f Makefile.shlib   compile shared object lib: libccb.so required for TCL'     
+	@echo '' 
 	@echo 'make package-update      replace src files with package files'
 	@echo 'make package-overwrite   replace package files with src files'
 	@echo 'make package-diff        diff src files against package files'
@@ -50,7 +55,7 @@ help:
 	@echo 'make clean-bench         clean up benchmark files'
 	@echo 'make bench-machine       bench a particular build'    
 	@echo ''
-	@echo 'make machine             build COMPASS where machine is one of:'
+	@echo 'make machine             build CCB where machine is one of:'
 	@echo ''
 	@files="`ls MAKE/Makefile.*`"; \
 	  for file in $$files; do head -1 $$file; done
@@ -88,6 +93,16 @@ clean-docs:
 
 clean-%:
 	rm -rf Obj_$(@:clean-%=%)
+
+# Update Makefile.lib and Makefile.list
+makelib:                                                                                                                                         
+	@$(SHELL) Make.sh style
+	@$(SHELL) Make.sh Makefile.lib
+
+
+makeshlib:
+	@$(SHELL) Make.sh style
+	@$(SHELL) Make.sh Makefile.shlib
 
 # Package management
 

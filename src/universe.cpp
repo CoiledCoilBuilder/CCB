@@ -9,7 +9,6 @@
  * the partitioning of the processors etc..
  */
 
-#include <omp.h>
 #include "universe.h"
 #include "version.h"
 
@@ -25,15 +24,8 @@ Universe::Universe(SCADS *scads) : Pointers(scads)
 {
      version = (char *) SCADS_VERSION; 
 
- 	//Figure out how many threads running with
+	//Figure out how many threads running with
  	nthreads = 1;
- 	#pragma omp parallel default(shared)
- 	{
- 	 	#pragma omp master
- 		{
- 			nthreads = omp_get_num_threads();
- 		}
- 	}
 
         // Always rank 0 wrt the universe 
         me = 0;

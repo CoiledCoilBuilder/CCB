@@ -131,6 +131,9 @@ void SCADS::run() {
      scadsio->write_output(newarg[2]);
      scadsio->delete_output(newarg[2]);
 
+     
+
+
 	// Memory usage pre opt
 	scadsio->memory_usage();
 }

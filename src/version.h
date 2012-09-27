@@ -14,4 +14,4 @@
   The format should be dd Month yyyy - vX.X.X
 */
 
-#define SCADS_VERSION "08JUNE2012"
+#define SCADS_VERSION "27SEPT2012"
