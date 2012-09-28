@@ -13,9 +13,11 @@ if (test $1 = 1) then
 
 
   cp tcl_ccb.cpp ..
+  cp pkgIndex.tcl ..
 
 elif (test $1 = 0) then
 
   rm -f ../tcl_ccb.cpp 
+  rm -f ../pkgIndex.tcl 
 
 fi

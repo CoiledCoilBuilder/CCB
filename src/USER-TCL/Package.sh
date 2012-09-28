@@ -1,4 +1,4 @@
-# Update package files in SCADS 
+# Update package files in CCB 
 # cp package file to src if doesn't exist or is different
 # do not copy molecular and kspace files if corresponding versions do not exist
 
