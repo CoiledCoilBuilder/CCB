@@ -14,7 +14,7 @@ OBJ = 	$(SRC:.cpp=.o)
 
 PACKAGE = 
 
-PACKUSER = user-coiledcoil
+PACKUSER = user-coiledcoil user-tcl
 
 PACKALL = $(PACKAGE) $(PACKUSER)
 
