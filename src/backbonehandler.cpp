@@ -166,3 +166,15 @@ void BackboneHandler::update_backbone(const char *id, int argc, const char **arg
 
      backbone[ibackbone]->update(argc, argv, n);
 }
+
+void BackboneHandler::generate_backbone(const char *id) {
+
+     int ibackbone = find_backbone(id);
+     if (ibackbone < 0) {
+          char str[128];
+          sprintf(str, "Could not find backbone id %s to generate", id);
+          error->one(FLERR, str);
+     }
+
+     backbone[ibackbone]->generate();
+}

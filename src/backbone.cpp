@@ -58,3 +58,7 @@ void Backbone::init() {
 void Backbone::update(int argc, const char **argv, int n) {
      update_style(argc, argv, n);
 }
+
+void Backbone::generate() {
+     generate_style();
+}

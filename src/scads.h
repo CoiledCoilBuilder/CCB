@@ -60,12 +60,9 @@ namespace SCADS_NS {
           void create(); /**< Creates instances of the top level classes */
           void init(); /**< Initializes & sets up the top level classes, Input->init() */
           void destroy(); /**< Destroys the top level classes */
-          void run(); /**< The main running routine, this is called after everything is setup */
-
-          void cmdline(int argc, char **argv); /**< Parses the command line */
 
      private:
-          char *ctlfile; /**< The Input Control File */
+
 	};
 
 }

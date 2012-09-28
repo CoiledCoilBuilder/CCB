@@ -39,13 +39,14 @@ namespace SCADS_NS {
           ~BackboneCoiledCoil();
 
           // Member Functions
-          void generate();            /**< build coiled-coil, update coordinates in x */ 
-          void update_domain();       /**< set the domain coordinates to the backbone coordianates*/     
+          void generate();                                              /**< build coiled-coil, update coordinates in x */ 
+          void update_domain();                                         /**< set the domain coordinates to the backbone coordianates*/     
           void set_params(int argc, const char **argv, int n);          /**< set the backbone parameters before generation*/ 
 
      protected:
-          virtual void init_style();  /**< Initialize the style (declare member variables, etc.. */ 
+          virtual void init_style();                                     /**< Initialize the style (declare member variables, etc.. */ 
           virtual void update_style(int argc, const char **argv, int n); /**< Update the parameters and re-generate the structure */
+          virtual void generate_style();                                 /**< Generate coordinates */
 
      private: 
 
@@ -94,7 +95,7 @@ namespace SCADS_NS {
 
 
           void get_pp_params(double *axis0, double *axis1, 
-              double *u, double *v, double *r, double &theta);             /**< Determins the screw-rotation parameters from the peptide plane */
+              double *u, double *v, double *r, double &theta);             /**< Determines the screw-rotation parameters from the peptide plane */
           void crick(double *u, double rho, double *r1, double *r2);       /**< Sets the rotation angle to correspond to the crick angle */
           void next_plane(double *u, double *v, double theta);             /**< Generates the next plane given u, v, theat */
           void terminate();                                                /**< Adds the n-terminal nitrogen, rearranges coordinates */

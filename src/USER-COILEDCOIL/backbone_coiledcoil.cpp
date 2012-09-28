@@ -130,136 +130,113 @@ BackboneCoiledCoil::~BackboneCoiledCoil() {
  *
  * @param argv array of arguments
  * @param argc number of argumets
- * @param n were in the array of arguments to start parsing
+ * @param n where in the array of arguments to start parsing
  *
  */
 void BackboneCoiledCoil::set_params(int argc, const char **argv, int n) {
 
+     if (error->verbosity_level == 10)
+          for (int i = 0; i < argc; i++)
+               fprintf(screen, "%s\n", argv[i]);
+
+
     while (n < argc) {
 
-        if (strcmp(argv[n], "pitch") == 0) {
-            isfloat(argv[n + 1]);
-            pitch = atof(argv[n + 1]);
+        if (strcmp(argv[n], "-pitch") == 0) {
+            n++;
+            isfloat(argv[n]);
+            pitch = atof(argv[n]);
 
-        } else if (strcmp(argv[n], "radius") == 0) {
-            isfloat(argv[n + 1]);
-            radius = atof(argv[n + 1]);
+        } else if (strcmp(argv[n], "-radius") == 0) {
+            n++;
+            isfloat(argv[n]);
+            radius = atof(argv[n]);
 
-        } else if (strcmp(argv[n], "rpr") == 0) {
-            isfloat(argv[n + 1]);
-            rpr = atof(argv[n + 1]);
+        } else if (strcmp(argv[n], "-rpr") == 0) {
+            n++;
+            isfloat(argv[n]);
+            rpr = atof(argv[n]);
 
-        } else if (strcmp(argv[n], "square") == 0) {
-            isfloat(argv[n + 1]);
-            square = atof(argv[n + 1]) * DEG2RAD;
+        } else if (strcmp(argv[n], "-square") == 0) {
+            n++;
+            isfloat(argv[n]);
+            square = atof(argv[n]) * DEG2RAD;
 
-        } else if (strcmp(argv[n], "nres") == 0) {
-            isfloat(argv[n + 1]);
-            nres = atoi(argv[n + 1]);
+        } else if (strcmp(argv[n], "-nres") == 0) {
+            n++;
+            isfloat(argv[n]);
+            nres = atoi(argv[n]);
             rebuild_domain = true;
 
-        } else if (strcmp(argv[n], "nhelix") == 0) {
-            isfloat(argv[n + 1]);
-            nhelix = atoi(argv[n + 1]);
+            if (nres < 1) error->one(FLERR, "nres must be greater than 0");
+
+        } else if (strcmp(argv[n], "-nhelix") == 0) {
+            n++;
+            isfloat(argv[n]);
+            nhelix = atoi(argv[n]);
             rebuild_domain = true;
 
-        } else if (strcmp(argv[n], "antiparallel") == 0) {
+            if (nres < 1) error->one(FLERR, "nhelix must be greater than 0");
+
+        } else if (strcmp(argv[n], "-antiparallel") == 0) {
             anti_flag = true;
             n++;
             continue;
 
-        } else if (strcmp(argv[n], "asymmetric") == 0) {
+        } else if (strcmp(argv[n], "-asymmetric") == 0) {
             asymmetric_flag = true;
             n++;
             continue;
-/*
-        } else if (strcmp(argv[n], "rpt") == 0) {
 
-            int argc_list = 0;
-            const char **argv_list = NULL;
+            /** These commands can have multiple arguments
+             * due to their asymmetry. Arguments look like
+             * -rotation 0 90 170
+             */
 
-            // Get rpt from TCL list
-            if (Tcl_SplitList(tcl_interp, argv[n + 1], &argc_list, &argv_list) != TCL_OK) {
-                Tcl_AppendResult(tcl_interp, "backbone: coiled coil: rpt expects a tcl list of length nhelix", "\n", NULL);
-                error->one_tcl(TCL_ERROR);
+        } else if (strcmp(argv[n], "-rotation") == 0) {
+            n++;
+            int i = 0;
+            while (argv[n][0] != '-' && n < argc) {
+                isfloat(argv[n]);
+                double rot = atof(argv[n]);
 
+                // Make sure rotation is between [-180, 180]
+                while (rot > 180) rot -= 360;
+                while (rot < -180) rot += 360;
+
+                rotation[i++] = rot * DEG2RAD;
+                n++;
             }
+            continue;
 
-            // Do we have values?
-            if (argc == 0) {
-                Tcl_AppendResult(tcl_interp, "backbone: coiled-coil: you didn't specify any rpts!", "\n", NULL);
-                error->one_tcl(TCL_ERROR);
+        } else if (strcmp(argv[n], "-rpt") == 0) {
+            n++;
+            int i = 0;
+            while (argv[n][0] != '-' && n < argc) {
+                isfloat(argv[n]);
+                rpt[i++] = atof(argv[n]);
+                n++;
             }
+            continue;
 
-            // Check for numbers, add to list
-            for (int i = 0; i < argc_list; i++) {
-                isfloat(argv_list[i]);
-                rpt[i] = atof(argv_list[i]);
+        } else if (strcmp(argv[n], "-zoff") == 0) {
+            n++;
+            int i = 0;
+            while (argv[n][0] != '-' && n < argc) {
+                isfloat(argv[n]);
+                zoff[i++] = atof(argv[n]);
+                n++;
             }
-
-            Tcl_Free((char *) argv_list);
-
-        } else if (strcmp(argv[n], "rotation") == 0) {
-
-            int argc_list = 0;
-            const char **argv_list = NULL;
-
-            // Get rotations from TCL list
-            if (Tcl_SplitList(tcl_interp, argv[n + 1], &argc_list, &argv_list) != TCL_OK) {
-                Tcl_AppendResult(tcl_interp, "backbone: coiled coil: rotations expects a tcl list of length nhelix", "\n", NULL);
-                error->one_tcl(TCL_ERROR);
-
-            }
-
-            // Do we have rotations
-            if (argc == 0) {
-                Tcl_AppendResult(tcl_interp, "backbone: coiled-coil: you didn't specify any rotations!", "\n", NULL);
-                error->one_tcl(TCL_ERROR);
-            }
-
-            // Check for numbers, copy and convert to radians
-            for (int i = 0; i < argc_list; i++) {
-                isfloat(argv_list[i]);
-                rotation[i] = atof(argv_list[i]) * DEG2RAD;
-            }
-
-            Tcl_Free((char *) argv_list);
-
-        } else if (strcmp(argv[n], "zoff") == 0) {
-
-            int argc_list = 0;
-            const char **argv_list = NULL;
-
-            // Get rotations from TCL list
-            if (Tcl_SplitList(tcl_interp, argv[n + 1], &argc_list, &argv_list) != TCL_OK) {
-                Tcl_AppendResult(tcl_interp, "backbone: coiled coil: Zoff expects a tcl list of length nhelix", "\n", NULL);
-                error->one_tcl(TCL_ERROR);
-
-            }
-
-            // Do we have offsets?
-            if (argc == 0) {
-                Tcl_AppendResult(tcl_interp, "backbone: coiled-coil: you didn't specify any Z offsets!", "\n", NULL);
-                error->one_tcl(TCL_ERROR);
-            }
-
-            // Check for numbers, copy and convert
-            for (int i = 0; i < argc_list; i++) {
-                fprintf(screen, "%s\n", argv_list[i]);
-                isfloat(argv_list[i]);
-                zoff[i] = atof(argv_list[i]);
-            }
-
-            Tcl_Free((char *) argv_list);
-*/
+            continue;
 
         } else {
-            char str[128];
-            sprintf(str, "BackboneCoiledCoil: unknown option: %s", argv[n]);
-            error->one(FLERR, str);
+                char str[128];
+                sprintf(str, "BackboneCoiledCoil: unknown option: %s", argv[n]);
+                error->one(FLERR, str);
         }
 
-        n += 2;
+        // Next Argument
+        n++;
     }
 }
 
@@ -272,13 +249,20 @@ void BackboneCoiledCoil::update_style(int argc, const char **argv, int n) {
     natom = nres * nhelix * 4;
     omega = -2 * PI * rpr / pitch;
     omega_alpha = 2 * PI / rpt[0];
+}
 
-    // generate the coiled-coil
-    if (asymmetric_flag) generate_asymmetric();
-    else generate();
+/** 
+ * @brief Generate Coordinates
+ *
+ */
+void BackboneCoiledCoil::generate_style() {
 
-    // update the domain
-    update_domain();
+     // generate the coiled-coil
+     if (asymmetric_flag) generate_asymmetric();
+     else generate();
+
+     // update the domain
+     update_domain();
 }
 
 /**
@@ -363,7 +347,7 @@ void BackboneCoiledCoil::azzero() {
 void BackboneCoiledCoil::generate() {
 
     // Print Header with info
-    if (error->verbosity_level >= 3)
+    if (error->verbosity_level >= 10)
         print_header();
 
     // Set initial peptide-plane coordiantes
@@ -468,7 +452,7 @@ void BackboneCoiledCoil::generate() {
 void BackboneCoiledCoil::generate_asymmetric() {
 
     // Print Header with info
-    if (error->verbosity_level >= 3)
+    if (error->verbosity_level >= 10)
         print_header();
 
     // Set initial peptide-plane coordiantes
@@ -1405,13 +1389,13 @@ void BackboneCoiledCoil::print_header() {
 
     if (asymmetric_flag)
         fprintf(screen, "Asymmetric Parameters:\n");
-        for (unsigned int i = 0; i < nhelix; i++)
-            fprintf(screen,
-                "Rotation (degrees) %d: %.2f\n"
-                "Zoff (angstrom)    %d: %.2f\n"
-                "Residues per Turn  %d: %.2f\n",
-                i+1, rotation[i] * RAD2DEG, i+1, zoff[i], i+1, rpt[i]);
-        fprintf(screen, "\n\n");
+    for (unsigned int i = 0; i < nhelix; i++)
+        fprintf(screen,
+            "Rotation (degrees) %d: %.2f\n"
+            "Zoff (angstrom)    %d: %.2f\n"
+            "Residues per Turn  %d: %.2f\n",
+            i+1, rotation[i] * RAD2DEG, i+1, zoff[i], i+1, rpt[i]);
+    fprintf(screen, "\n\n");
 
 }
 

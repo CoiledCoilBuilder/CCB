@@ -35,10 +35,9 @@ namespace SCADS_NS {
           void add_backbone(int, const char **);
           void delete_backbone(const char *);
           void update_backbone(const char *id, int argc, const char **argv, int n);
+          void generate_backbone(const char *id);
           int find_backbone(const char *);
                
-
-
      private:
 
 	};
