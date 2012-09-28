@@ -134,6 +134,28 @@ int tcl_ccb(ClientData /**/, Tcl_Interp *interp,
         scads->scadsio->delete_output(newarg[2]);
     }
 
+    /// Create TCL object and return coordinates
+    Tcl_Obj *resultPtr;
+    resultPtr = Tcl_NewListObj(0,NULL);
+
+    for (int i = 0; i < scads->domain->nsite; i++)
+        for (int j = 0; j < scads->domain->site[i]->fixed_atoms->natom; j++) {
+
+            Tcl_Obj *xyz;
+
+            double coords[3] = { 0.0 };
+            scads->domain->site[i]->fixed_atoms->atom[j]->get_xyz(coords);
+
+            xyz = Tcl_NewListObj(0,NULL);
+
+            for (int k = 0; k < 3; k++)
+                Tcl_ListObjAppendElement(interp,xyz,Tcl_NewDoubleObj(coords[k]));
+
+            Tcl_ListObjAppendElement(interp,resultPtr,xyz);
+        }
+
+    Tcl_SetObjResult(interp, resultPtr);
+
     // Delete ccb instance
     delete scads;
 
