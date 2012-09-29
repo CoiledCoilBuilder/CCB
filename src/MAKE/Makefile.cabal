@@ -1,6 +1,8 @@
-# cabal  = Optimized compiler options, c++
+# cabal  = Optimized compiler options, g++, 64bit
 
 SHELL = /bin/sh
+ROOT = ccb
+VERSION = 1.0
 
 # ---------------------------------------------------------------------
 # compiler/linker settings
@@ -20,17 +22,17 @@ SIZE =		size
 
 ARCHIVE =       ar
 ARFLAGS =       -rc
-SHLIBFLAGS =    -shared
+SHLIBFLAGS =    -shared -m64
 
 # ---------------------------------------------------------------------
-# SCADS-specific settings
-# specify settings for SCADS features you will use
+# CCB-specific settings
+# specify settings for CCB features you will use
 # if you change any -D setting, do full re-compile after "make clean"
 
-# SCADS ifdef settings, OPTIONAL, include -D
+# CCB ifdef settings, OPTIONAL, include -D
 
-SCADS_INC = -DSCADS_MEMALIGN=16 
-#SCADS_INC =
+CCB_INC = -DPACKAGE_NAME=\"$(ROOT)\" -DPACKAGE_VERSION=\"$(VERSION)\"\
+	  -DUSE_TCL_STUBS
 
 # TCL library, required
 # INC = 
@@ -40,6 +42,7 @@ SCADS_INC = -DSCADS_MEMALIGN=16
 TCL_INC =  -I/usr/include
 TCL_PATH = -L/usr/lib64
 TCL_LIB =  -ltcl8.5
+TCL_STUB_LIB = -ltclstub8.5
 
 # ---------------------------------------------------------------------
 # build rules and dependencies
@@ -48,9 +51,9 @@ TCL_LIB =  -ltcl8.5
 include	Makefile.package.settings
 include	Makefile.package
 
-EXTRA_INC = $(SCADS_INC) $(PKG_INC) $(TCL_INC) $(PKG_SYSINC)
+EXTRA_INC = $(CCB_INC) $(PKG_INC) $(TCL_INC) $(PKG_SYSINC)
 EXTRA_PATH = $(PKG_PATH) $(TCL_PATH) $(PKG_SYSPATH)
-EXTRA_LIB =  $(PKG_LIB) $(TCL_LIB) $(PKG_SYSLIB)
+EXTRA_LIB =  $(PKG_LIB) $(TCL_LIB) $(TCL_STUB_LIB) $(PKG_SYSLIB)
 
 # Link target
 

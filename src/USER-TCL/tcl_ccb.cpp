@@ -155,6 +155,7 @@ int tcl_ccb(ClientData /**/, Tcl_Interp *interp,
 
     /// Create TCL object and return coordinates if requested
     if (vmd) {
+
         Tcl_Obj *resultPtr;
         resultPtr = Tcl_NewListObj(0,NULL);
 
@@ -172,6 +173,9 @@ int tcl_ccb(ClientData /**/, Tcl_Interp *interp,
                     Tcl_ListObjAppendElement(interp,xyz,Tcl_NewDoubleObj(coords[k]));
 
                 Tcl_ListObjAppendElement(interp,resultPtr,xyz);
+
+                fprintf(stdout, "TEST");
+                fflush(stdout);  
             }
 
         Tcl_SetObjResult(interp, resultPtr);
@@ -186,7 +190,7 @@ int tcl_ccb(ClientData /**/, Tcl_Interp *interp,
 
 extern "C" {
 
-    /* register the plugin with the tcl interpreters */
+/* register the plugin with the tcl interpreters */
 #if defined(CCBTCLDLL_EXPORTS) && defined(_WIN32)
 #  undef TCL_STORAGE_CLASS
 #  define TCL_STORAGE_CLASS DLLEXPORT
@@ -205,15 +209,99 @@ extern "C" {
 
 #else
 
-        int Ccb_Init(Tcl_Interp *interp)
+    int Ccb_Init(Tcl_Interp *interp)
 
 #endif
     {
+
+#if defined(USE_TCL_STUBS)
+       if (Tcl_InitStubs(interp, TCL_VERSION, 0) == NULL)
+                    return TCL_ERROR;
+       if (Tcl_PkgRequire(interp, "Tcl", TCL_VERSION, 0) == NULL)
+                    return TCL_ERROR;
+#endif
+
+       if (Tcl_PkgProvide(interp, PACKAGE_NAME, PACKAGE_VERSION) != TCL_OK)
+            return TCL_ERROR;
+
         Tcl_CreateObjCommand(interp,"ccb",tcl_ccb,
             (ClientData)NULL, (Tcl_CmdDeleteProc*)NULL);
 
-        Tcl_PkgProvide(interp, "ccb", "1.0");
+        return TCL_OK;
+    }
 
+#if defined(CCBTCLDLL_EXPORTS) && defined(_WIN32)
+#  undef TCL_STORAGE_CLASS
+#  define TCL_STORAGE_CLASS DLLEXPORT
+
+#define WIN32_LEAN_AND_MEAN /* Exclude rarely-used stuff from Windows headers */
+#include <windows.h>
+
+    BOOL APIENTRY DllMain( HANDLE hModule,
+        DWORD  ul_reason_for_call,
+        LPVOID lpReserved )
+    {
+        return TRUE;
+    }
+
+    EXTERN int Ccb_SafeInit(Tcl_Interp *interp)
+
+#else
+
+    int Ccb_SafeInit(Tcl_Interp *interp)
+
+#endif
+    {
+        return TCL_OK;
+    }
+
+#if defined(CCBTCLDLL_EXPORTS) && defined(_WIN32)
+#  undef TCL_STORAGE_CLASS
+#  define TCL_STORAGE_CLASS DLLEXPORT
+
+#define WIN32_LEAN_AND_MEAN /* Exclude rarely-used stuff from Windows headers */
+#include <windows.h>
+
+    BOOL APIENTRY DllMain( HANDLE hModule,
+        DWORD  ul_reason_for_call,
+        LPVOID lpReserved )
+    {
+        return TRUE;
+    }
+
+    EXTERN int Ccb_SafeUnload(Tcl_Interp *interp)
+
+#else
+
+    int Ccb_SafeUnload(Tcl_Interp *interp)
+
+#endif
+    {
+        return TCL_OK;
+    }
+
+#if defined(CCBTCLDLL_EXPORTS) && defined(_WIN32)
+#  undef TCL_STORAGE_CLASS
+#  define TCL_STORAGE_CLASS DLLEXPORT
+
+#define WIN32_LEAN_AND_MEAN /* Exclude rarely-used stuff from Windows headers */
+#include <windows.h>
+
+    BOOL APIENTRY DllMain( HANDLE hModule,
+        DWORD  ul_reason_for_call,
+        LPVOID lpReserved )
+    {
+        return TRUE;
+    }
+
+    EXTERN int Ccb_Unload(Tcl_Interp *interp)
+
+#else
+
+    int Ccb_Unload(Tcl_Interp *interp)
+
+#endif
+    {
         return TCL_OK;
     }
 }

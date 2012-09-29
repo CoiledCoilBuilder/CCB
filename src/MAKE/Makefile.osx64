@@ -1,27 +1,27 @@
-# base  = minimal compiler flags, g++, 64bit
+# osx64  = minimal compiler flags, c++, 64-bit
+# if you're compiling for a vmd importable .so, you need the 32-bit version
 #
 SHELL = /bin/sh
 ROOT = ccb
 VERSION = 1.0
-
 
 # ---------------------------------------------------------------------
 # compiler/linker settings
 # specify flags and libraries needed for your compiler
 
 CC =		g++ 
-CCFLAGS =       -O0 -g -mpc64 -Wall -W -Wno-uninitialized
+CCFLAGS =       -Os -g -Wall -W -Wno-uninitialized -dynamic -m64
 SHFLAGS =       -fPIC
 DEPFLAGS =      -M
 
 LINK =		g++ 
-LINKFLAGS =	-O -g -mpc64
+LINKFLAGS =	-Os -g -m64
 LIB =           -lstdc++ -lm
 SIZE =		size
 
 ARCHIVE =       ar
 ARFLAGS =       -rc
-SHLIBFLAGS =    -shared
+SHLIBFLAGS =    -bundle -m64 -L/usr/X11R6/lib/ 
 
 # ---------------------------------------------------------------------
 # CCB-specific settings
@@ -39,8 +39,8 @@ CCB_INC = -DPACKAGE_NAME=\"$(ROOT)\" -DPACKAGE_VERSION=\"$(VERSION)\"\
 # LIB = 
 
 TCL_INC =  -I/usr/include
-TCL_PATH = -L/usr/lib64
-TCL_LIB =  -ltcl8.5
+TCL_PATH = -L/usr/lib
+TCL_LIB =  -ltcl8.5 -dl
 TCL_STUB_LIB = -ltclstub8.5
 
 # ---------------------------------------------------------------------

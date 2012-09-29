@@ -5,6 +5,7 @@
 # Definitions
 
 ROOT =  ccb
+VERSION = 1.0
 EXE =	$(ROOT)_$@
 SRC =	$(wildcard *.cpp)
 INC =	$(wildcard *.h)
