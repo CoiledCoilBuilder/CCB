@@ -241,11 +241,11 @@ extern "C" {
         return TRUE;
     }
 
-    EXTERN int Ccb_SafeInit(Tcl_Interp *interp)
+    EXTERN int Ccb_SafeInit(Tcl_Interp *)
 
 #else
 
-    int Ccb_SafeInit(Tcl_Interp *interp)
+    int Ccb_SafeInit(Tcl_Interp *)
 
 #endif
     {
@@ -266,11 +266,11 @@ extern "C" {
         return TRUE;
     }
 
-    EXTERN int Ccb_SafeUnload(Tcl_Interp *interp)
+    EXTERN int Ccb_SafeUnload(Tcl_Interp *)
 
 #else
 
-    int Ccb_SafeUnload(Tcl_Interp *interp)
+    int Ccb_SafeUnload(Tcl_Interp *)
 
 #endif
     {
@@ -291,11 +291,11 @@ extern "C" {
         return TRUE;
     }
 
-    EXTERN int Ccb_Unload(Tcl_Interp *interp)
+    EXTERN int Ccb_Unload(Tcl_Interp *)
 
 #else
 
-    int Ccb_Unload(Tcl_Interp *interp)
+    int Ccb_Unload(Tcl_Interp *)
 
 #endif
     {

@@ -33,7 +33,7 @@ using namespace SCADS_NS;
  * @param arg argument array
  */
 
-SCADS::SCADS(int narg, char **arg) {
+SCADS::SCADS(int , char **) {
 
 	/// Initialize fundamental classes
 	memory = new Memory(this);

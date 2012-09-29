@@ -80,7 +80,7 @@ namespace SCADS_NS {
           double **x;                   /**< 2D-array of coordinates for coiled-coil */  
 
           //Order of output by chain
-          int order[64];                /**< Order of chain output, e.g. {0 3 1 2} */
+          unsigned int order[64];       /**< Order of chain output, e.g. {0 3 1 2} switches {A B C D} to {A D B C} */
                                         
           Site **site;                  /**< Array of sites that this style created and can update or delete */
           unsigned int nsite;           /**< current number of sites that belong to this style */

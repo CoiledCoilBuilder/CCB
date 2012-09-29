@@ -62,7 +62,7 @@ BackboneCoiledCoil::BackboneCoiledCoil(SCADS *scads, int narg, const char **arg)
         rpt[i] = 3.64;
     }
 
-    // Initial Output Order
+    // Initial Output Order, maximum 64 chains
     for (int i = 0; i < 64; i++) {
         order[i] = i;
     }
@@ -208,8 +208,8 @@ void BackboneCoiledCoil::set_params(int argc, const char **argv, int n) {
             n++;
             if (n == argc) error->one(FLERR, "Missing argument to -rotation");
             int i = 0;
-            while (argv[n][0] != '-' && n < argc) {
-                isfloat(argv[n]);
+            while (n < argc && isfloat(argv[n])) {
+                
                 double rot = atof(argv[n]);
 
                 // Make sure rotation is between [-180, 180]
@@ -225,8 +225,7 @@ void BackboneCoiledCoil::set_params(int argc, const char **argv, int n) {
             n++;
             if (n == argc) error->one(FLERR, "Missing argument to -rpt");
             int i = 0;
-            while (argv[n][0] != '-' && n < argc) {
-                isfloat(argv[n]);
+            while (n < argc && isfloat(argv[n])) {
                 rpt[i++] = atof(argv[n]);
                 n++;
             }
@@ -236,8 +235,7 @@ void BackboneCoiledCoil::set_params(int argc, const char **argv, int n) {
             n++;
             if (n == argc) error->one(FLERR, "Missing argument to -zoff");
             int i = 0;
-            while (argv[n][0] != '-' && n < argc) {
-                isfloat(argv[n]);
+            while (n < argc && isfloat(argv[n])) {
                 zoff[i++] = atof(argv[n]);
                 n++;
             }
@@ -247,12 +245,12 @@ void BackboneCoiledCoil::set_params(int argc, const char **argv, int n) {
             n++;
             if (n == argc) error->one(FLERR, "Missing argument to -order");
             int i = 0;
-            while (argv[n][0] != '-' && n < argc) {
-                isfloat(argv[n]);
+            while (n < argc && isfloat(argv[n])) {
                 order[i++] = atoi(argv[n]);
                 n++;
+ 
             }
-            continue;
+           continue;
 
         } else {
             char str[128];
@@ -1290,7 +1288,9 @@ void BackboneCoiledCoil::update_domain() {
         nsite = 0;
         for (unsigned int i = 0, offset = 0; i < nhelix; i++) {
 
-            fprintf(screen, "%d\n", order[i]);
+            if (order[i] >= nhelix)
+              error->one(FLERR, "Orders must be less than the number of helices\n"
+                    "e.g. if nhelix = 2, order is either {0 1} or {1 0}");
 
             // Calculate the offset w.r.t the user specified order
             offset = order[i]*nperhelix;
@@ -1615,11 +1615,7 @@ bool BackboneCoiledCoil::isfloat(const char *str) {
 
     if (i == strlen(str))
         return true;
-    else {
-        char s[128];
-        sprintf(s, "BackboneCoiledCoil: expected number, got: %s", s);
-        error->one(FLERR, s);
-    }
-
+    
     return false;
+
 }

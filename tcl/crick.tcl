@@ -37,7 +37,7 @@ proc ::crick::crick { args } {
   set params(rpr) 1.5
   set params(antiparallel) 0
   set params(asymmetric) 0
-  set params(order) 0
+  set params(order) {0 1} 
 
   # Generate mol
   newmol
@@ -76,10 +76,12 @@ proc ::crick::newmol { args } {
 	lappend opts "-antiparallel"
     }
 
+    puts $opts
+
     # Generate structure
     if { [catch {eval $opts} err] } {
-	vmdcon -error "ccb: Could not generate structure:\n $err"
-	return -1
+        vmdcon -error "ccb: Could not generate structure:\n $err"
+        return -1
     }
 
     ## Load into VMD
