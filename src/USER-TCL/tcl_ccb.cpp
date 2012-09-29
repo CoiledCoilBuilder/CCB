@@ -173,9 +173,6 @@ int tcl_ccb(ClientData /**/, Tcl_Interp *interp,
                     Tcl_ListObjAppendElement(interp,xyz,Tcl_NewDoubleObj(coords[k]));
 
                 Tcl_ListObjAppendElement(interp,resultPtr,xyz);
-
-                fprintf(stdout, "TEST");
-                fflush(stdout);  
             }
 
         Tcl_SetObjResult(interp, resultPtr);
