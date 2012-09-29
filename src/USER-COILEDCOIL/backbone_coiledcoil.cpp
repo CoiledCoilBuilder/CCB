@@ -62,6 +62,11 @@ BackboneCoiledCoil::BackboneCoiledCoil(SCADS *scads, int narg, const char **arg)
         rpt[i] = 3.64;
     }
 
+    // Initial Output Order
+    for (int i = 0; i < 64; i++) {
+        order[i] = i;
+    }
+
     anti_flag = false;
     asymmetric_flag = false;
     rebuild_domain = true;
@@ -135,35 +140,40 @@ BackboneCoiledCoil::~BackboneCoiledCoil() {
  */
 void BackboneCoiledCoil::set_params(int argc, const char **argv, int n) {
 
-     if (error->verbosity_level == 10)
-          for (int i = 0; i < argc; i++)
-               fprintf(screen, "%s\n", argv[i]);
+    if (error->verbosity_level == 10)
+        for (int i = 0; i < argc; i++)
+            fprintf(screen, "%s\n", argv[i]);
 
 
     while (n < argc) {
 
         if (strcmp(argv[n], "-pitch") == 0) {
             n++;
+            if (n == argc) error->one(FLERR, "Missing argument to -pitch");
             isfloat(argv[n]);
             pitch = atof(argv[n]);
 
         } else if (strcmp(argv[n], "-radius") == 0) {
             n++;
+            if (n == argc) error->one(FLERR, "Missing argument to -radius");
             isfloat(argv[n]);
             radius = atof(argv[n]);
 
         } else if (strcmp(argv[n], "-rpr") == 0) {
             n++;
+            if (n == argc) error->one(FLERR, "Missing argument to -rpr");
             isfloat(argv[n]);
             rpr = atof(argv[n]);
 
         } else if (strcmp(argv[n], "-square") == 0) {
             n++;
+            if (n == argc) error->one(FLERR, "Missing argument to -square");
             isfloat(argv[n]);
             square = atof(argv[n]) * DEG2RAD;
 
         } else if (strcmp(argv[n], "-nres") == 0) {
             n++;
+            if (n == argc) error->one(FLERR, "Missing argument to -nres");
             isfloat(argv[n]);
             nres = atoi(argv[n]);
             rebuild_domain = true;
@@ -172,6 +182,7 @@ void BackboneCoiledCoil::set_params(int argc, const char **argv, int n) {
 
         } else if (strcmp(argv[n], "-nhelix") == 0) {
             n++;
+            if (n == argc) error->one(FLERR, "Missing argument to -nhelix");
             isfloat(argv[n]);
             nhelix = atoi(argv[n]);
             rebuild_domain = true;
@@ -195,6 +206,7 @@ void BackboneCoiledCoil::set_params(int argc, const char **argv, int n) {
 
         } else if (strcmp(argv[n], "-rotation") == 0) {
             n++;
+            if (n == argc) error->one(FLERR, "Missing argument to -rotation");
             int i = 0;
             while (argv[n][0] != '-' && n < argc) {
                 isfloat(argv[n]);
@@ -211,6 +223,7 @@ void BackboneCoiledCoil::set_params(int argc, const char **argv, int n) {
 
         } else if (strcmp(argv[n], "-rpt") == 0) {
             n++;
+            if (n == argc) error->one(FLERR, "Missing argument to -rpt");
             int i = 0;
             while (argv[n][0] != '-' && n < argc) {
                 isfloat(argv[n]);
@@ -221,6 +234,7 @@ void BackboneCoiledCoil::set_params(int argc, const char **argv, int n) {
 
         } else if (strcmp(argv[n], "-zoff") == 0) {
             n++;
+            if (n == argc) error->one(FLERR, "Missing argument to -zoff");
             int i = 0;
             while (argv[n][0] != '-' && n < argc) {
                 isfloat(argv[n]);
@@ -229,10 +243,21 @@ void BackboneCoiledCoil::set_params(int argc, const char **argv, int n) {
             }
             continue;
 
+        } else if (strcmp(argv[n], "-order") == 0) {
+            n++;
+            if (n == argc) error->one(FLERR, "Missing argument to -order");
+            int i = 0;
+            while (argv[n][0] != '-' && n < argc) {
+                isfloat(argv[n]);
+                order[i++] = atoi(argv[n]);
+                n++;
+            }
+            continue;
+
         } else {
-                char str[128];
-                sprintf(str, "BackboneCoiledCoil: unknown option: %s", argv[n]);
-                error->one(FLERR, str);
+            char str[128];
+            sprintf(str, "CCB: unknown option: %s", argv[n]);
+            error->one(FLERR, str);
         }
 
         // Next Argument
@@ -251,18 +276,18 @@ void BackboneCoiledCoil::update_style(int argc, const char **argv, int n) {
     omega_alpha = 2 * PI / rpt[0];
 }
 
-/** 
+/**
  * @brief Generate Coordinates
  *
  */
 void BackboneCoiledCoil::generate_style() {
 
-     // generate the coiled-coil
-     if (asymmetric_flag) generate_asymmetric();
-     else generate();
+    // generate the coiled-coil
+    if (asymmetric_flag) generate_asymmetric();
+    else generate();
 
-     // update the domain
-     update_domain();
+    // update the domain
+    update_domain();
 }
 
 /**
@@ -1259,9 +1284,17 @@ void BackboneCoiledCoil::update_domain() {
             site[i] = NULL;
         }
 
+        int nperhelix = natom / nhelix;
+
         // Recreate the coiled coil contigiously
         nsite = 0;
-        for (unsigned int i = 0, offset = 0; i < nhelix; i++)
+        for (unsigned int i = 0, offset = 0; i < nhelix; i++) {
+
+            fprintf(screen, "%d\n", order[i]);
+
+            // Calculate the offset w.r.t the user specified order
+            offset = order[i]*nperhelix;
+
             for (unsigned int j = 0; j < nres; j++, offset += 4) {
 
                 int isite = domain->add_site();
@@ -1368,7 +1401,8 @@ void BackboneCoiledCoil::update_domain() {
 
             }
 
-        rebuild_domain = false;
+            rebuild_domain = false;
+        }
     }
 }
 

@@ -61,11 +61,11 @@ $(EXE):	$(OBJ)
 # Library targets
 
 lib:    $(OBJ)
-        $(ARCHIVE) $(ARFLAGS) $(EXE) $(OBJ)
+	$(ARCHIVE) $(ARFLAGS) $(EXE) $(OBJ)
 
 shlib:  $(OBJ)
-        $(CC) $(CCFLAGS) $(SHFLAGS) $(SHLIBFLAGS) $(EXTRA_PATH) -o $(EXE) \
-        $(OBJ) $(EXTRA_LIB) $(LIB)
+	$(CC) $(CCFLAGS) $(SHFLAGS) $(SHLIBFLAGS) $(EXTRA_PATH) -o $(EXE) \
+	$(OBJ) $(EXTRA_LIB) $(LIB)
 
 # Compilation rules
 

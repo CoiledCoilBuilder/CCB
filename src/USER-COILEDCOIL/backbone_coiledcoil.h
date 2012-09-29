@@ -78,6 +78,9 @@ namespace SCADS_NS {
           double **axis_x;              /**< coordinates of the minor-helical axis */ 
           double **pp_x;                /**< 2D-array of initial peptide-plane coordinates */ 
           double **x;                   /**< 2D-array of coordinates for coiled-coil */  
+
+          //Order of output by chain
+          int order[64];                /**< Order of chain output, e.g. {0 3 1 2} */
                                         
           Site **site;                  /**< Array of sites that this style created and can update or delete */
           unsigned int nsite;           /**< current number of sites that belong to this style */

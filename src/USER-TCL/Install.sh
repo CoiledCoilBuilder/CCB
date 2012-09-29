@@ -18,6 +18,6 @@ if (test $1 = 1) then
 elif (test $1 = 0) then
 
   rm -f ../tcl_ccb.cpp 
-  rm -f ../pkgIndex.tcl 
+  rm -f ../pkgIndex.tcl
 
 fi

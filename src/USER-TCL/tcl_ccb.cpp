@@ -101,17 +101,29 @@ int tcl_ccb(ClientData /**/, Tcl_Interp *interp,
 
             // Check for PDB
             if (strcmp("-pdb", argv[argc]) == 0) {
+
+                 if (i + 1 == objc) {
+                      Tcl_AppendResult(interp, "Missing argument to -pdb\n", NULL);
+                      return TCL_ERROR;
+                 }
+
                 pdb = 1;
                 outfile = Tcl_GetString(objv[++i]);
 
                 // Verbosity
             } else if (strcmp("-v", argv[argc]) == 0) {
                 int v = 0;
+                
+                if (i + 1 == objc) {
+                     Tcl_AppendResult(interp, "Missing argument to -v\n", NULL);
+                     return TCL_ERROR;
+                }
+
                 if(Tcl_GetIntFromObj(interp,objv[++i], &v) != TCL_OK)
                     return TCL_ERROR;
                 scads->error->verbosity_level = v;
 
-                // VMD
+            // VMD
             } else if (strcmp("-vmd", argv[argc]) == 0) {
                 vmd = 1;
 
