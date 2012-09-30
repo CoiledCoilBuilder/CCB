@@ -80,10 +80,10 @@ void Output::write() {
 
 void Output::openfile() {
 	fp = fopen(filename, "w");
-	if (fp == NULL && me == 0) 
+	if (fp == NULL && universe->me == 0) 
           error->one(FLERR, "Can't open output file");
 }
 
 void Output::closefile() {
-	if (me == 0 && fp != NULL) fclose(fp);
+	if (universe->me == 0 && fp != NULL) fclose(fp);
 }

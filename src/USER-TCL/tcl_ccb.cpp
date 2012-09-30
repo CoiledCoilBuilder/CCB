@@ -150,7 +150,6 @@ int tcl_ccb(ClientData /**/, Tcl_Interp *interp,
         scads->scadsio->add_output(5, newarg);
         scads->scadsio->init_output(newarg[2]);
         scads->scadsio->write_output(newarg[2]);
-        scads->scadsio->delete_output(newarg[2]);
     }
 
     /// Create TCL object and return coordinates if requested
