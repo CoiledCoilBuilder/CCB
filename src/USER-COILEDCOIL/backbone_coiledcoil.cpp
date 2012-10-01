@@ -1153,7 +1153,7 @@ void BackboneCoiledCoil::symmetry_axis(double **axis) {
         double theta = (2 * PI * i / nhelix);
 
         if ((i % 2) == 0) {
-            v[2] = 0.0;
+            v[2] = zoff[i];
             theta += square;
         } else {
             v[2] = zoff[i];
@@ -1604,13 +1604,14 @@ double BackboneCoiledCoil::memory_usage() {
  *
  * @param str the sting to check
  *
- * @return true if the string is an integer or fp
+ * @return true if the string is an integer or fp, or exp
  */
 
 bool BackboneCoiledCoil::isfloat(const char *str) {
 
     unsigned int i = 0;
-    while (isdigit(str[i]) || str[i] == '.' || str[i] == '-')
+    while (isdigit(str[i]) || str[i] == '.'
+         || str[i] == '-' || str[i] == 'e')
         i++;
 
     if (i == strlen(str))
