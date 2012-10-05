@@ -32,7 +32,7 @@
  * @brief increase site array by delta each realloc
  */
 
-#define SITE_DELTA 64
+#define SITE_DELTA 64 
 
 using namespace SCADS_NS;
 using namespace MathExtra;
@@ -187,7 +187,7 @@ void BackboneCoiledCoil::set_params(int argc, const char **argv, int n) {
             nhelix = atoi(argv[n]);
             rebuild_domain = true;
 
-            if (nres < 1) error->one(FLERR, "nhelix must be greater than 0");
+            if (nhelix < 1) error->one(FLERR, "nhelix must be greater than 0");
 
         } else if (strcmp(argv[n], "-antiparallel") == 0) {
             anti_flag = true;
@@ -865,7 +865,11 @@ void BackboneCoiledCoil::crick(double *u, double rho, double *r1, double *r2) {
  * @param theta rotation about u to produce next plane
  */
 
-void BackboneCoiledCoil::get_pp_params(double *axis0, double *axis1, double *u, double *v, double *r, double &theta) {
+void BackboneCoiledCoil::get_pp_params(
+    double *axis0, double *axis1, 
+    double *u, double *v, double *r, 
+    double &theta) 
+{
 
     /**
      * calculates the helical parameters of the

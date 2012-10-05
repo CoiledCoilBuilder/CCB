@@ -78,7 +78,7 @@ proc ::crick::parse { args } {
         if {$i == "-sel"} {
             set sys(usersel) $j
             set sys(molid) [$j molid]
-            set sys(usertext) [$j get text]
+            set sys(usertext) [$j text]
             continue
         }
 
@@ -207,6 +207,35 @@ proc ::crick::resetmol { args } {
     newmol
 }
 
+## Clear the params 
+proc ::crick::clearparams { args } {
+
+    set params(nhelix) 2
+    set params(nres) 28
+    set params(pitch) 179
+    set params(radius) 4.5
+    set params(rpt) 3.64
+    set params(rotation) 0.0
+    set params(zoff) 0.0
+    set params(square) 0.0
+    set params(rpr) 1.5
+    set params(antiparallel) 0
+    set params(asymmetric) 0
+    set params(order) {0 1}
+}
+
+## Reset everything to vanilla
+proc ::crick::veryclean { args } {
+
+    variable params
+    variable sys
+
+    cleanup
+    clearparams
+}
+
+
+
 # Determine the inputted coiled-coil topology
 # including the orientation, order, helices
 # and the number of residues per helix
@@ -215,7 +244,7 @@ proc ::crick::topology { args } {
     variable sys
 
     ## Make selection for main chain connectivity
-    set sel [atomselect $sys(molid) "$sys(usertext) and name N C CA"]
+    set sel [atomselect $sys(molid) "($sys(usertext)) and name N C CA"]
 
     ## Get bonded list
     set BL [topo -sel $sel getbondlist]
@@ -250,7 +279,7 @@ proc ::crick::topology { args } {
 
     foreach {nter cter} $ter_index {
         set sel [atomselect $sys(molid)\
-                     "$sys(usertext) and index >= $nter and index <= $cter and name CA"]
+                     "($sys(usertext)) and index >= $nter and index <= $cter and name CA"]
 
         ## Residues
         set resids [$sel get residue]
@@ -330,7 +359,6 @@ proc ::crick::topology { args } {
     # Sort according to increasing angle, gives counterclockwise
     # order
     set sys(order) [lsort -increasing -real -index 2 $sys(order)]
-    set sys(order) {1 2 3 0}
 }
 
 proc ::crick::setmol { args } {
@@ -360,10 +388,11 @@ proc ::crick::setmol { args } {
     ## Cool little hack to get columnwise from a list
     set params(order) [lsearch -all -index 0 -subindices -inline $sys(order) *]
 
-    ## Create a new mol consistent with determined params
+    ## Create a new mol consistent with determined topology 
     resetmol
 
 }
+
 
 proc ::crick::run { args } {
 
@@ -380,7 +409,7 @@ proc ::crick::run { args } {
     # Create global selection for input mol alignment
     catch {$sys(sel_user_all) delete}
     set sys(sel_user_align) [atomselect $sys(molid)\
-                                 "$sys(usertext) and $sys(aligntext)"]
+                                 "($sys(usertext)) and $sys(aligntext)"]
     $sys(sel_user_align) global
 
     # Calculate initial RMSD
