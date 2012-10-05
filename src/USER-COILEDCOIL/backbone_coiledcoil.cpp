@@ -32,7 +32,7 @@
  * @brief increase site array by delta each realloc
  */
 
-#define SITE_DELTA 64 
+#define SITE_DELTA 64
 
 using namespace SCADS_NS;
 using namespace MathExtra;
@@ -46,8 +46,8 @@ BackboneCoiledCoil::BackboneCoiledCoil(SCADS *scads, int narg, const char **arg)
 
     // Set some default values for the coiled coil geometries
 
-    nres = 35;
     nhelix = 2;
+    nreslarge = 35;
     pitch = 120.0;
     radius = 4.65;
     square = 0.0;
@@ -57,13 +57,14 @@ BackboneCoiledCoil::BackboneCoiledCoil(SCADS *scads, int narg, const char **arg)
 
     // Asymmetric parameters, assume parallel, 3.64 rpt
     for (int i = 0; i < MAX_HELIX; i++) {
+        nres[i] = 35;
         rotation[i] = 0.0;
         zoff[i] = 0.0;
         rpt[i] = 3.64;
     }
 
     // Initial Output Order, maximum 64 chains
-    for (int i = 0; i < 64; i++) {
+    for (int i = 0; i < MAX_HELIX; i++) {
         order[i] = i;
     }
 
@@ -98,12 +99,23 @@ BackboneCoiledCoil::BackboneCoiledCoil(SCADS *scads, int narg, const char **arg)
     nsite = maxsite = 0;
 
     //Parse the provided parameters, if any
-    if (narg > 3)
-        set_params(narg, arg, 4);
+    set_params(narg, arg, 4);
+
+    // Total number of atoms
+    natom = nrestotal = 0;
+    for (unsigned int i = 0; i < nhelix; i++) {
+        natom += nres[i] * 4;
+        nrestotal += nres[i];
+    }
+
+    // largest number of residues in any chain
+    nreslarge = nres[0];
+    for (unsigned int i = 1; i < nhelix; i++)
+        if (nreslarge < nres[i])
+            nreslarge = nres[i];
 
     // Set parameter dependent values
     maxatom = 0;
-    natom = nres * nhelix * 4;
     omega = -2 * PI * rpr / pitch;
     omega_alpha = 2 * PI / rpt[0];
 
@@ -144,7 +156,6 @@ void BackboneCoiledCoil::set_params(int argc, const char **argv, int n) {
         for (int i = 0; i < argc; i++)
             fprintf(screen, "%s\n", argv[i]);
 
-
     while (n < argc) {
 
         if (strcmp(argv[n], "-pitch") == 0) {
@@ -160,7 +171,7 @@ void BackboneCoiledCoil::set_params(int argc, const char **argv, int n) {
             radius = atof(argv[n]);
 
         } else if (strcmp(argv[n], "-rpr") == 0) {
-            n++;
+            n++; 
             if (n == argc) error->one(FLERR, "Missing argument to -rpr");
             isfloat(argv[n]);
             rpr = atof(argv[n]);
@@ -170,15 +181,6 @@ void BackboneCoiledCoil::set_params(int argc, const char **argv, int n) {
             if (n == argc) error->one(FLERR, "Missing argument to -square");
             isfloat(argv[n]);
             square = atof(argv[n]) * DEG2RAD;
-
-        } else if (strcmp(argv[n], "-nres") == 0) {
-            n++;
-            if (n == argc) error->one(FLERR, "Missing argument to -nres");
-            isfloat(argv[n]);
-            nres = atoi(argv[n]);
-            rebuild_domain = true;
-
-            if (nres < 1) error->one(FLERR, "nres must be greater than 0");
 
         } else if (strcmp(argv[n], "-nhelix") == 0) {
             n++;
@@ -204,12 +206,25 @@ void BackboneCoiledCoil::set_params(int argc, const char **argv, int n) {
              * -rotation 0 90 170
              */
 
+        } else if (strcmp(argv[n], "-nres") == 0) {
+            n++;
+            if (n == argc) error->one(FLERR, "Missing argument to -nres");
+            int i = 0;
+            while (n < argc && isfloat(argv[n])) {
+                nres[i] = atoi(argv[n]);
+                if (nres[i] < 1) error->one(FLERR, "nres must be greater than 0");
+                i++; n++;
+            }
+
+            rebuild_domain = true;
+            continue;
+
         } else if (strcmp(argv[n], "-rotation") == 0) {
             n++;
             if (n == argc) error->one(FLERR, "Missing argument to -rotation");
             int i = 0;
             while (n < argc && isfloat(argv[n])) {
-                
+
                 double rot = atof(argv[n]);
 
                 // Make sure rotation is between [-180, 180]
@@ -248,9 +263,9 @@ void BackboneCoiledCoil::set_params(int argc, const char **argv, int n) {
             while (n < argc && isfloat(argv[n])) {
                 order[i++] = atoi(argv[n]);
                 n++;
- 
+
             }
-           continue;
+            continue;
 
         } else {
             char str[128];
@@ -269,9 +284,21 @@ void BackboneCoiledCoil::update_style(int argc, const char **argv, int n) {
     set_params(argc, argv, n);
 
     // Update parameter dependent values
-    natom = nres * nhelix * 4;
     omega = -2 * PI * rpr / pitch;
     omega_alpha = 2 * PI / rpt[0];
+
+    // Total number of atoms
+    natom = nrestotal = 0;
+    for (unsigned int i = 0; i < nhelix; i++) {
+        natom += nres[i] * 4;
+        nrestotal += nres[i];
+    }
+
+    // largest number of residues in any chain
+    nreslarge = nres[0];
+    for (unsigned int i = 1; i < nhelix; i++)
+        if (nreslarge < nres[i])
+            nreslarge = nres[i];
 }
 
 /**
@@ -321,7 +348,7 @@ void BackboneCoiledCoil::allocate() {
         x = memory->grow(x, natom, 4, "backbonecoiledcoil:x");
 
         // reallocate the array to store the coodinates of the helical axis
-        axis_x = memory->grow(axis_x, nres + 2, 4, "backbonecoiledcoild:axis_x");
+        axis_x = memory->grow(axis_x, nreslarge + 2, 4, "backbonecoiledcoild:axis_x");
     }
 
 }
@@ -354,7 +381,7 @@ void BackboneCoiledCoil::azzero() {
         x[i][3] = 1.0;
     }
 
-    for (unsigned int i = 0; i < nres + 2; i++) {
+    for (unsigned int i = 0; i < nreslarge + 2; i++) {
         axis_x[i][0] = 0.0;
         axis_x[i][1] = 0.0;
         axis_x[i][2] = 0.0;
@@ -368,6 +395,7 @@ void BackboneCoiledCoil::azzero() {
  */
 
 void BackboneCoiledCoil::generate() {
+
 
     // Print Header with info
     if (error->verbosity_level >= 10)
@@ -383,7 +411,7 @@ void BackboneCoiledCoil::generate() {
     azzero();
 
     // Generate the minior-helical axis
-    helix_axis();
+    helix_axis(nres[0]);
 
     // bring the plane to the first
     // helix axis point
@@ -428,7 +456,7 @@ void BackboneCoiledCoil::generate() {
 
     get_pp_params(axis_x[0], axis_x[1], u, v, r, theta);
 
-    for (unsigned int i = 1, n = 0; i <= nres; i++) {
+    for (unsigned int i = 1, n = 0; i <= nres[0]; i++) {
 
         // copy coordinates from peptide plane to x
         for (int j = 0; j < 4; j++, n++) {
@@ -461,7 +489,7 @@ void BackboneCoiledCoil::generate() {
 
 /**
  * The main routine for generating
- * the helical system
+ * the helical system asymmetrically
  *
  * Adapted to remove the symmetry assumption
  * between helices in the coiled-coil, leading to
@@ -488,12 +516,12 @@ void BackboneCoiledCoil::generate_asymmetric() {
     azzero();
 
     // Generate the minior-helical axis
-    helix_axis();
+    // helix_axis(nreslarge);
 
     // Allocate some memory for copies of the helical axes and
     // generate the symmetric counterparts
     double **axis = NULL;
-    axis = memory->grow(axis, (nres + 2) * nhelix, 4, "backbonecoiledcoild:axis");
+    axis = memory->grow(axis, (nrestotal + 2) * nhelix, 4, "backbonecoiledcoild:axis");
     symmetry_axis(axis);
 
     /* Now, do the generation procedure for each axis, the procedure is
@@ -510,7 +538,7 @@ void BackboneCoiledCoil::generate_asymmetric() {
         omega_alpha = 2 * PI / rpt[i];
 
         // Copy coordinates into the axis_x array
-        int n = nres + 2;
+        int n = nres[i] + 2;
         for (int j = 0; j < n; j++) {
             int offset = i * n + j;
             axis_x[j][0] = axis[offset][0];
@@ -562,7 +590,7 @@ void BackboneCoiledCoil::generate_asymmetric() {
 
         get_pp_params(axis_x[0], axis_x[1], u, v, r, theta);
 
-        for (unsigned int j = 1, n = 0; j <= nres; j++) {
+        for (unsigned int j = 1, n = 0; j <= nres[i]; j++) {
 
             // copy coordinates from peptide plane to x
             for (int k = 0; k < 4; k++, n++) {
@@ -610,13 +638,13 @@ void BackboneCoiledCoil::generate_asymmetric() {
  *  provided from defaults or the user
  */
 
-void BackboneCoiledCoil::helix_axis() {
+void BackboneCoiledCoil::helix_axis(int nreschain) {
 
     // center the helix axis in the x,y plane
-    double z0 = -((nres - 1) * rpr / 2);
+    double z0 = -((nreschain - 1) * rpr / 2);
 
     // generate the coordinates
-    for (unsigned int i = 0; i <= nres + 1; i++) {
+    for (int i = 0; i <= nreschain + 1; i++) {
         axis_x[i][0] = radius * cos(i * omega);
         axis_x[i][1] = radius * sin(i * omega);
         axis_x[i][2] = i * rpr + z0;
@@ -866,9 +894,9 @@ void BackboneCoiledCoil::crick(double *u, double rho, double *r1, double *r2) {
  */
 
 void BackboneCoiledCoil::get_pp_params(
-    double *axis0, double *axis1, 
-    double *u, double *v, double *r, 
-    double &theta) 
+    double *axis0, double *axis1,
+    double *u, double *v, double *r,
+    double &theta)
 {
 
     /**
@@ -1040,8 +1068,8 @@ void BackboneCoiledCoil::symmetry() {
         // interpolate this when nres/2 is odd.
 
         double r2d[3] = { 0.0 };
-        r2d[0] = axis_x[nres / 2][0];
-        r2d[1] = axis_x[nres / 2][1];
+        r2d[0] = axis_x[nres[0] / 2][0];
+        r2d[1] = axis_x[nres[0] / 2][1];
         r2d[2] = 0.0;
         norm3(r2d);
 
@@ -1118,7 +1146,6 @@ void BackboneCoiledCoil::symmetry_axis(double **axis) {
     double m3[4][4];
     double m4[4][4];
     double ident[4][4];
-    // double xtemp[(nres + 2) * nhelix][4];
 
     // get a 4x4 identity matrix, clear others
     identity4(m1);
@@ -1127,31 +1154,33 @@ void BackboneCoiledCoil::symmetry_axis(double **axis) {
     identity4(m4);
     identity4(ident);
 
-    if (anti_flag) {
-
-        // antiparallel
-        // Calculate the superhelical radius
-        // vector in the xy plane, should probably
-        // interpolate this when nres/2 is odd.
-
-        double r2d[3] = { 0.0 };
-        r2d[0] = axis_x[nres / 2][0];
-        r2d[1] = axis_x[nres / 2][1];
-        r2d[2] = 0.0;
-        norm3(r2d);
-
-        axis_angle_to_mat_trans4(PI, r2d, v, m1);
-    }
-
-    /**
-     * rotation about r2d a magnitude pi and about
-     * z a magnitude 2*pi*i/nhelix. Odd helices
-     * are offset along z if specified, even
-     * helices are offset in x/y depending on
-     * squareness.
-     */
-
     for (unsigned int i = 0; i < nhelix; i++) {
+
+        // Generate the asymmetric axis
+        helix_axis(nres[i]);
+
+        if (anti_flag) {
+
+            // antiparallel
+            // Calculate the superhelical radius
+            // vector in the xy plane, should probably
+            // interpolate this when nres/2 is odd.
+
+            double r2d[3] = { 0.0 };
+            r2d[0] = axis_x[nres[i] / 2][0];
+            r2d[1] = axis_x[nres[i] / 2][1];
+            r2d[2] = 0.0;
+            norm3(r2d);
+
+            axis_angle_to_mat_trans4(PI, r2d, v, m1);
+        }
+
+        /**
+         * rotation about r2d a magnitude pi and about
+         * z a magnitude 2*pi*i/nhelix. Even
+         * helices are offset in x/y depending on
+         * squareness.
+         */
 
         copy4(m4, ident);
         double theta = (2 * PI * i / nhelix);
@@ -1173,9 +1202,9 @@ void BackboneCoiledCoil::symmetry_axis(double **axis) {
         times4(m2, m4, m3);
 
         // Perform rotation.
-        int natomper = nres + 2;
-        int jstart = i * natomper;
-        int jend = jstart + natomper;
+        int nresper = nres[i] + 2;
+        int jstart = i * nresper;
+        int jend = jstart + nresper;
 
         for (int j = jstart, k = 0; j < jend; j++, k++) {
             matvec4(m3, axis_x[k], axis[j]);
@@ -1293,13 +1322,13 @@ void BackboneCoiledCoil::update_domain() {
         for (unsigned int i = 0, offset = 0; i < nhelix; i++) {
 
             if (order[i] >= nhelix)
-              error->one(FLERR, "Orders must be less than the number of helices\n"
+                error->one(FLERR, "Orders must be less than the number of helices\n"
                     "e.g. if nhelix = 2, order is either {0 1} or {1 0}");
 
             // Calculate the offset w.r.t the user specified order
             offset = order[i]*nperhelix;
 
-            for (unsigned int j = 0; j < nres; j++, offset += 4) {
+            for (unsigned int j = 0; j < nres[i]; j++, offset += 4) {
 
                 int isite = domain->add_site();
                 cursite = domain->site[isite];
@@ -1413,7 +1442,6 @@ void BackboneCoiledCoil::update_domain() {
 void BackboneCoiledCoil::print_header() {
 
     fprintf(screen, "\nGenerating a coiled-coil with the following parameters:\n"
-        "N residues:           %d\n"
         "N helices:            %d\n"
         "Pitch (angstroms):    %.2f\n"
         "Radius (angstroms):   %.2f\n"
@@ -1422,17 +1450,19 @@ void BackboneCoiledCoil::print_header() {
         "Zoff (angstroms):     %.2f\n"
         "Squareness (degrees): %.2f\n"
         "Rise per residue:     %.2f\n"
-        "Antiparallel:         %d\n\n", nres, nhelix, pitch, radius, rotation[0] * RAD2DEG,
+        "Antiparallel:         %d\n\n", nhelix, pitch, radius, rotation[0] * RAD2DEG,
         rpt[0], zoff[0], square * RAD2DEG, rpr, anti_flag);
 
     if (asymmetric_flag)
         fprintf(screen, "Asymmetric Parameters:\n");
     for (unsigned int i = 0; i < nhelix; i++)
         fprintf(screen,
+            "N residues:        %d: %3d\n"
             "Rotation (degrees) %d: %.2f\n"
             "Zoff (angstrom)    %d: %.2f\n"
             "Residues per Turn  %d: %.2f\n",
-            i+1, rotation[i] * RAD2DEG, i+1, zoff[i], i+1, rpt[i]);
+            i+1, nres[i], i+1, rotation[i] * RAD2DEG,
+            i+1, zoff[i], i+1, rpt[i]);
     fprintf(screen, "\n\n");
 
 }
@@ -1509,10 +1539,10 @@ void BackboneCoiledCoil::axis_to_xyz(char *filename) {
     if (fp == NULL && universe->me == 0)
         error->one(FLERR, "Can't open output file");
 
-    fprintf(fp, "%d\n", nres + 1);
+    fprintf(fp, "%d\n", nres[0] + 1);
     fprintf(fp, "Output from SCADS\n");
 
-    for (unsigned int i = 0; i <= nres; i++)
+    for (unsigned int i = 0; i <= nres[0]; i++)
         fprintf(fp, "%5s %10.4f %10.4f %10.4f\n", "CA", axis_x[i][0], axis_x[i][1], axis_x[i][2]);
 
     fclose(fp);
@@ -1595,7 +1625,7 @@ double BackboneCoiledCoil::memory_usage() {
     double bytes = natom * 4 * sizeof(double);
 
     // Coordinates of helix axis
-    bytes += (nres + 2) * 4 * sizeof(double);
+    bytes += (nreslarge + 2) * 4 * sizeof(double);
 
     // Coordinates of peptide plane
     bytes += 5 * 4 * sizeof(double);
@@ -1615,12 +1645,12 @@ bool BackboneCoiledCoil::isfloat(const char *str) {
 
     unsigned int i = 0;
     while (isdigit(str[i]) || str[i] == '.'
-         || str[i] == '-' || str[i] == 'e')
+        || str[i] == '-' || str[i] == 'e')
         i++;
 
     if (i == strlen(str))
         return true;
-    
+
     return false;
 
 }
