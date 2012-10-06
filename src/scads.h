@@ -60,6 +60,7 @@ namespace SCADS_NS {
           void create(); /**< Creates instances of the top level classes */
           void init(); /**< Initializes & sets up the top level classes, Input->init() */
           void destroy(); /**< Destroys the top level classes */
+          void test();   /**< testing function for debugging */
 
      private:
 

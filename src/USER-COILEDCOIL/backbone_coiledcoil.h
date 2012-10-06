@@ -52,6 +52,7 @@ BackboneStyle(coiledcoil,BackboneCoiledCoil)
 
         // Variables that describe the backbone topology
         unsigned int natom;           /**< number of atoms = numres*numhelix*4 */
+        unsigned int natomlarge;      /**< Largest number of atoms in a chain */
         unsigned int maxatom;         /**< maximum number of atoms allowed before realloc of atom vector */
         unsigned int nhelix;          /**< number of helices per coiled-coil */
         unsigned int nreslarge;       /**< Largest number of residues in a chain */
@@ -68,7 +69,7 @@ BackboneStyle(coiledcoil,BackboneCoiledCoil)
         double omega_alpha;           /**< minor helix angular yield per residue; 2*pi/rpt */
 
         // Asymmetric Parameters
-        int nres[MAX_HELIX];          /**< number of residues per helix */
+        unsigned int nres[MAX_HELIX]; /**< number of residues per helix */
         double rotation[MAX_HELIX];   /**< rotation of the helices, for asymmetric, a list of rotations for each helix */
         double rpt[MAX_HELIX];        /**< residues per turn of the helices */
         double zoff[MAX_HELIX];       /**< z-axis displacement of helices, for asymmetric, a list of offsets for each helix */
@@ -77,9 +78,9 @@ BackboneStyle(coiledcoil,BackboneCoiledCoil)
         bool asymmetric_flag;         /**< Are the helices in the coiled-coil symmetric? **/
         bool rebuild_domain;          /**< if true, we erase the existing coiled coil when we update */
 
-        double **axis_x;              /**< coordinates of the minor-helical axis */
         double **pp_x;                /**< 2D-array of initial peptide-plane coordinates */
-        double **x;                   /**< 2D-array of coordinates for coiled-coil */
+        double ***axis_x;              /**< coordinates of the minor-helical axis */
+        double ***x;                  /**< 3D-array of coordinates for coiled-coil */
 
         //Order of output by chain
         unsigned int order[64];       /**< Order of chain output, e.g. {0 3 1 2} switches {A B C D} to {A D B C} */
@@ -93,7 +94,7 @@ BackboneStyle(coiledcoil,BackboneCoiledCoil)
 
         void build_plane();             /**< build the first peptide plane */
         void align_plane(double *w);    /**< align the peptide-plane rotation vector with w (axis) */
-        void helix_axis(int nreshelix); /**< generate the axis of the minor helix */
+        void helix_axis(); /**< generate the axis of the minor helix */
         void symmetry();                /**< apply symmetry operations to helix to generate coil */
         void allocate();                /**< increase size of x, axis if necessary */
         void azzero();                  /**< zero out coordinates in x array */
@@ -104,11 +105,12 @@ BackboneStyle(coiledcoil,BackboneCoiledCoil)
         void crick(double *u, double rho, double *r1, double *r2);       /**< Sets the rotation angle to correspond to the crick angle */
         void next_plane(double *u, double *v, double theta);             /**< Generates the next plane given u, v, theat */
         void terminate();                                                /**< Adds the n-terminal nitrogen, rearranges coordinates */
+        void terminate_asymmetric();                                     /**< Adds the n-terminal nitrogen, rearranges coordinates */
         double memory_usage();                                           /**< Calculates the memory usage of this style */
         void print_header();                                             /**< Prints the header information each time a coil is generated*/
 
         // Stuff for asymmetry
-        void symmetry_axis(double **axis);
+        void symmetry_axis();
         void generate_asymmetric();
 
         /**
@@ -120,8 +122,8 @@ BackboneStyle(coiledcoil,BackboneCoiledCoil)
         void print_coordinates();
         void ppx_to_xyz(char *filename);
         void axis_to_xyz(char *filename);
-        void inner_to_outer(double a[4], double b[4], double c[4],
-            double bond, double angle, double chi, double z[4]);
+        void inner_to_outer(double *&a, double *&b, double *&c,
+            double bond, double angle, double chi, double *&z);
         bool isfloat(const char *str);
 
 

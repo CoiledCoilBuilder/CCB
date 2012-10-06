@@ -101,6 +101,17 @@ BackboneCoiledCoil::BackboneCoiledCoil(SCADS *scads, int narg, const char **arg)
     //Parse the provided parameters, if any
     set_params(narg, arg, 4);
 
+    // Update symmetric parameters
+    if (!asymmetric_flag) {
+        // Asymmetric parameters, assume parallel, 3.64 rpt
+        for (int i = 1; i < MAX_HELIX; i++) {
+            nres[i] = nres[0];
+            rotation[i] = rotation[0];
+            zoff[i] = zoff[0];
+            rpt[i] = rpt[0];
+        }
+    }
+
     // Total number of atoms
     natom = nrestotal = 0;
     for (unsigned int i = 0; i < nhelix; i++) {
@@ -113,6 +124,9 @@ BackboneCoiledCoil::BackboneCoiledCoil(SCADS *scads, int narg, const char **arg)
     for (unsigned int i = 1; i < nhelix; i++)
         if (nreslarge < nres[i])
             nreslarge = nres[i];
+
+    // Largest number of atoms in a chain
+    natomlarge = nreslarge * 4;
 
     // Set parameter dependent values
     maxatom = 0;
@@ -171,7 +185,7 @@ void BackboneCoiledCoil::set_params(int argc, const char **argv, int n) {
             radius = atof(argv[n]);
 
         } else if (strcmp(argv[n], "-rpr") == 0) {
-            n++; 
+            n++;
             if (n == argc) error->one(FLERR, "Missing argument to -rpr");
             isfloat(argv[n]);
             rpr = atof(argv[n]);
@@ -287,6 +301,17 @@ void BackboneCoiledCoil::update_style(int argc, const char **argv, int n) {
     omega = -2 * PI * rpr / pitch;
     omega_alpha = 2 * PI / rpt[0];
 
+    // Update symmetric parameters
+    if (!asymmetric_flag) {
+        // Asymmetric parameters, assume parallel, 3.64 rpt
+        for (int i = 1; i < MAX_HELIX; i++) {
+            nres[i] = nres[0];
+            rotation[i] = rotation[0];
+            zoff[i] = zoff[0];
+            rpt[i] = rpt[0];
+        }
+    }
+
     // Total number of atoms
     natom = nrestotal = 0;
     for (unsigned int i = 0; i < nhelix; i++) {
@@ -299,6 +324,8 @@ void BackboneCoiledCoil::update_style(int argc, const char **argv, int n) {
     for (unsigned int i = 1; i < nhelix; i++)
         if (nreslarge < nres[i])
             nreslarge = nres[i];
+
+    natomlarge = nreslarge * 4;
 }
 
 /**
@@ -345,12 +372,11 @@ void BackboneCoiledCoil::allocate() {
         maxatom = natom;
 
         // reallocate the array to store coordinates of the atoms
-        x = memory->grow(x, natom, 4, "backbonecoiledcoil:x");
+        x = memory->grow(x, nhelix, natomlarge, 4, "backbonecoiledcoil:x");
 
         // reallocate the array to store the coodinates of the helical axis
-        axis_x = memory->grow(axis_x, nreslarge + 2, 4, "backbonecoiledcoild:axis_x");
+        axis_x = memory->grow(axis_x, nhelix, nreslarge + 2, 4, "backbonecoiledcoild:axis_x");
     }
-
 }
 
 /**
@@ -374,18 +400,23 @@ void BackboneCoiledCoil::add_site(Site *s) {
  */
 
 void BackboneCoiledCoil::azzero() {
-    for (unsigned int i = 0; i < natom; i++) {
-        x[i][0] = 0.0;
-        x[i][1] = 0.0;
-        x[i][2] = 0.0;
-        x[i][3] = 1.0;
+
+    for (unsigned int i = 0; i < nhelix; i++) {
+        for (unsigned int j = 0; j < natomlarge; j++) {
+            x[i][j][0] = 0.0;
+            x[i][j][1] = 0.0;
+            x[i][j][2] = 0.0;
+            x[i][j][3] = 1.0;
+        }
     }
 
-    for (unsigned int i = 0; i < nreslarge + 2; i++) {
-        axis_x[i][0] = 0.0;
-        axis_x[i][1] = 0.0;
-        axis_x[i][2] = 0.0;
-        axis_x[i][3] = 1.0;
+    for (unsigned int i = 0; i < nhelix; i++) {
+        for (unsigned int j = 0; j < nreslarge + 2; j++) {
+            axis_x[i][j][0] = 0.0;
+            axis_x[i][j][1] = 0.0;
+            axis_x[i][j][2] = 0.0;
+            axis_x[i][j][3] = 1.0;
+        }
     }
 }
 
@@ -411,14 +442,14 @@ void BackboneCoiledCoil::generate() {
     azzero();
 
     // Generate the minior-helical axis
-    helix_axis(nres[0]);
+    helix_axis();
 
     // bring the plane to the first
     // helix axis point
     double m[4][4];
     double temp[4] = { 0.0 };
 
-    moveby(axis_x[0], m);
+    moveby(axis_x[0][0], m);
 
     for (int i = 0; i < 5; i++) {
         matvec4(m, pp_x[i], temp);
@@ -433,17 +464,17 @@ void BackboneCoiledCoil::generate() {
 
     // Align the plane rotation vector with
     // the helical axis
-    align_plane(axis_x[1]);
+    align_plane(axis_x[0][1]);
 
     // get u, r, v for the peptide pane
     // axis vector becomes normalized u at axis0
-    get_pp_params(axis_x[0], axis_x[1], u, v, r, theta);
+    get_pp_params(axis_x[0][0], axis_x[0][1], u, v, r, theta);
 
     //rotate the plane to set the correct crick angle
-    crick(u, rotation[0], r, axis_x[0]);
+    crick(u, rotation[0], r, axis_x[0][0]);
 
     ////offset the plane by calculated r
-    get_pp_params(axis_x[0], axis_x[1], u, v, r, theta);
+    get_pp_params(axis_x[0][0], axis_x[0][1], u, v, r, theta);
     moveto(r, m);
 
     for (int i = 0; i < 5; i++) {
@@ -454,16 +485,16 @@ void BackboneCoiledCoil::generate() {
         pp_x[i][3] = temp[3];
     }
 
-    get_pp_params(axis_x[0], axis_x[1], u, v, r, theta);
+    get_pp_params(axis_x[0][0], axis_x[0][1], u, v, r, theta);
 
     for (unsigned int i = 1, n = 0; i <= nres[0]; i++) {
 
         // copy coordinates from peptide plane to x
         for (int j = 0; j < 4; j++, n++) {
-            x[n][0] = pp_x[j][0];
-            x[n][1] = pp_x[j][1];
-            x[n][2] = pp_x[j][2];
-            x[n][3] = pp_x[j][3];
+            x[0][n][0] = pp_x[j][0];
+            x[0][n][1] = pp_x[j][1];
+            x[0][n][2] = pp_x[j][2];
+            x[0][n][3] = pp_x[j][3];
         }
 
         /**
@@ -476,8 +507,7 @@ void BackboneCoiledCoil::generate() {
 
         // determine the next set of parameters
         // to produce the next plane
-        get_pp_params(axis_x[i], axis_x[i + 1], u, v, r, theta);
-
+        get_pp_params(axis_x[0][i], axis_x[0][i + 1], u, v, r, theta);
     }
 
     // Terminate the helix
@@ -503,8 +533,11 @@ void BackboneCoiledCoil::generate() {
 void BackboneCoiledCoil::generate_asymmetric() {
 
     // Print Header with info
-    if (error->verbosity_level >= 10)
+    if (error->verbosity_level >= 10) {
+        fprintf(screen, "Asymmetric Generation\n");
         print_header();
+    }
+
 
     // Set initial peptide-plane coordiantes
     build_plane();
@@ -515,21 +548,18 @@ void BackboneCoiledCoil::generate_asymmetric() {
     // zero out the coordinate and axis arrays
     azzero();
 
-    // Generate the minior-helical axis
-    // helix_axis(nreslarge);
+    // Generate the minior-helical axes
+    helix_axis();
 
-    // Allocate some memory for copies of the helical axes and
-    // generate the symmetric counterparts
-    double **axis = NULL;
-    axis = memory->grow(axis, (nrestotal + 2) * nhelix, 4, "backbonecoiledcoild:axis");
-    symmetry_axis(axis);
+    // Generate the other axes
+    symmetry_axis();
 
     /* Now, do the generation procedure for each axis, the procedure is
      * essentially the same, except we store the coordinates as an offset
      * after we terminate them in the final coordinate matrix and then return it
      */
 
-    for (int i = nhelix - 1; i >= 0; i--) {
+    for (unsigned int i = 0; i < nhelix; i++) {
 
         // Set initial peptide-plane coordiantes (do this each time)
         build_plane();
@@ -537,22 +567,12 @@ void BackboneCoiledCoil::generate_asymmetric() {
         // calculate omega_alpha for the asymmetric rpt
         omega_alpha = 2 * PI / rpt[i];
 
-        // Copy coordinates into the axis_x array
-        int n = nres[i] + 2;
-        for (int j = 0; j < n; j++) {
-            int offset = i * n + j;
-            axis_x[j][0] = axis[offset][0];
-            axis_x[j][1] = axis[offset][1];
-            axis_x[j][2] = axis[offset][2];
-            axis_x[j][3] = axis[offset][3];
-        }
-
         // bring the plane to the first
         // helix axis point
         double m[4][4];
         double temp[4] = { 0.0 };
 
-        moveby(axis_x[0], m);
+        moveby(axis_x[i][0], m);
 
         for (int j = 0; j < 5; j++) {
             matvec4(m, pp_x[j], temp);
@@ -567,17 +587,17 @@ void BackboneCoiledCoil::generate_asymmetric() {
 
         // Align the plane rotation vector with
         // the helical axis
-        align_plane(axis_x[1]);
+        align_plane(axis_x[i][1]);
 
         // get u, r, v for the peptide pane
         // axis vector becomes normalized u at axis0
-        get_pp_params(axis_x[0], axis_x[1], u, v, r, theta);
+        get_pp_params(axis_x[i][0], axis_x[i][1], u, v, r, theta);
 
         //rotate the plane to set the correct crick angle
-        crick(u, rotation[i], r, axis_x[0]);
+        crick(u, rotation[i], r, axis_x[i][0]);
 
         ////offset the plane by calculated r
-        get_pp_params(axis_x[0], axis_x[1], u, v, r, theta);
+        get_pp_params(axis_x[i][0], axis_x[i][1], u, v, r, theta);
         moveto(r, m);
 
         for (int j = 0; j < 5; j++) {
@@ -588,16 +608,16 @@ void BackboneCoiledCoil::generate_asymmetric() {
             pp_x[j][3] = temp[3];
         }
 
-        get_pp_params(axis_x[0], axis_x[1], u, v, r, theta);
+        get_pp_params(axis_x[i][0], axis_x[i][1], u, v, r, theta);
 
         for (unsigned int j = 1, n = 0; j <= nres[i]; j++) {
 
             // copy coordinates from peptide plane to x
             for (int k = 0; k < 4; k++, n++) {
-                x[n][0] = pp_x[k][0];
-                x[n][1] = pp_x[k][1];
-                x[n][2] = pp_x[k][2];
-                x[n][3] = pp_x[k][3];
+                x[i][n][0] = pp_x[k][0];
+                x[i][n][1] = pp_x[k][1];
+                x[i][n][2] = pp_x[k][2];
+                x[i][n][3] = pp_x[k][3];
             }
 
             /**
@@ -610,26 +630,12 @@ void BackboneCoiledCoil::generate_asymmetric() {
 
             // determine the next set of parameters
             // to produce the next plane
-            get_pp_params(axis_x[j], axis_x[j + 1], u, v, r, theta);
+            get_pp_params(axis_x[i][j], axis_x[i][j + 1], u, v, r, theta);
         }
-
-        // Terminate the helix
-        terminate();
-
-        // copy coordinates
-        unsigned int natomper = natom / nhelix;
-        if (i > 0)
-            for (unsigned int j = 0; j < natomper; j++) {
-                int offset = i * natomper + j;
-                x[offset][0] = x[j][0];
-                x[offset][1] = x[j][1];
-                x[offset][2] = x[j][2];
-                x[offset][3] = x[j][3];
-            }
     }
 
-    // Free up memory used by local copy of axis
-    memory->destroy(axis);
+    // Terminate the helices
+    terminate_asymmetric();
 }
 
 /**
@@ -638,17 +644,20 @@ void BackboneCoiledCoil::generate_asymmetric() {
  *  provided from defaults or the user
  */
 
-void BackboneCoiledCoil::helix_axis(int nreschain) {
+void BackboneCoiledCoil::helix_axis() {
 
-    // center the helix axis in the x,y plane
-    double z0 = -((nreschain - 1) * rpr / 2);
+    for (unsigned int i = 0; i < nhelix; i++) {
 
-    // generate the coordinates
-    for (int i = 0; i <= nreschain + 1; i++) {
-        axis_x[i][0] = radius * cos(i * omega);
-        axis_x[i][1] = radius * sin(i * omega);
-        axis_x[i][2] = i * rpr + z0;
-        axis_x[i][3] = 1.0;
+        // center the helix axis in the x,y plane
+        double z0 = -(nres[i] * rpr / 2);
+
+        // generate the coordinates
+        for (unsigned int j = 0; j <= nres[i] + 1; j++) {
+            axis_x[i][j][0] = radius * cos(j * omega);
+            axis_x[i][j][1] = radius * sin(j * omega);
+            axis_x[i][j][2] = j * rpr + z0;
+            axis_x[i][j][3] = 1.0;
+        }
     }
 }
 
@@ -1051,7 +1060,7 @@ void BackboneCoiledCoil::symmetry() {
     double m3[4][4];
     double m4[4][4];
     double ident[4][4];
-    double xtemp[natom][4];
+    double xtemp[4] = { 0.0 };
 
     // get a 4x4 identity matrix, clear others
     identity4(m1);
@@ -1068,8 +1077,8 @@ void BackboneCoiledCoil::symmetry() {
         // interpolate this when nres/2 is odd.
 
         double r2d[3] = { 0.0 };
-        r2d[0] = axis_x[nres[0] / 2][0];
-        r2d[1] = axis_x[nres[0] / 2][1];
+        r2d[0] = axis_x[0][nres[0] / 2][0];
+        r2d[1] = axis_x[0][nres[0] / 2][1];
         r2d[2] = 0.0;
         norm3(r2d);
 
@@ -1105,22 +1114,15 @@ void BackboneCoiledCoil::symmetry() {
         //multiply m2 on m4 return in m3
         times4(m2, m4, m3);
 
-        // Perform rotation.
-        int natomper = natom / nhelix;
-        int jstart = i * natomper;
-        int jend = jstart + natomper;
-
-        for (int j = jstart, k = 0; j < jend; j++, k++)
-            matvec4(m3, x[k], xtemp[j]);
-
-    }
-
-    /// Copy coordinates to x
-    for (unsigned int i = 0; i < natom; i++) {
-        x[i][0] = xtemp[i][0];
-        x[i][1] = xtemp[i][1];
-        x[i][2] = xtemp[i][2];
-        x[i][3] = xtemp[i][3];
+        // Perform rotation. Copy atoms.
+        int natomper = nres[i] * 4;
+        for (int j = 0; j < natomper; j++) {
+            matvec4(m3, x[0][j], xtemp);
+            x[i][j][0] = xtemp[0];
+            x[i][j][1] = xtemp[1];
+            x[i][j][2] = xtemp[2];
+            x[i][j][3] = xtemp[3];
+        }
     }
 }
 
@@ -1132,7 +1134,7 @@ void BackboneCoiledCoil::symmetry() {
  * This is a pretty hacky way of doing the symmetry.
  */
 
-void BackboneCoiledCoil::symmetry_axis(double **axis) {
+void BackboneCoiledCoil::symmetry_axis() {
 
     // Vector for offsetting helices
     double v[3] = { 0.0 };
@@ -1156,9 +1158,6 @@ void BackboneCoiledCoil::symmetry_axis(double **axis) {
 
     for (unsigned int i = 0; i < nhelix; i++) {
 
-        // Generate the asymmetric axis
-        helix_axis(nres[i]);
-
         if (anti_flag) {
 
             // antiparallel
@@ -1167,8 +1166,8 @@ void BackboneCoiledCoil::symmetry_axis(double **axis) {
             // interpolate this when nres/2 is odd.
 
             double r2d[3] = { 0.0 };
-            r2d[0] = axis_x[nres[i] / 2][0];
-            r2d[1] = axis_x[nres[i] / 2][1];
+            r2d[0] = axis_x[i][nres[i] / 2][0];
+            r2d[1] = axis_x[i][nres[i] / 2][1];
             r2d[2] = 0.0;
             norm3(r2d);
 
@@ -1203,11 +1202,14 @@ void BackboneCoiledCoil::symmetry_axis(double **axis) {
 
         // Perform rotation.
         int nresper = nres[i] + 2;
-        int jstart = i * nresper;
-        int jend = jstart + nresper;
+        double temp[4] = { 0.0 };
 
-        for (int j = jstart, k = 0; j < jend; j++, k++) {
-            matvec4(m3, axis_x[k], axis[j]);
+        for (int j = 0; j < nresper; j++) {
+            matvec4(m3, axis_x[i][j], temp);
+            axis_x[i][j][0] = temp[0];
+            axis_x[i][j][1] = temp[1];
+            axis_x[i][j][2] = temp[2];
+            axis_x[i][j][3] = temp[3];
         }
     }
 }
@@ -1222,19 +1224,42 @@ void BackboneCoiledCoil::symmetry_axis(double **axis) {
 void BackboneCoiledCoil::terminate() {
 
     /* move all the coordinates + 1 index */
-
-    unsigned int istart = natom / nhelix - 1;
-    unsigned int iend = 0;
-
-    for (unsigned int i = istart; i > iend; i--) {
-        x[i][0] = x[i - 1][0];
-        x[i][1] = x[i - 1][1];
-        x[i][2] = x[i - 1][2];
-        x[i][3] = x[i - 1][3];
+    unsigned int jstart = nres[0] * 4 - 1;
+    for (unsigned int j = jstart; j > 0; j--) {
+        x[0][j][0] = x[0][j - 1][0];
+        x[0][j][1] = x[0][j - 1][1];
+        x[0][j][2] = x[0][j - 1][2];
+        x[0][j][3] = x[0][j - 1][3];
     }
 
     // Terminate the end of the helix with "N"
-    inner_to_outer(x[4], x[2], x[1], n_ca, n_ca_c, psi, x[0]);
+    inner_to_outer(x[0][4], x[0][2], x[0][1], n_ca, n_ca_c, psi, x[0][0]);
+}
+
+
+/**
+ * Terminates the n-terminus of the
+ * helix and shifts coordinate matrix
+ * to start at n and end at o instead
+ * of starting at ca and ending at n
+ */
+
+void BackboneCoiledCoil::terminate_asymmetric() {
+
+    /* move all the coordinates + 1 index */
+
+    for (unsigned int i = 0; i < nhelix; i++) {
+        unsigned int jstart = nres[i] * 4 - 1;
+        for (unsigned int j = jstart; j > 0; j--) {
+            x[i][j][0] = x[i][j - 1][0];
+            x[i][j][1] = x[i][j - 1][1];
+            x[i][j][2] = x[i][j - 1][2];
+            x[i][j][3] = x[i][j - 1][3];
+        }
+
+        // Terminate the end of the helix with "N"
+        inner_to_outer(x[i][4], x[i][2], x[i][1], n_ca, n_ca_c, psi, x[i][0]);
+    }
 }
 
 /**
@@ -1248,196 +1273,139 @@ void BackboneCoiledCoil::update_domain() {
     Atom *curatom = NULL;
     int serial = 1;
 
-    static const char *chainid[] = { "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X",
-                                     "Y", "Z" };
+    static const char *chainid[] = { "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M",
+                                     "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z" };
 
     /**
-     * What we do here depends on if the user has requested more helices
-     * or residues, e.g. we need to add sites. If no, then we can just update
-     * the coordinates and delete the rotamers associated with those sites
-     *
-     * If we do have to add sites, we delete the sites that belong to this style,
-     * using this styles site array, then we add new sites, and set the update flag
-     * to false.
-     *
-     * we need to selectively rebuild the rotamers at these sites, we can make use
-     * of the build_site command at each site, and the corresponding bitmask
-     * for the backbone atoms
+     * Delete all the sites associated with the old
+     * coiled-coil, and create new sites. This is
+     * definitely more costly.
      */
 
-    // Just update the coordinates, delete the rotamers
-    if (!rebuild_domain) {
-        for (unsigned int i = 0, offset = 0; i < nsite; i++, offset += 4) {
+    for (unsigned int i = 0; i < nsite; i++) {
+        domain->delete_site(site[i]->id);
+        site[i] = NULL;
+    }
 
-            // Delete all the rotamers at this site
-            while (site[i]->nrotamer)
-                site[i]->delete_rotamer(site[i]->rotamer[0]->id);
+    // Recreate the coiled coil contigiously
+    nsite = 0;
+    for (unsigned int i = 0; i < nhelix; i++) {
 
-            /**
-             * Update the coordinates of the backbone atoms.
-             * note, we assume the user hasn't mucked with the
-             * order of the backbone atoms, or deleted them.
-             * If necessary, we can search for the type, but this
-             * creates a lot of unnecessary overhead.
-             */
+        if (order[i] >= nhelix)
+            error->one(FLERR, "Order must be less than the number of helices\n"
+                "e.g. if nhelix = 2, order is either {0 1} or {1 0}");
 
-            // N atom
-            site[i]->fixed_atoms->atom[0]->x = x[offset][0];
-            site[i]->fixed_atoms->atom[0]->y = x[offset][1];
-            site[i]->fixed_atoms->atom[0]->z = x[offset][2];
+        // Calculate the offset w.r.t the user specified order
+        int hindex = order[i];
 
-            // CA atom
-            site[i]->fixed_atoms->atom[1]->x = x[offset + 1][0];
-            site[i]->fixed_atoms->atom[1]->y = x[offset + 1][1];
-            site[i]->fixed_atoms->atom[1]->z = x[offset + 1][2];
+        for (unsigned int j = 0, offset = 0; j < nres[i]; j++, offset += 4) {
 
-            // C atom
-            site[i]->fixed_atoms->atom[2]->x = x[offset + 2][0];
-            site[i]->fixed_atoms->atom[2]->y = x[offset + 2][1];
-            site[i]->fixed_atoms->atom[2]->z = x[offset + 2][2];
+            int isite = domain->add_site();
+            cursite = domain->site[isite];
 
-            // O atom
-            site[i]->fixed_atoms->atom[3]->x = x[offset + 3][0];
-            site[i]->fixed_atoms->atom[3]->y = x[offset + 3][1];
-            site[i]->fixed_atoms->atom[3]->z = x[offset + 3][2];
-        }
+            // Set the site-bitmask for construction and atom inheritance
+            cursite->mask |= mask;
 
-    } else {
+            // add a pointer to this site to this style
+            add_site(cursite);
 
-        /**
-         * Delete all the sites associated with the old
-         * coiled-coil, and create new sites. This is
-         * definitely more costly.
-         */
+            // Set the site resid number, chain
+            // and seg id
+            cursite->resid = j + 1;
+            strcpy(cursite->chain, chainid[i]);
+            strcpy(cursite->seg, chainid[i]);
 
-        for (unsigned int i = 0; i < nsite; i++) {
-            domain->delete_site(site[i]->id);
-            site[i] = NULL;
-        }
+            // set the group properties
+            strcpy(cursite->fixed_atoms->type, "GLY");
 
-        int nperhelix = natom / nhelix;
+            // Add N atom to the fixed_atoms group
+            int iatom = cursite->fixed_atoms->add_atom();
+            curatom = cursite->fixed_atoms->atom[iatom];
 
-        // Recreate the coiled coil contigiously
-        nsite = 0;
-        for (unsigned int i = 0, offset = 0; i < nhelix; i++) {
+            curatom->serial = serial++;
+            strcpy(curatom->name, "N");
 
-            if (order[i] >= nhelix)
-                error->one(FLERR, "Orders must be less than the number of helices\n"
-                    "e.g. if nhelix = 2, order is either {0 1} or {1 0}");
+            curatom->x = x[hindex][offset][0];
+            curatom->y = x[hindex][offset][1];
+            curatom->z = x[hindex][offset][2];
 
-            // Calculate the offset w.r.t the user specified order
-            offset = order[i]*nperhelix;
+            //curatom->backbone = true;
+            curatom->fixed = true;
 
-            for (unsigned int j = 0; j < nres[i]; j++, offset += 4) {
+            // add reverse references
+            curatom->site = cursite;
+            curatom->group = cursite->fixed_atoms;
 
-                int isite = domain->add_site();
-                cursite = domain->site[isite];
+            // Set bitmask
+            curatom->mask |= mask;
 
-                // Set the site-bitmask for construction and atom inheritance
-                cursite->mask |= mask;
+            // Add CA atom to the fixed_atoms group
+            iatom = cursite->fixed_atoms->add_atom();
+            curatom = cursite->fixed_atoms->atom[iatom];
 
-                // add a pointer to this site to this style
-                add_site(cursite);
+            curatom->serial = serial++;
+            strcpy(curatom->name, "CA");
 
-                // Set the site resid number, chain
-                // and seg id
-                cursite->resid = j + 1;
-                strcpy(cursite->chain, chainid[i]);
-                strcpy(cursite->seg, chainid[i]);
+            curatom->x = x[hindex][offset+1][0];
+            curatom->y = x[hindex][offset+1][1];
+            curatom->z = x[hindex][offset+1][2];
 
-                // set the group properties
-                strcpy(cursite->fixed_atoms->type, "GLY");
+            //curatom->backbone = true;
+            curatom->fixed = true;
 
-                // Add N atom to the fixed_atoms group
-                int iatom = cursite->fixed_atoms->add_atom();
-                curatom = cursite->fixed_atoms->atom[iatom];
+            // add reverse references
+            curatom->site = cursite;
+            curatom->group = cursite->fixed_atoms;
 
-                curatom->serial = serial++;
-                strcpy(curatom->name, "N");
+            // Set bitmask
+            curatom->mask |= mask;
 
-                curatom->x = x[offset][0];
-                curatom->y = x[offset][1];
-                curatom->z = x[offset][2];
+            // Add C atom to the fixed_atoms group
+            iatom = cursite->fixed_atoms->add_atom();
+            curatom = cursite->fixed_atoms->atom[iatom];
 
-                //curatom->backbone = true;
-                curatom->fixed = true;
+            curatom->serial = serial++;
+            strcpy(curatom->name, "C");
 
-                // add reverse references
-                curatom->site = cursite;
-                curatom->group = cursite->fixed_atoms;
+            curatom->x = x[hindex][offset+2][0];
+            curatom->y = x[hindex][offset+2][1];
+            curatom->z = x[hindex][offset+2][2];
 
-                // Set bitmask
-                curatom->mask |= mask;
+            //curatom->backbone = true;
+            curatom->fixed = true;
 
-                // Add CA atom to the fixed_atoms group
-                iatom = cursite->fixed_atoms->add_atom();
-                curatom = cursite->fixed_atoms->atom[iatom];
+            // add reverse references
+            curatom->site = cursite;
+            curatom->group = cursite->fixed_atoms;
 
-                curatom->serial = serial++;
-                strcpy(curatom->name, "CA");
+            // Set bitmask
+            curatom->mask |= mask;
 
-                curatom->x = x[offset + 1][0];
-                curatom->y = x[offset + 1][1];
-                curatom->z = x[offset + 1][2];
+            // Add O atom to the fixed_atoms group
+            iatom = cursite->fixed_atoms->add_atom();
+            curatom = cursite->fixed_atoms->atom[iatom];
 
-                //curatom->backbone = true;
-                curatom->fixed = true;
+            curatom->serial = serial++;
+            strcpy(curatom->name, "O");
 
-                // add reverse references
-                curatom->site = cursite;
-                curatom->group = cursite->fixed_atoms;
+            curatom->x = x[hindex][offset+3][0];
+            curatom->y = x[hindex][offset+3][1];
+            curatom->z = x[hindex][offset+3][2];
 
-                // Set bitmask
-                curatom->mask |= mask;
+            //curatom->backbone = true;
+            curatom->fixed = true;
 
-                // Add C atom to the fixed_atoms group
-                iatom = cursite->fixed_atoms->add_atom();
-                curatom = cursite->fixed_atoms->atom[iatom];
+            // add reverse references
+            curatom->site = cursite;
+            curatom->group = cursite->fixed_atoms;
 
-                curatom->serial = serial++;
-                strcpy(curatom->name, "C");
+            // Set bitmask
+            curatom->mask |= mask;
 
-                curatom->x = x[offset + 2][0];
-                curatom->y = x[offset + 2][1];
-                curatom->z = x[offset + 2][2];
-
-                //curatom->backbone = true;
-                curatom->fixed = true;
-
-                // add reverse references
-                curatom->site = cursite;
-                curatom->group = cursite->fixed_atoms;
-
-                // Set bitmask
-                curatom->mask |= mask;
-
-                // Add O atom to the fixed_atoms group
-                iatom = cursite->fixed_atoms->add_atom();
-                curatom = cursite->fixed_atoms->atom[iatom];
-
-                curatom->serial = serial++;
-                strcpy(curatom->name, "O");
-
-                curatom->x = x[offset + 3][0];
-                curatom->y = x[offset + 3][1];
-                curatom->z = x[offset + 3][2];
-
-                //curatom->backbone = true;
-                curatom->fixed = true;
-
-                // add reverse references
-                curatom->site = cursite;
-                curatom->group = cursite->fixed_atoms;
-
-                // Set bitmask
-                curatom->mask |= mask;
-
-            }
-
-            rebuild_domain = false;
         }
     }
 }
+
 
 void BackboneCoiledCoil::print_header() {
 
@@ -1539,11 +1507,12 @@ void BackboneCoiledCoil::axis_to_xyz(char *filename) {
     if (fp == NULL && universe->me == 0)
         error->one(FLERR, "Can't open output file");
 
-    fprintf(fp, "%d\n", nres[0] + 1);
-    fprintf(fp, "Output from SCADS\n");
+    fprintf(fp, "%d\n", nrestotal + 1);
+    fprintf(fp, "Helical Axes from CCB\n");
 
-    for (unsigned int i = 0; i <= nres[0]; i++)
-        fprintf(fp, "%5s %10.4f %10.4f %10.4f\n", "CA", axis_x[i][0], axis_x[i][1], axis_x[i][2]);
+    for (unsigned int i = 0; i < nhelix; i++)
+        for (unsigned int j = 0; j <= nres[i]; j++)
+            fprintf(fp, "%5s %10.4f %10.4f %10.4f\n", "CA", axis_x[i][j][0], axis_x[i][j][1], axis_x[i][j][2]);
 
     fclose(fp);
 }
@@ -1553,8 +1522,12 @@ void BackboneCoiledCoil::axis_to_xyz(char *filename) {
  */
 void BackboneCoiledCoil::print_coordinates() {
 
-    for (unsigned int i = 0; i < natom; i++) {
-        fprintf(screen, "%d\t%10.4f\t%10.4f\t%10.4f\n", i, x[i][0], x[i][1], x[i][2]);
+    for (unsigned int i = 0; i < nhelix; i++) {
+        int natomper = nres[i] * 4;
+
+        for (int j = 0; j < natomper; j++) {
+            fprintf(screen, "%d\t%10.4f\t%10.4f\t%10.4f\n", i, x[i][j][0], x[i][j][1], x[i][j][2]);
+        }
     }
 }
 
@@ -1572,7 +1545,7 @@ void BackboneCoiledCoil::print_coordinates() {
  * @param z atom z's coordinates (calculated, returned)
  */
 
-void BackboneCoiledCoil::inner_to_outer(double a[4], double b[4], double c[4], double bond, double angle, double chi, double z[4]) {
+void BackboneCoiledCoil::inner_to_outer(double *&a, double *&b, double *&c, double bond, double angle, double chi, double *&z) {
 
     double x[4] = { 0.0 }, y[4] = { 0.0 }, n[4] = { 0.0 };
     double z1[4] = { 0.0 };

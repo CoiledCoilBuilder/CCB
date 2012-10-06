@@ -47,6 +47,10 @@ SCADS::SCADS(int , char **) {
 	/// Create and initialize the top level classes
 	create();
 	init();
+
+     // Do a test
+     //test();
+
 }
 
 /**
@@ -99,3 +103,34 @@ void SCADS::destroy() {
 	delete domain;
 
 }
+
+void SCADS::test() {
+
+    const char **newarg = new const char*[5];
+
+    error->verbosity_level=10;
+
+    /// Add the coiled-coil plugin
+    newarg[0] = (char *) "backbone";
+    newarg[1] = (char *) "add";
+    newarg[2] = (char *) "coiledcoil";
+    newarg[3] = (char *) "bbcc1";
+    newarg[4] = (char *) "-asymmetric";
+    backbone->add_backbone(5,newarg);
+    backbone->init_backbone(newarg[3]);
+    backbone->generate_backbone(newarg[3]);
+
+    /// Write out the coordinates to a pdb file
+    newarg[0] = (char *) "output";
+    newarg[1] = (char *) "pdb";
+    newarg[2] = (char *) "pdb1";
+    newarg[3] = (char *) "test.pdb";
+    newarg[4] = (char *) "all";
+    scadsio->add_output(5, newarg);
+    scadsio->init_output(newarg[2]);
+    scadsio->write_output(newarg[2]);
+
+    newarg[3] = (char *) "bbcc1";
+    backbone->delete_backbone(newarg[3]);
+}
+
