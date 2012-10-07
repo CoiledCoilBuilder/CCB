@@ -55,10 +55,11 @@ proc ::crick::crick { args } {
 
     # Set per-run defaults
     set params(asymmetric) 0
-    set sys(tol) 0.0001; # CG Tollerance
+    set sys(tol) 0.0001;          # CG Tollerance
     set sys(aligntext) "name CA"; # The atoms to align for RMSD
     set sys(usertext) "all";      # optional user text
- 
+    set sys(orderflag) 0;         # user specified chain order 
+
     # Parse the passed arguments
     eval parse $args
 
@@ -89,6 +90,7 @@ proc ::crick::parse { args } {
         if {$i == "-aligntext"} {set sys(aligntext) $j; continue}
         if {$i == "-params"} {set sys(userparams) [lsort -unique $j]; continue}
         if {$i == "-tol"} {set sys(tol) $j; continue}
+        if {$i == "-order"} {set sys(orderflag) 1; set params(order) $j; continue}  
     }
 
     ## Single Argument Flags
@@ -389,12 +391,12 @@ proc ::crick::setmol { args } {
 
     ## Set output order as determined from input structure
     ## Cool little hack to get columnwise from a list
-    set params(order) [lsearch -all -index 0 -subindices -inline $sys(order) *]
-    #set params(order) {0 1 2 3}
+    if {!$sys(orderflag)} {
+      set params(order) [lsearch -all -index 0 -subindices -inline $sys(order) *]
+    }
 
     ## Create a new mol consistent with determined topology 
     resetmol
-
 }
 
 
