@@ -168,7 +168,7 @@ void BackboneCoiledCoil::set_params(int argc, const char **argv, int n) {
 
     if (error->verbosity_level == 10)
         for (int i = 0; i < argc; i++)
-            fprintf(screen, "%s\n", argv[i]);
+             fprintf(screen, "%d\t %s\n", i, argv[i]);
 
     while (n < argc) {
 
@@ -220,19 +220,6 @@ void BackboneCoiledCoil::set_params(int argc, const char **argv, int n) {
              * -rotation 0 90 170
              */
 
-        } else if (strcmp(argv[n], "-nres") == 0) {
-            n++;
-            if (n == argc) error->one(FLERR, "Missing argument to -nres");
-            int i = 0;
-            while (n < argc && isfloat(argv[n])) {
-                nres[i] = atoi(argv[n]);
-                if (nres[i] < 1) error->one(FLERR, "nres must be greater than 0");
-                i++; n++;
-            }
-
-            rebuild_domain = true;
-            continue;
-
         } else if (strcmp(argv[n], "-rotation") == 0) {
             n++;
             if (n == argc) error->one(FLERR, "Missing argument to -rotation");
@@ -255,8 +242,8 @@ void BackboneCoiledCoil::set_params(int argc, const char **argv, int n) {
             if (n == argc) error->one(FLERR, "Missing argument to -rpt");
             int i = 0;
             while (n < argc && isfloat(argv[n])) {
-                rpt[i++] = atof(argv[n]);
-                n++;
+                 rpt[i++] = atof(argv[n]);
+                 n++;
             }
             continue;
 
@@ -277,9 +264,18 @@ void BackboneCoiledCoil::set_params(int argc, const char **argv, int n) {
             while (n < argc && isfloat(argv[n])) {
                 order[i++] = atoi(argv[n]);
                 n++;
-
             }
             continue;
+
+        } else if (strcmp(argv[n], "-nres") == 0) {
+             n++;
+             if (n == argc) error->one(FLERR, "Missing argument to -nres");
+             int i = 0;
+             while (n < argc && isfloat(argv[n])) {
+                  this->nres[i++] = atoi(argv[n]);
+                  n++;
+             }
+             continue;
 
         } else {
             char str[128];

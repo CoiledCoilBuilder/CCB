@@ -64,6 +64,9 @@ proc ::crick::crick { args } {
 
     # Run the fit
     run
+
+    return 0
+
 }
 
 proc ::crick::parse { args } {
@@ -152,8 +155,6 @@ proc ::crick::updatemol { args } {
     variable sys
 
     # Set Options
-    # The number of residues or helices can't be changed
-    # as this changes the number of atoms
     set opts [list ccb -vmd\
                   -nhelix $params(nhelix)\
                   -nres $params(nres)\
@@ -209,6 +210,8 @@ proc ::crick::resetmol { args } {
 
 ## Clear the params 
 proc ::crick::clearparams { args } {
+
+    variable params
 
     set params(nhelix) 2
     set params(nres) 28
@@ -367,13 +370,13 @@ proc ::crick::setmol { args } {
     variable params
 
     # Set number of residues, make sure each chain is the same length
-    set nres [lsort -unique -integer $sys(nres)]
-    if {[llength $nres] > 1} {
-        vmdcon -error "ccb:number of residues per helix is variable: $sys(nres)"
-        return -1
-    }
+    #set nres [lsort -unique -integer $sys(nres)]
+    #if {[llength $nres] > 1} {
+    #    vmdcon -error "ccb:number of residues per helix is variable: $sys(nres)"
+    #    return -1
+    #}
 
-    set params(nres) $nres
+    set params(nres) $sys(nres)
     set params(nhelix) $sys(nhelix)
 
     ## Check if parallel/antiparallel
@@ -387,6 +390,7 @@ proc ::crick::setmol { args } {
     ## Set output order as determined from input structure
     ## Cool little hack to get columnwise from a list
     set params(order) [lsearch -all -index 0 -subindices -inline $sys(order) *]
+    #set params(order) {0 1 2 3}
 
     ## Create a new mol consistent with determined topology 
     resetmol
