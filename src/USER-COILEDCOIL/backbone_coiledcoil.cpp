@@ -811,13 +811,15 @@ void BackboneCoiledCoil::align_plane(double *w) {
     // the vector of rotation (u) and the magnitude
     // of rotation, theta given by the 4x4 matrix
 
+    double theta = 2*acos(m2[0][0]);
+
     double u[3] = { 0.0 };
-    u[0] = m2[0][1];
-    u[1] = m2[0][2];
-    u[2] = m2[0][3];
+    double sinthetaover2 = sin(theta/2);
+    u[0] = m2[0][1] / sinthetaover2;
+    u[1] = m2[0][2] / sinthetaover2;
+    u[2] = m2[0][3] / sinthetaover2;
     norm3(u);
 
-    //double theta = 2*acos(m2[0][0]);
 
     /* calculate the vector normal to
      * u and w_temp, rotate about this vector
