@@ -63,6 +63,73 @@ proc get_params_batch {indir} {
     }
 }
 
+proc get_params_trajectory {psf dcd {stride 1}} {
 
+  ## For a trajectory, determine the 
+  ## crick parameters for each frame
 
+  ## Make sure we have pbc tools available
+  package require pbctools
 
+  catch {file mkdir fits}
+
+  set prefix [file rootname [file tail $psf]]
+  set outfile [open "$prefix\_crick.out" w]
+
+  ## load the psf
+  set molid [mol new $psf type psf waitfor all]
+
+  ## Load the dcd file in its entirety 
+  mol addfile $dcd type dcd waitfor all
+
+  ## Unwrap the coordinates
+  pbc unwrap -sel "not water"
+
+  # Number of frames
+  set N [molinfo top get numframes]
+
+  ## Loop over frames getting the params for each one
+  for {set i 0} {$i < N} {incr i $stride} {
+
+    ## Update the frame
+    molinfo top set frame $i
+
+    crick -molid $molid -params {pitch radius rotation rpt zoff} -asymmetric
+
+    $::crick::sys(sel_ccb_all) writepdb fits/$i\_$prefix\_fit.pdb
+
+    set formatline {}
+    set nfloat [expr {$crick::sys(nhelix) * 3}]
+    
+    ## Variable number of rotations, rpts, zoffs
+    set formatline [lrepeat $nfloat "%.4f"]
+
+    ## Number of residues per chain
+    set formatline [concat $formatline [lrepeat $crick::sys(nhelix) "%d"]]
+    set formatline [join $formatline ","]
+
+    puts $outfile [format "#RESULTS:,%s,%d,%d,%.4f,%.4f,%.4f,$formatline"\
+                 $prefix $i $crick::sys(nhelix) $crick::sys(rmsd)\
+                 $crick::params(pitch)\
+                 $crick::params(radius)\
+                 {*}$crick::params(rotation)\
+                 {*}$crick::params(rpt)\
+                 {*}$crick::params(zoff)\
+                 {*}$crick::sys(nres)]
+
+                 parray ::crick::sys
+                 parray ::crick::params
+
+    ## Cleanup after each frame
+    ## ::crick::veryclean
+  }
+
+  ##clean up
+  close $outfile
+  ::crick::veryclean
+  mol delete $molid
+}
+
+lassign $argv psf dcd
+get_params_trajectory $psf $dcd
+exit 0
