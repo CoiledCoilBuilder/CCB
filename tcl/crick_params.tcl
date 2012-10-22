@@ -63,7 +63,7 @@ proc get_params_batch {indir} {
     }
 }
 
-proc get_params_trajectory {psf dcd {stride 1}} {
+proc get_params_trajectory {psf dcd seltext {stride 1}} {
 
   ## For a trajectory, determine the 
   ## crick parameters for each frame
@@ -94,7 +94,7 @@ proc get_params_trajectory {psf dcd {stride 1}} {
     ## Update the frame
     molinfo top set frame $i
 
-    crick -molid $molid -params {pitch radius rotation rpt zoff} -asymmetric
+    crick -molid $molid -params {pitch radius rotation rpt zoff} -text $seltext -asymmetric
 
     $::crick::sys(sel_ccb_all) writepdb fits/$i\_$prefix\_fit.pdb
 
@@ -130,6 +130,8 @@ proc get_params_trajectory {psf dcd {stride 1}} {
   mol delete $molid
 }
 
-lassign $argv psf dcd
-get_params_trajectory $psf $dcd
-exit 0
+## For cli runs
+if {0} {
+        lassign $argv psf dcd
+        get_params_trajectory $psf $dcd
+}

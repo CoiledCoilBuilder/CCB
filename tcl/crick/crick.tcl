@@ -12,7 +12,7 @@ namespace eval ::crick:: {
 
     variable sys
     set sys(aligntext) "name CA"; # The atoms to align for RMSD
-    set sys(usertext) "all";      # optional user text
+    set sys(usertext) "backbone"; # optional user text
     set sys(userparams) {pitch radius rotation zoff rpt square rpr}; #params to fit
     set sys(tol) 0.0001; # CG Tollerance
 
@@ -57,7 +57,7 @@ proc ::crick::crick { args } {
     set params(asymmetric) 0
     set sys(tol) 0.0001;          # CG Tollerance
     set sys(aligntext) "name CA"; # The atoms to align for RMSD
-    set sys(usertext) "all";      # optional user text
+    set sys(usertext) "backbone"; # optional user text
     set sys(orderflag) 0;         # user specified chain order 
 
     # Parse the passed arguments
@@ -88,6 +88,7 @@ proc ::crick::parse { args } {
 
         if {$i == "-molid"} { set sys(molid) $j; continue}
         if {$i == "-aligntext"} {set sys(aligntext) $j; continue}
+        if {$i == "-text"} {set sys(usertext) $j; continue}
         if {$i == "-params"} {set sys(userparams) [lsort -unique $j]; continue}
         if {$i == "-tol"} {set sys(tol) $j; continue}
         if {$i == "-order"} {set sys(orderflag) 1; set params(order) $j; continue}  
@@ -319,7 +320,7 @@ proc ::crick::topology { args } {
     set r1 [lindex $sys(direction) 0]
     foreach r2 [lrange $sys(direction) 1 end] {
         set angle [vecdot [vecnorm $r1] [vecnorm $r2]]
-       
+
         ## Watch out for floatng point error 
         if {$angle > 1.000} {set angle [expr {$angle - 0.0001}]}
         if {$angle < -1.000} {set angle [expr {$angle + 0.0001}]}
