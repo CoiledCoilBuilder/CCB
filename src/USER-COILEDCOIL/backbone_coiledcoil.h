@@ -30,6 +30,14 @@ BackboneStyle(coiledcoil,BackboneCoiledCoil)
 
 #define MAX_HELIX 20
 
+/**
+ * @def MAX_RES
+ *
+ * @brief maximum number residues per helix
+ */
+
+#define MAX_RES 500
+
     namespace SCADS_NS {
 
     class BackboneCoiledCoil : public Backbone {
@@ -54,13 +62,12 @@ BackboneStyle(coiledcoil,BackboneCoiledCoil)
         unsigned int natom;           /**< number of atoms = numres*numhelix*4 */
         unsigned int natomlarge;      /**< Largest number of atoms in a chain */
         unsigned int maxatom;         /**< maximum number of atoms allowed before realloc of atom vector */
-        unsigned int nhelix;          /**< number of helices per coiled-coil */
-        unsigned int nreslarge;       /**< Largest number of residues in a chain */
-        unsigned int nrestotal;       /**< Total number of residues in the coiled-coil */
+        int nreslarge;                /**< Largest number of residues in a chain */
+        int nrestotal;                /**< Total number of residues in the coiled-coil */
+        int nhelix;                   /**< number of helices per coiled-coil */
 
         // Symmetric Parameters
         double pitch;                 /**< pitch of the coiled-coil */
-        double radius;                /**< radius of the coiled-coil */
         double square;                /**< squareness of the coiled-coil */
         double phi;                   /**< initial phi angle used to build the peptide plane */
         double psi;                   /**< initial psi angle used to build the peptide plane */
@@ -68,8 +75,12 @@ BackboneStyle(coiledcoil,BackboneCoiledCoil)
         double omega;                 /**< major helix angular yield per residue; -2*PI*rpr/pitch */
         double omega_alpha;           /**< minor helix angular yield per residue; 2*pi/rpt */
 
+        // Radius expansion/contraction
+        double radius[MAX_RES];       /**<Radius of the coiled-coil*/
+        double r0_params[4];          /**<Array of radius parameters for expansion/contraction r0_start, r0_end, res_start, res_end */
+
         // Asymmetric Parameters
-        unsigned int nres[MAX_HELIX]; /**< number of residues per helix */
+        int nres[MAX_HELIX];          /**< number of residues per helix */
         double rotation[MAX_HELIX];   /**< rotation of the helices, for asymmetric, a list of rotations for each helix */
         double rpt[MAX_HELIX];        /**< residues per turn of the helices */
         double zoff[MAX_HELIX];       /**< z-axis displacement of helices, for asymmetric, a list of offsets for each helix */
@@ -79,11 +90,11 @@ BackboneStyle(coiledcoil,BackboneCoiledCoil)
         bool rebuild_domain;          /**< if true, we erase the existing coiled coil when we update */
 
         double **pp_x;                /**< 2D-array of initial peptide-plane coordinates */
-        double ***axis_x;              /**< coordinates of the minor-helical axis */
+        double ***axis_x;             /**< coordinates of the minor-helical axis */
         double ***x;                  /**< 3D-array of coordinates for coiled-coil */
 
         //Order of output by chain
-        unsigned int order[64];       /**< Order of chain output, e.g. {0 3 1 2} switches {A B C D} to {A D B C} */
+        int order[64];                /**< Order of chain output, e.g. {0 3 1 2} switches {A B C D} to {A D B C} */
 
         Site **site;                  /**< Array of sites that this style created and can update or delete */
         unsigned int nsite;           /**< current number of sites that belong to this style */

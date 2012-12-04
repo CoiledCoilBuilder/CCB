@@ -262,7 +262,7 @@ proc ::ccbtools::asymbox {args} {
 
     for {set i 0} {$i < $params(nhelix)} {incr i} {
         #spinbox $wid.sub_box_$i -width 10 -from $box_min -to $box_max -increment $box_incr -format %10.2f\
-        #    -command [namespace code [list asymcmdwrap $args $i 2]]
+                                                       #    -command [namespace code [list asymcmdwrap $args $i 2]]
         #grid $wid.sub_box_$i -row $i -column 3
 
         scale $wid.sub_scale_$i -label "$args $i:" -orient h -resolution 0 -digit $scl_dgt -from $scl_min\
