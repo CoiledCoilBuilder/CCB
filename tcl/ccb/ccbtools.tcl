@@ -179,6 +179,7 @@ proc ::ccbtools::resetmol { args } {
 
 proc ::ccbtools::cmdwrap {args} {
 
+<<<<<<< HEAD
     puts "the params passing in cmdwrap are: $args "
 
     variable params
@@ -200,6 +201,8 @@ proc ::ccbtools::scalecmdwrap {args} {
     
     puts "the params passing in scalecmdwrap are: $args"
 
+=======
+>>>>>>> 90dc7f6992af91307976af7eb9a47f10d744b569
     variable params
 
     lassign $args param val
@@ -215,20 +218,28 @@ proc ::ccbtools::scalecmdwrap {args} {
 
 proc ::ccbtools::asymcmdwrap {args} {
 
+<<<<<<< HEAD
     puts "the params passing in asymcmdwrap are: $args"
 
+=======
+>>>>>>> 90dc7f6992af91307976af7eb9a47f10d744b569
     ## Update the asymmetric parameters
 
     variable params
 
     lassign $args param idx val
 
+<<<<<<< HEAD
     puts "before set the params in asymcmdwrap, params($param) is $params($param)"
 
     set params($param) [lset params($param) $idx $val]
 
     puts "after set the params in asymcmdwrap, params($param) is $params($param)"
 
+=======
+    set params($param) [lset params($param) $idx $val]
+
+>>>>>>> 90dc7f6992af91307976af7eb9a47f10d744b569
     if {$param == "nres"} {
         resetmol
     } else {
@@ -248,6 +259,7 @@ proc ::ccbtools::setasym {args} {
 
             ## Adjust the array lengths...
             set N [llength $params($x)]
+<<<<<<< HEAD
 	    puts "the number of the asymmetric helices is $N" 
 
             while {$N < $params(nhelix)} {
@@ -257,6 +269,14 @@ proc ::ccbtools::setasym {args} {
 		incr N
             }
 		
+=======
+
+            while {$N <= $params(nhelix)} {
+                lappend params($x) [lindex $params($x) 0]
+                incr N
+            }
+
+>>>>>>> 90dc7f6992af91307976af7eb9a47f10d744b569
             if {$N > $params(nhelix)} {
                 set params($x) [lrange $params($x) 0 [expr {$params(nhelix) - 1}]]
             }
@@ -314,7 +334,11 @@ proc ::ccbtools::asymbox {args} {
 
     for {set i 0} {$i < $params(nhelix)} {incr i} {
         #spinbox $wid.sub_box_$i -width 10 -from $box_min -to $box_max -increment $box_incr -format %10.2f\
+<<<<<<< HEAD
         #    -command [namespace code [list asymcmdwrap $args $i 2]]
+=======
+                                                       #    -command [namespace code [list asymcmdwrap $args $i 2]]
+>>>>>>> 90dc7f6992af91307976af7eb9a47f10d744b569
         #grid $wid.sub_box_$i -row $i -column 3
 
         scale $wid.sub_scale_$i -label "$args $i:" -orient h -resolution 0 -digit $scl_dgt -from $scl_min\
@@ -371,7 +395,11 @@ proc ::ccbtools::gui {args} {
     spinbox $wid.scales.entM -width 10 -textvariable ccbtools::params(nhelix) -from 1 -to 20 -increment 1\
         -command [namespace code resetmol]
 
+<<<<<<< HEAD
     spinbox $wid.scales.entN -width 10 -textvariable ccbtools::params(nres) -from 1 -to 200 -increment 1\
+=======
+    spinbox $wid.scales.entN -width 10 -from 1 -to 200 -increment 1\
+>>>>>>> 90dc7f6992af91307976af7eb9a47f10d744b569
         -command [namespace code {cmdwrap "nres"}]
 
     spinbox $wid.scales.entP -width 10 -textvariable ccbtools::params(pitch) -from -1000.00 -to 1000.00 -increment 10.00 -format %10.2f\
@@ -380,6 +408,7 @@ proc ::ccbtools::gui {args} {
     spinbox $wid.scales.entR -width 10 -textvariable ccbtools::params(radius) -from 0.01 -to 40.00 -increment 0.10 -format %10.2f\
         -command [namespace code updatemol]
 
+<<<<<<< HEAD
     spinbox $wid.scales.entC -width 10 -textvariable ccbtools::params(rpt) -from 3.00 -to 5.00 -increment 0.01 -format %10.2f\
         -command [namespace code {cmdwrap "rpt"}]
 
@@ -387,13 +416,26 @@ proc ::ccbtools::gui {args} {
         -command [namespace code {cmdwrap "rotation"}]
 
     spinbox $wid.scales.entZ -width 10 -textvariable ccbtools::params(zoff) -from -10.00 -to 10.00 -increment 1.0 -format %10.2f\
+=======
+    spinbox $wid.scales.entC -width 10 -from 3.00 -to 5.00 -increment 0.01 -format %10.2f\
+        -command [namespace code {cmdwrap "rpt"}]
+
+    spinbox $wid.scales.entH -width 10 -from -180.00 -to 180.00 -increment 1.0 -format %10.2f\
+        -command [namespace code {cmdwrap "rotation"}]
+
+    spinbox $wid.scales.entZ -width 10 -from -10.00 -to 10.00 -increment 1.0 -format %10.2f\
+>>>>>>> 90dc7f6992af91307976af7eb9a47f10d744b569
         -command [namespace code {cmdwrap "zoff"}]
 
     scale $wid.scales.sclM -label "Number of helices:" -orient h -digit 1 -from 1 -to 20\
         -tickinterval 0 -length 300 -command [namespace code resetmol]  -variable ccbtools::params(nhelix)
 
     scale $wid.scales.sclN -label "Number of residues:" -orient h -digit 1 -from 1 -to 200\
+<<<<<<< HEAD
         -tickinterval 0 -length 300 -command [namespace code {scalecmdwrap "nres"}]
+=======
+        -tickinterval 0 -length 300 -command [namespace code {cmdwrap "nres"}]
+>>>>>>> 90dc7f6992af91307976af7eb9a47f10d744b569
 
     scale $wid.scales.sclP -label "Pitch :" -orient h -resolution 0 -digit 5 -from -1000 -to 1000\
         -tickinterval 0 -length 300 -command [namespace code updatemol]  -variable ccbtools::params(pitch)
@@ -402,6 +444,7 @@ proc ::ccbtools::gui {args} {
         -tickinterval 0 -length 300 -command [namespace code updatemol]  -variable ccbtools::params(radius)
 
     scale $wid.scales.sclC -label "Residue Per Turn :" -orient h -resolution 0 -digit 5 -from 3 -to 5 \
+<<<<<<< HEAD
         -tickinterval 0 -length 300 -command [namespace code {scalecmdwrap "rpt"}]
 
     scale $wid.scales.sclH -label "Helical Rotation :" -orient h -resolution 0 -digit 5 -from -180.00 -to 180.00\
@@ -409,6 +452,15 @@ proc ::ccbtools::gui {args} {
 
     scale $wid.scales.sclZ -label "Z-Offset:" -orient h -resolution 0 -digit 5 -from -10.00 -to 10.00\
         -tickinterval 0 -length 300 -command [namespace code {scalecmdwrap "zoff"}]
+=======
+        -tickinterval 0 -length 300 -command [namespace code {cmdwrap "rpt"}]
+
+    scale $wid.scales.sclH -label "Helical Rotation :" -orient h -resolution 0 -digit 5 -from -180.00 -to 180.00\
+        -tickinterval 0 -length 300 -command [namespace code {cmdwrap "rotation"}]
+
+    scale $wid.scales.sclZ -label "Z-Offset:" -orient h -resolution 0 -digit 5 -from -10.00 -to 10.00\
+        -tickinterval 0 -length 300 -command [namespace code {cmdwrap "zoff"}]
+>>>>>>> 90dc7f6992af91307976af7eb9a47f10d744b569
 
     entry $wid.ccbcommand -textvariable ccbtools::sys(opts) -width 60
 
