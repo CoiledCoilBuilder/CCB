@@ -69,8 +69,8 @@ BackboneCoiledCoil::BackboneCoiledCoil(SCADS *scads, int narg, const char **arg)
     // Radius expansion/contraction parameters
     r0_params[0] = 4.65;        /**< r0_start */
     r0_params[1] = 4.65;        /**< r0_end */
-    r0_params[2] = 1;           /**< res_start */
-    r0_params[3] = 35;          /**< res_end */
+    r0_params[2] = 0;           /**< res_start */
+    r0_params[3] = 0;          /**< res_end */
 
     // Fill radius array with default values
     for (int i = 0; i < MAX_RES; i++)
@@ -293,6 +293,10 @@ void BackboneCoiledCoil::set_params(int argc, const char **argv, int n) {
                 r0_params[i++] = atof(argv[n]);
                 n++;
             }
+
+            // Make sure Ri == Rf if no modulation is specified
+            if (r0_params[3] == r0_params[4]) r0_params[1] = r0_params[0];
+
             continue;
 
         } else {
@@ -673,7 +677,7 @@ void BackboneCoiledCoil::helix_axis() {
 
         // Adjust the radius values for expansion/contraction if necessary
         int j = 0, k = 0;
-        if(start != end)
+        if(start != end) {
             for (j = start, k = 0; j < end; j++, k++)
                 radius[j] = r0_params[0] + (k * delta);
 
@@ -681,11 +685,12 @@ void BackboneCoiledCoil::helix_axis() {
         // so we don't make disjointed-structures
         while (j < nres[i] + 1)
             radius[j++] = r0_params[1];
+        }
 
         // Output radius values if debugging
         if (error->verbosity_level > 8) {
             for (j = 0; j < nres[i]; j++)
-                fprintf(screen, "%d %10.4f\n", j, radius[j]);
+                fprintf(screen, "%d %10.4f\n", j + 1, radius[j]);
             fflush(screen);
         }
 

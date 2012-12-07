@@ -227,7 +227,69 @@ proc ::ccbtools::setasym {args} {
     resetmol
 }
 
+proc ::ccbtools::radiuscmdwrap {args} {
+
+    ## Update the radius
+
+    variable params
+
+    lassign $args idx val
+
+    set params(radius) [lset params(radius) $idx $val]
+
+    updatemol
+}
+
 ## Actual GUI Stuff
+proc ::ccbtools::mod_radius {args} {
+
+    variable sys
+    variable params
+    variable gui
+
+    ## Check for existing window
+    if { [winfo exists $gui(wid).$args] } {
+        wm deiconify $gui(wid).$args
+        return
+    }
+
+    set wid [toplevel $gui(wid).radius]
+    lappend gui(subwid) $wid
+
+    wm title $wid $args
+    wm resizable $wid 0 0
+
+    ## Make Subwindow
+    frame $wid.sub
+
+    ## Calculate the maximum number of residues in all helices
+    lassign [lsort -decreasing -integer $params(nres)] maxres
+
+    ## Set radius list
+    set curR [lindex $params(radius) 0]
+    set params(radius) [list $curR $curR 1 $maxres]
+
+    ## scale limits
+    lassign {5 0.01 40.00} scl_dgt scl_min scl_max
+
+    scale $wid.sub_scale_0 -label "radius R_i:" -orient h -resolution 0 -digit $scl_dgt -from $scl_min\
+        -to $scl_max -tickinterval 0 -length 300 -command [namespace code [list radiuscmdwrap 0]]
+
+    scale $wid.sub_scale_1 -label "radius R_f:" -orient h -resolution 0 -digit $scl_dgt -from $scl_min\
+        -to $scl_max -tickinterval 0 -length 300 -command [namespace code [list radiuscmdwrap 1]]
+
+    scale $wid.sub_scale_2 -label "resid start:" -orient h -resolution 0 -digit 0 -from 1\
+        -to $maxres -tickinterval 0 -length 300 -command [namespace code [list radiuscmdwrap 2]]
+
+    scale $wid.sub_scale_3 -label "resid_end:" -orient h -resolution 0 -digit 0 -from 1\
+        -to $maxres -tickinterval 0 -length 300 -command [namespace code [list radiuscmdwrap 3]]
+
+    grid $wid.sub_scale_0 -row 0 -column 1 -columnspan 2
+    grid $wid.sub_scale_1 -row 1 -column 1 -columnspan 2
+    grid $wid.sub_scale_2 -row 2 -column 1 -columnspan 2
+    grid $wid.sub_scale_3 -row 3 -column 1 -columnspan 2
+}
+
 proc ::ccbtools::asymbox {args} {
 
     variable sys
@@ -301,14 +363,16 @@ proc ::ccbtools::gui {args} {
 
     checkbutton $wid.scales.ap -text "Antiparallel" -variable ::ccbtools::params(antiparallel)\
         -onvalue 1 -offvalue 0 -command [namespace code updatemol]
+
     checkbutton $wid.scales.asym -text "Asymmetric" -variable ::ccbtools::params(asymmetric)\
         -onvalue 1 -offvalue 0 -command [namespace code setasym]
 
     button $wid.scales.new -text NEW -command [namespace code newmol]
-
     button $wid.scales.reset -text RESET -command [namespace code resetmol]
-
     button $wid.scales.update -text UPDATE -command [namespace code updatemol]
+
+    ## Button for modulated radius
+    button $wid.scales.modR -text Mod -command [namespace code mod_radius]
 
     ## Buttons for asymmetric commands
     button $wid.scales.asymN -text Asymmetric -command [namespace code {asymbox "nres"}]
@@ -325,8 +389,8 @@ proc ::ccbtools::gui {args} {
     spinbox $wid.scales.entP -width 10 -textvariable ccbtools::params(pitch) -from -1000.00 -to 1000.00 -increment 10.00 -format %10.2f\
         -command [namespace code updatemol]
 
-    spinbox $wid.scales.entR -width 10 -textvariable ccbtools::params(radius) -from 0.01 -to 40.00 -increment 0.10 -format %10.2f\
-        -command [namespace code updatemol]
+    spinbox $wid.scales.entR -width 10 -from 0.01 -to 40.00 -increment 0.10 -format %10.2f\
+        -command [namespace code [list radiuscmdwrap 0]]
 
     spinbox $wid.scales.entC -width 10 -from 3.00 -to 5.00 -increment 0.01 -format %10.2f\
         -command [namespace code {cmdwrap "rpt"}]
@@ -347,7 +411,7 @@ proc ::ccbtools::gui {args} {
         -tickinterval 0 -length 300 -command [namespace code updatemol]  -variable ccbtools::params(pitch)
 
     scale $wid.scales.sclR -label "Radius :" -orient h -resolution 0 -digit 5 -from 0.01 -to 40.00\
-        -tickinterval 0 -length 300 -command [namespace code updatemol]  -variable ccbtools::params(radius)
+        -tickinterval 0 -length 300 -command [namespace code [list radiuscmdwrap 0]]
 
     scale $wid.scales.sclC -label "Residue Per Turn :" -orient h -resolution 0 -digit 5 -from 3 -to 5 \
         -tickinterval 0 -length 300 -command [namespace code {cmdwrap "rpt"}]
@@ -383,6 +447,9 @@ proc ::ccbtools::gui {args} {
     grid $wid.scales.entZ   -row 7  -column 3
 
     grid $wid.ccbcommand    -row 10 -rowspan 3
+
+    ## Mod radius button
+    grid $wid.scales.modR -row 4 -column 4;# nres asym Button
 
     ## Asymmetric Buttons
     grid $wid.scales.asymN -row 2 -column 4;# nres asym Button
