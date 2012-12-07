@@ -7,7 +7,8 @@ package require ccb
 
 namespace eval ::ccbtools:: {
     namespace export ccbtools
-
+    
+    variable fp    
     variable sys
     variable params
 
@@ -89,15 +90,18 @@ proc ::ccbtools::newmol { args } {
     }
 
     ## Create a globalized selection for the entire coil
-    catch {$sys(sel_ccb_all) delete}
-    set sys(sel_ccb_all) [atomselect $sys(ccbid) "all"]
-    $sys(sel_ccb_all) global
+    #if { [catch {$sys(sel_ccb_all) delete} err] } {
+#	vmdcon -error "ccb: Could not delete atom selection for newmol:\n $err"
+ #   }
+    #set sys(sel_ccb_all) [atomselect $sys(ccbid) "all"]
+    #$sys(sel_ccb_all) global
 }
 
 proc ::ccbtools::updatemol { args } {
 
     variable params
     variable sys
+    variable fp
 
     # Set Options
     set opts [list ccb -vmd\
@@ -128,7 +132,18 @@ proc ::ccbtools::updatemol { args } {
     ## The command used to generate the coiled-coil
     set sys(opts) [join $opts]
 
-    $sys(sel_ccb_all) set {x y z} $coords
+    set sel_ccb_all [atomselect $sys(ccbid) "all"]
+    puts "molecular id selected now is: $sys(ccbid)"
+    puts "molecular selection is: $sel_ccb_all"
+    $sel_ccb_all set {x y z} $coords
+
+    ## Delete the selection
+     if { [catch {$sel_ccb_all delete} err] } {
+	 vmdcon -error "ccb: Could not delete atom selection for cleanup:\n $err"
+     }
+
+    #puts $fp "the selected molecule: $sys(sel_ccb_all)\n"
+    #puts $fp "their coordinates: $coords\n"
 }
 
 proc ::ccbtools::cleanup { args } {
@@ -136,10 +151,15 @@ proc ::ccbtools::cleanup { args } {
     variable sys
 
     ## Delete the selection
-    catch {$sys(sel_ccb_all) delete}
+   # if { [catch {$sys(sel_ccb_all) delete} err] } {
+#	vmdcon -error "ccb: Could not delete atom selection for cleanup:\n $err"
+#	return -1
+ #   }
 
     ## Delete old mol
-    catch {mol delete $sys(ccbid)}
+    if { [catch {mol delete $sys(ccbid)} err] } {
+	vmdcon -error "ccb: Could not delete molecule for cleanup:\n $err"
+    }
 }
 
 proc ::ccbtools::resetmol { args } {
@@ -157,6 +177,27 @@ proc ::ccbtools::resetmol { args } {
 
 proc ::ccbtools::cmdwrap {args} {
 
+    puts "the params passing in cmdwrap are: $args "
+
+    variable params
+
+    lassign $args param
+
+    puts "the variable params($param) changed to $params($param)"
+
+    lset params($param) $params($param)
+
+    if {$args == "nres"} {
+        resetmol
+    } else {
+        updatemol
+    }
+}
+
+proc ::ccbtools::scalecmdwrap {args} {
+    
+    puts "the params passing in scalecmdwrap are: $args"
+
     variable params
 
     lassign $args param val
@@ -172,13 +213,19 @@ proc ::ccbtools::cmdwrap {args} {
 
 proc ::ccbtools::asymcmdwrap {args} {
 
+    puts "the params passing in asymcmdwrap are: $args"
+
     ## Update the asymmetric parameters
 
     variable params
 
     lassign $args param idx val
 
+    puts "before set the params in asymcmdwrap, params($param) is $params($param)"
+
     set params($param) [lset params($param) $idx $val]
+
+    puts "after set the params in asymcmdwrap, params($param) is $params($param)"
 
     if {$param == "nres"} {
         resetmol
@@ -199,12 +246,15 @@ proc ::ccbtools::setasym {args} {
 
             ## Adjust the array lengths...
             set N [llength $params($x)]
+	    puts "the number of the asymmetric helices is $N" 
 
-            while {$N <= $params(nhelix)} {
+            while {$N < $params(nhelix)} {
+		puts "before asymmetry feature on, params($x) is $params($x)\n"
                 lappend params($x) [lindex $params($x) 0]
-                incr N
+		puts "after asymmetry feature on, params($x) is $params($x)\n"                
+		incr N
             }
-
+		
             if {$N > $params(nhelix)} {
                 set params($x) [lrange $params($x) 0 [expr {$params(nhelix) - 1}]]
             }
@@ -324,7 +374,7 @@ proc ::ccbtools::asymbox {args} {
 
     for {set i 0} {$i < $params(nhelix)} {incr i} {
         #spinbox $wid.sub_box_$i -width 10 -from $box_min -to $box_max -increment $box_incr -format %10.2f\
-                                                       #    -command [namespace code [list asymcmdwrap $args $i 2]]
+        #    -command [namespace code [list asymcmdwrap $args $i 2]]
         #grid $wid.sub_box_$i -row $i -column 3
 
         scale $wid.sub_scale_$i -label "$args $i:" -orient h -resolution 0 -digit $scl_dgt -from $scl_min\
@@ -383,7 +433,7 @@ proc ::ccbtools::gui {args} {
     spinbox $wid.scales.entM -width 10 -textvariable ccbtools::params(nhelix) -from 1 -to 20 -increment 1\
         -command [namespace code resetmol]
 
-    spinbox $wid.scales.entN -width 10 -from 1 -to 200 -increment 1\
+    spinbox $wid.scales.entN -width 10 -textvariable ccbtools::params(nres) -from 1 -to 200 -increment 1\
         -command [namespace code {cmdwrap "nres"}]
 
     spinbox $wid.scales.entP -width 10 -textvariable ccbtools::params(pitch) -from -1000.00 -to 1000.00 -increment 10.00 -format %10.2f\
@@ -392,20 +442,20 @@ proc ::ccbtools::gui {args} {
     spinbox $wid.scales.entR -width 10 -from 0.01 -to 40.00 -increment 0.10 -format %10.2f\
         -command [namespace code [list radiuscmdwrap 0]]
 
-    spinbox $wid.scales.entC -width 10 -from 3.00 -to 5.00 -increment 0.01 -format %10.2f\
+    spinbox $wid.scales.entC -width 10 -textvariable ccbtools::params(rpt) -from 3.00 -to 5.00 -increment 0.01 -format %10.2f\
         -command [namespace code {cmdwrap "rpt"}]
 
-    spinbox $wid.scales.entH -width 10 -from -180.00 -to 180.00 -increment 1.0 -format %10.2f\
+    spinbox $wid.scales.entH -width 10 -textvariable ccbtools::params(rotation) -from -180.00 -to 180.00 -increment 1.0 -format %10.2f\
         -command [namespace code {cmdwrap "rotation"}]
 
-    spinbox $wid.scales.entZ -width 10 -from -10.00 -to 10.00 -increment 1.0 -format %10.2f\
+    spinbox $wid.scales.entZ -width 10 -textvariable ccbtools::params(zoff) -from -10.00 -to 10.00 -increment 1.0 -format %10.2f\
         -command [namespace code {cmdwrap "zoff"}]
 
     scale $wid.scales.sclM -label "Number of helices:" -orient h -digit 1 -from 1 -to 20\
         -tickinterval 0 -length 300 -command [namespace code resetmol]  -variable ccbtools::params(nhelix)
 
     scale $wid.scales.sclN -label "Number of residues:" -orient h -digit 1 -from 1 -to 200\
-        -tickinterval 0 -length 300 -command [namespace code {cmdwrap "nres"}]
+        -tickinterval 0 -length 300 -command [namespace code {scalecmdwrap "nres"}]
 
     scale $wid.scales.sclP -label "Pitch :" -orient h -resolution 0 -digit 5 -from -1000 -to 1000\
         -tickinterval 0 -length 300 -command [namespace code updatemol]  -variable ccbtools::params(pitch)
@@ -414,13 +464,13 @@ proc ::ccbtools::gui {args} {
         -tickinterval 0 -length 300 -command [namespace code [list radiuscmdwrap 0]]
 
     scale $wid.scales.sclC -label "Residue Per Turn :" -orient h -resolution 0 -digit 5 -from 3 -to 5 \
-        -tickinterval 0 -length 300 -command [namespace code {cmdwrap "rpt"}]
+        -tickinterval 0 -length 300 -command [namespace code {scalecmdwrap "rpt"}]
 
     scale $wid.scales.sclH -label "Helical Rotation :" -orient h -resolution 0 -digit 5 -from -180.00 -to 180.00\
-        -tickinterval 0 -length 300 -command [namespace code {cmdwrap "rotation"}]
+        -tickinterval 0 -length 300 -command [namespace code {scalecmdwrap "rotation"}]
 
     scale $wid.scales.sclZ -label "Z-Offset:" -orient h -resolution 0 -digit 5 -from -10.00 -to 10.00\
-        -tickinterval 0 -length 300 -command [namespace code {cmdwrap "zoff"}]
+        -tickinterval 0 -length 300 -command [namespace code {scalecmdwrap "zoff"}]
 
     entry $wid.ccbcommand -textvariable ccbtools::sys(opts) -width 60
 
