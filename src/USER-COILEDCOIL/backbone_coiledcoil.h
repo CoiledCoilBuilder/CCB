@@ -131,6 +131,7 @@ BackboneStyle(coiledcoil,BackboneCoiledCoil)
 
         void print_plane();
         void print_coordinates();
+        void print_axis();      /**< Print the helix axis coodinates to screen */
         void ppx_to_xyz(char *filename);
         void axis_to_xyz(char *filename);
         void inner_to_outer(double *&a, double *&b, double *&c,

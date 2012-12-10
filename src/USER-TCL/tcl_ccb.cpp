@@ -87,6 +87,7 @@ int tcl_ccb(ClientData /**/, Tcl_Interp *interp,
     bool pdb = 0;
     const char *outfile;
     bool vmd = 0;
+    bool axis = 0;
 
     // Parse Arguments
     for (int i = 1; i < objc; ++i) {
@@ -127,6 +128,9 @@ int tcl_ccb(ClientData /**/, Tcl_Interp *interp,
             } else if (strcmp("-vmd", argv[argc]) == 0) {
                 vmd = 1;
 
+            } else if (strcmp("-axis", argv[argc]) == 0) {
+                 axis = 1;
+
             } else {
 
                 argc++;
@@ -155,26 +159,26 @@ int tcl_ccb(ClientData /**/, Tcl_Interp *interp,
     /// Create TCL object and return coordinates if requested
     if (vmd) {
 
-        Tcl_Obj *resultPtr;
-        resultPtr = Tcl_NewListObj(0,NULL);
+         Tcl_Obj *resultPtr;
+         resultPtr = Tcl_NewListObj(0,NULL);
 
-        for (int i = 0; i < scads->domain->nsite; i++)
-            for (int j = 0; j < scads->domain->site[i]->fixed_atoms->natom; j++) {
+         for (int i = 0; i < scads->domain->nsite; i++)
+              for (int j = 0; j < scads->domain->site[i]->fixed_atoms->natom; j++) {
 
-                Tcl_Obj *xyz;
+                   Tcl_Obj *xyz;
 
-                double coords[3] = { 0.0 };
-                scads->domain->site[i]->fixed_atoms->atom[j]->get_xyz(coords);
+                   double coords[3] = { 0.0 };
+                   scads->domain->site[i]->fixed_atoms->atom[j]->get_xyz(coords);
 
-                xyz = Tcl_NewListObj(0,NULL);
+                   xyz = Tcl_NewListObj(0,NULL);
 
-                for (int k = 0; k < 3; k++)
-                    Tcl_ListObjAppendElement(interp,xyz,Tcl_NewDoubleObj(coords[k]));
+                   for (int k = 0; k < 3; k++)
+                        Tcl_ListObjAppendElement(interp,xyz,Tcl_NewDoubleObj(coords[k]));
 
-                Tcl_ListObjAppendElement(interp,resultPtr,xyz);
-            }
+                   Tcl_ListObjAppendElement(interp,resultPtr,xyz);
+              }
 
-        Tcl_SetObjResult(interp, resultPtr);
+         Tcl_SetObjResult(interp, resultPtr);
     }
 
     // Delete ccb instance

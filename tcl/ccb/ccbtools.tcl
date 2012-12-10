@@ -289,7 +289,7 @@ proc ::ccbtools::mod_radius {args} {
 
     ## Set radius list
     set curR [lindex $params(radius) 0]
-    set params(radius) [list $curR $curR 1 $maxres]
+    set params(radius) [list $curR $curR 1 1]
 
     ## scale limits
     lassign {5 0.01 40.00} scl_dgt scl_min scl_max

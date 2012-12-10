@@ -614,6 +614,15 @@ void BackboneCoiledCoil::generate_asymmetric() {
         //rotate the plane to set the correct crick angle
         crick(u, rotation[i], r, axis_x[i][0]);
 
+
+        // get u, r, v for the peptide pane
+        // axis vector becomes normalized u at axis0
+        get_pp_params(axis_x[i][0], axis_x[i][1], u, v, r, theta);
+
+        //rotate the plane to set the correct crick angle
+        crick(u, rotation[i], r, axis_x[i][0]);
+
+
         ////offset the plane by calculated r
         get_pp_params(axis_x[i][0], axis_x[i][1], u, v, r, theta);
         moveto(r, m);
@@ -642,7 +651,7 @@ void BackboneCoiledCoil::generate_asymmetric() {
              * Get the next plane, use omega_alpha
              * so the user can manipulate the residues
              * per turn of the helix directly at risk
-             * of losing the rpt-pitch relaonship...
+             * of losing the rpt-pitch relationship...
              */
             next_plane(u, v, omega_alpha);
 
@@ -910,31 +919,37 @@ void BackboneCoiledCoil::crick(double *u, double rho, double *r1, double *r2) {
 
     // rotates the peptide plane
     // about it's rotation axis so that
-    // the planes radius vector points
+    // the plane's radius vector points
     // at the coiled-coil axis.
     // e.g set the crick angle
 
     double b1[3] = { 0.0 };
     double b2[3] = { 0.0 };
+    double n[3] = { 0.0 };
 
     b1[0] = -r1[0];
     b1[1] = -r1[1];
-    b1[2] = 0;
 
     b2[0] = -r2[0];
     b2[1] = -r2[1];
-    b2[2] = 0;
 
     norm3(b1);
     norm3(b2);
 
     double crick = acos(dot3(b1, b2));
-    double offset = rho - crick;
 
-    double zero[3] = { 0.0 };
+    // Check the rotation direction
+    cross3(b1,b2,n);
+    norm3(n);
+    double orient = dot3(n,u);
+    if (orient > 0)
+         crick *= -1;
+
+    double offset = rho - crick;
 
     // rotate the peptide plane about u
     // a magnitude offset...
+    double zero[3] = { 0.0 };
     next_plane(u, zero, offset);
 }
 
@@ -1577,6 +1592,17 @@ void BackboneCoiledCoil::print_coordinates() {
             fprintf(screen, "%d\t%10.4f\t%10.4f\t%10.4f\n", i, x[i][j][0], x[i][j][1], x[i][j][2]);
         }
     }
+}
+
+/** 
+ * Prints the helix coordinates to screen
+ */
+void BackboneCoiledCoil::print_axis() {
+
+     for (int i = 0; i < nhelix; i++)
+          for (int j = 0; j < nres[i]; j++)
+               fprintf(screen, "%d\t%d\t%10.4f\t%10.4f\t%10.4f\n", i, j,
+                    axis_x[i][j][0], axis_x[i][j][1], axis_x[i][j][2]);
 }
 
 /**
