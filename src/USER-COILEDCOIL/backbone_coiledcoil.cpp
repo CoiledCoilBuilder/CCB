@@ -889,12 +889,14 @@ void BackboneCoiledCoil::align_plane(double *w) {
      */
 
     cross3(u, w_temp, n);
-    double offset = acos(dot3(u, w_temp));
+    double length = len3(n);
+    norm3(n);
+    //double offset = acos(dot3(u, w_temp));
+
+    double offset = atan2(length, dot3(u,w_temp));
 
     // return to the global frame
     moveto(ca, m2);
-
-    norm3(n);
 
     //rotate the peptide plane coordinates
     axis_angle_to_mat_trans4(offset, n, zero, m1);

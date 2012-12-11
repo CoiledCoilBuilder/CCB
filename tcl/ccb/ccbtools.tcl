@@ -103,7 +103,8 @@ proc ::ccbtools::updatemol { args } {
     variable params
     variable sys
 
-    if {$params(pitch) == 0.0} {set params(pitch) 0.0001}
+    ## Make sure the pitch is never exactly zero
+    if {$params(pitch) == 0.0} {set params(pitch) 0.000001}
 
     # Set Options
     set opts [list ccb -vmd\
@@ -180,6 +181,8 @@ proc ::ccbtools::resetparams {} {
 
 }
 
+## Just changes the frist value,
+## useful for sym commands like pitch radius
 proc ::ccbtools::cmdwrap {args} {
 
     variable params
@@ -198,6 +201,26 @@ proc ::ccbtools::cmdwrap {args} {
     }
 }
 
+## Changes all the asymmetric values symmetrically
+proc ::ccbtools::symcmdwrap {args} {
+
+    variable params
+
+    lassign $args param val
+
+    ## Make sure the val is an actual number
+    if {[scan $val %f val] != 1} {set val 0}
+
+    set params($param) [lrepeat $params(nhelix) $val]
+
+    if {$param == "nres"} {
+        resetmol
+    } else {
+        updatemol
+    }
+}
+
+## Individual manipulation of asymmetric values
 proc ::ccbtools::asymcmdwrap {args} {
 
     ## Update the asymmetric parameters
@@ -218,6 +241,7 @@ proc ::ccbtools::asymcmdwrap {args} {
     }
 }
 
+## Turn on asymmetry and setup the lists
 ## Make sure that the list always has the correct number of elements
 proc ::ccbtools::setasym {args} {
 
@@ -247,12 +271,14 @@ proc ::ccbtools::setasym {args} {
         #update the windows if necessary
         asymwid_update
 
-        ## If we're not asymmetric, should only have single values
     } else {
 
-        ## Kill the lists, set to values of first helix
+        ## If we're not asymmetric, only need the first value, but 
+	## all fields should match for consistency
+
+        ## Set to values of first helix
         foreach x {nres rotation rpt zoff} {
-            set params($x) [lindex $params($x) 0]
+            set params($x) [lrepeat $params(nhelix) [lindex $params($x) 0]]
         }
 
         ## Kill the asymmetric windows
@@ -444,54 +470,54 @@ proc ::ccbtools::gui {args} {
     button $wid.scales.asymC -text Asymmetric -command [namespace code {asymwid "rpt"}]
     button $wid.scales.asymH -text Asymmetric -command [namespace code {asymwid "rotation"}]
 
-    ## Spinboxs for main window
-    spinbox $wid.scales.box_nhelix -width 10 -textvariable ccbtools::params(nhelix) -from 1 -to 20 -increment 1\
+    ## Spinboxes for main window
+    spinbox $wid.scales.box_nhelix -width 10 -textvariable ccbtools::params(nhelix) -from 1 -to 12 -increment 1\
         -command [namespace code resetmol]
 
-    spinbox $wid.scales.box_nres -width 10 -from 1 -to 200 -increment 1\
-        -command [namespace code {cmdwrap "nres" %s}]
+    spinbox $wid.scales.box_nres -width 10 -from 1 -to 300 -increment 1\
+        -command [namespace code {symcmdwrap "nres" %s}]
 
-    spinbox $wid.scales.box_pitch -width 10 -from -1000.00 -to 1000.00 -increment 10.00 -format %10.2f\
+    spinbox $wid.scales.box_pitch -width 10 -from -2000.00 -to 2000.00 -increment 10.00 -format %10.2f\
         -command [namespace code {cmdwrap "pitch" %s}]
 
     spinbox $wid.scales.box_radius -width 10 -from 0.01 -to 40.00 -increment 0.10 -format %10.2f\
         -command [namespace code {cmdwrap "radius" %s}]
 
     spinbox $wid.scales.box_rpt -width 10 -from 3.00 -to 5.00 -increment 0.01 -format %10.2f\
-        -command [namespace code {cmdwrap "rpt" %s}]
+        -command [namespace code {symcmdwrap "rpt" %s}]
 
     spinbox $wid.scales.box_rotation -width 10 -from -180.00 -to 180.00 -increment 1.0 -format %10.2f\
-        -command [namespace code {cmdwrap "rotation" %s}]
+        -command [namespace code {symcmdwrap "rotation" %s}]
 
-    spinbox $wid.scales.box_zoff -width 10 -from -10.00 -to 10.00 -increment 1.0 -format %10.2f\
-        -command [namespace code {cmdwrap "zoff" %s}]
+    spinbox $wid.scales.box_zoff -width 10 -from -20.00 -to 20.00 -increment 1.0 -format %10.2f\
+        -command [namespace code {symcmdwrap "zoff" %s}]
 
     ## Scales for main window
-    scale $wid.scales.scl_nhelix -label "Number of helices:" -orient h -digit 1 -from 1 -to 20\
+    scale $wid.scales.scl_nhelix -label "Number of helices:" -orient h -digit 1 -from 1 -to 12\
         -tickinterval 0 -length 300 -command [namespace code resetmol]  -variable ccbtools::params(nhelix)
 
-    scale $wid.scales.scl_nres -label "Number of residues:" -orient h -digit 1 -from 1 -to 200\
-        -tickinterval 0 -length 300 -command [namespace code {cmdwrap "nres"}]
+    scale $wid.scales.scl_nres -label "Number of residues:" -orient h -digit 1 -from 1 -to 300\
+        -tickinterval 0 -length 300 -command [namespace code {symcmdwrap "nres"}]
 
-    scale $wid.scales.scl_pitch -label "Pitch :" -orient h -resolution 0 -digit 5 -from -1000 -to 1000\
+    scale $wid.scales.scl_pitch -label "Pitch :" -orient h -resolution 0 -digit 5 -from -2000 -to 2000\
         -tickinterval 0 -length 300 -command [namespace code {cmdwrap "pitch"}]
 
     scale $wid.scales.scl_radius -label "Radius :" -orient h -resolution 0 -digit 5 -from 0.01 -to 40.00\
         -tickinterval 0 -length 300 -command [namespace code {cmdwrap "radius"}]
 
     scale $wid.scales.scl_rpt -label "Residue Per Turn :" -orient h -resolution 0 -digit 5 -from 3 -to 5 \
-        -tickinterval 0 -length 300 -command [namespace code {cmdwrap "rpt"}]
+        -tickinterval 0 -length 300 -command [namespace code {symcmdwrap "rpt"}]
 
     scale $wid.scales.scl_rotation -label "Helical Rotation :" -orient h -resolution 0 -digit 5 -from -180.00 -to 180.00\
-        -tickinterval 0 -length 300 -command [namespace code {cmdwrap "rotation"}]
+        -tickinterval 0 -length 300 -command [namespace code {symcmdwrap "rotation"}]
 
-    scale $wid.scales.scl_zoff -label "Z-Offset:" -orient h -resolution 0 -digit 5 -from -10.00 -to 10.00\
-        -tickinterval 0 -length 300 -command [namespace code {cmdwrap "zoff"}]
+    scale $wid.scales.scl_zoff -label "Z-Offset:" -orient h -resolution 0 -digit 5 -from -20.00 -to 20.00\
+        -tickinterval 0 -length 300 -command [namespace code {symcmdwrap "zoff"}]
 
     ## Set initial params
     foreach x {nhelix nres pitch radius rpt rotation zoff} {
-        $wid.scales.box_$x set $params($x)
-        $wid.scales.scl_$x set $params($x)
+        $wid.scales.box_$x set [lindex $params($x) 0]
+        $wid.scales.scl_$x set [lindex $params($x) 0]
     }
 
     entry $wid.ccbcommand -textvariable ccbtools::sys(opts) -width 60
