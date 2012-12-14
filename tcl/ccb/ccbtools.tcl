@@ -30,15 +30,15 @@ namespace eval ::ccbtools:: {
     set params(asymmetric) 0
 
     ## Gui parameters
-    set gui(nres_box) {1 200 1}
+    set gui(nres_box) {1 300 1}
     set gui(rpt_box) {3.00 5.00 0.01}
     set gui(rotation_box) {-180.00 180.00 1.0}
-    set gui(zoff_box) {-10.00 10.00 0.5}
+    set gui(zoff_box) {-20.00 20.00 0.5}
 
-    set gui(nres_scl) {1 200 1}
+    set gui(nres_scl) {1 300 1}
     set gui(rpt_scl) {3.00 5.00 5}
     set gui(rotation_scl) {-180.00 180.00 5}
-    set gui(zoff_scl) {-10.00 10.00 5}
+    set gui(zoff_scl) {-20.00 20.00 5}
 }
 
 proc ccbgui { args } {

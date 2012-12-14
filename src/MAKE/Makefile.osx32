@@ -1,4 +1,4 @@
-# osx32  = minimal compiler flags, c++, 32-bit
+# osx32  = minimal compiler flags, c++, 32-bit, VMD
 # if you're compiling for a vmd importable .so, you need this version (32bit) 
 #
 SHELL = /bin/sh

@@ -690,10 +690,10 @@ void BackboneCoiledCoil::helix_axis() {
             for (j = start, k = 0; j < end; j++, k++)
                 radius[j] = r0_params[0] + (k * delta);
 
-        // Fill out the rest of the coil with the last radius value
-        // so we don't make disjointed-structures
-        while (j < nres[i] + 1)
-            radius[j++] = r0_params[1];
+            // Fill out the rest of the coil with the last radius value
+            // so we don't make disjointed-structures
+            while (j < nres[i] + 1)
+                radius[j++] = r0_params[1];
         }
 
         // Output radius values if debugging
@@ -708,9 +708,9 @@ void BackboneCoiledCoil::helix_axis() {
 
         // generate the coordinates
         for (j = 0; j <= nres[i] + 1; j++) {
-            axis_x[i][j][0] = radius[j] * cos(j * omega);
-            axis_x[i][j][1] = radius[j] * sin(j * omega);
-            axis_x[i][j][2] = j * rpr + z0;
+            axis_x[i][j][0] = radius[j] * cos(j * omega + (zoff[i] * omega / rpr));
+            axis_x[i][j][1] = radius[j] * sin(j * omega + (zoff[i] * omega / rpr));
+            axis_x[i][j][2] = j * rpr + z0 + zoff[i];
             axis_x[i][j][3] = 1.0;
         }
     }
@@ -945,7 +945,7 @@ void BackboneCoiledCoil::crick(double *u, double rho, double *r1, double *r2) {
     norm3(n);
     double orient = dot3(n,u);
     if (orient > 0)
-         crick *= -1;
+        crick *= -1;
 
     double offset = rho - crick;
 
@@ -1167,7 +1167,7 @@ void BackboneCoiledCoil::symmetry() {
             v[2] = 0.0;
             theta += square;
         } else {
-            v[2] = zoff[0];
+            //v[2] = zoff[0];
 
             if (anti_flag)
                 copy4(m4, m1);
@@ -1250,10 +1250,10 @@ void BackboneCoiledCoil::symmetry_axis() {
         double theta = (2 * PI * i / nhelix);
 
         if ((i % 2) == 0) {
-            v[2] = zoff[i];
+            //v[2] = zoff[i];
             theta += square;
         } else {
-            v[2] = zoff[i];
+            //v[2] = zoff[i];
 
             if (anti_flag)
                 copy4(m4, m1);
@@ -1596,15 +1596,15 @@ void BackboneCoiledCoil::print_coordinates() {
     }
 }
 
-/** 
+/**
  * Prints the helix coordinates to screen
  */
 void BackboneCoiledCoil::print_axis() {
 
-     for (int i = 0; i < nhelix; i++)
-          for (int j = 0; j < nres[i]; j++)
-               fprintf(screen, "%d\t%d\t%10.4f\t%10.4f\t%10.4f\n", i, j,
-                    axis_x[i][j][0], axis_x[i][j][1], axis_x[i][j][2]);
+    for (int i = 0; i < nhelix; i++)
+        for (int j = 0; j < nres[i]; j++)
+            fprintf(screen, "%d\t%d\t%10.4f\t%10.4f\t%10.4f\n", i, j,
+                axis_x[i][j][0], axis_x[i][j][1], axis_x[i][j][2]);
 }
 
 /**
