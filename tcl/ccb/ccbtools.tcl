@@ -11,11 +11,7 @@ namespace eval ::ccbtools:: {
     variable sys
     variable params
 
-    if {[info exists env(TMPDIR)]} {
-        set sys(TMPDIR) $env(TMPDIR)
-    } else {
-        set sys(TMPDIR) /tmp
-    }
+    set sys(TMPDIR) /tmp
 
     set params(nhelix) 2
     set params(nres) 28
