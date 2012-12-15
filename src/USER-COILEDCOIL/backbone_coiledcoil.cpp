@@ -295,7 +295,7 @@ void BackboneCoiledCoil::set_params(int argc, const char **argv, int n) {
             }
 
             // Make sure Ri == Rf if no modulation is specified
-            if (r0_params[3] == r0_params[4]) r0_params[1] = r0_params[0];
+            if (r0_params[2] == r0_params[3]) r0_params[1] = r0_params[0];
 
             continue;
 
@@ -708,8 +708,8 @@ void BackboneCoiledCoil::helix_axis() {
 
         // generate the coordinates
         for (j = 0; j <= nres[i] + 1; j++) {
-            axis_x[i][j][0] = radius[j] * cos(j * omega + (zoff[i] * omega / rpr));
-            axis_x[i][j][1] = radius[j] * sin(j * omega + (zoff[i] * omega / rpr));
+            axis_x[i][j][0] = radius[j] * cos(j * omega + ((z0 + zoff[i]) * omega / rpr));
+            axis_x[i][j][1] = radius[j] * sin(j * omega + ((z0 + zoff[i]) * omega / rpr));
             axis_x[i][j][2] = j * rpr + z0 + zoff[i];
             axis_x[i][j][3] = 1.0;
         }
