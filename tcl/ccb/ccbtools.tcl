@@ -562,3 +562,6 @@ proc ::ccbtools::gui {args} {
     catch {trace vdelete ::ccbtools::params(nhelix) w ::ccbtools::setasym}
     trace var ::ccbtools::params(nhelix) w ::ccbtools::setasym
 }
+
+## Add the plugin to the extensions menu
+vmd_install_extension ccb ::ccbgui "Modeling/CCB"
