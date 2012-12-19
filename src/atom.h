@@ -14,18 +14,18 @@
  * the pdb for convenience.
  */
 
-#ifndef SCADS_ATOM_H
-#define SCADS_ATOM_H
+#ifndef CCB_ATOM_H
+#define CCB_ATOM_H
 
 #include "pointers.h"
 
-namespace SCADS_NS {
+namespace CCB_NS {
 
     class Atom: protected Pointers {
     public:
 
         // Constructor and destructor
-        Atom(class SCADS *, int id);
+        Atom(class CCB *, int id);
         ~Atom();
 
         class Site *site; /**< The site this atom belongs to */

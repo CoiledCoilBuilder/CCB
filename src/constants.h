@@ -8,8 +8,8 @@
  * 
  */
 
-#ifndef SCADS_CONSTANTS_H
-#define SCADS_CONSTANTS_H
+#ifndef CCB_CONSTANTS_H
+#define CCB_CONSTANTS_H
 
 /**
  * Pi

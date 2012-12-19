@@ -1,5 +1,5 @@
 /**
- * @file   scadsio.cpp
+ * @file   ccbio.cpp
  * @author Chris <chris@mount-doom.chem.upenn.edu>
  * @date   Thu Jun 23 17:19:33 2011
  * 
@@ -10,7 +10,7 @@
 
 #include "stdio.h"
 #include "string.h"
-#include "scadsio.h"
+#include "ccbio.h"
 #include "output.h"
 #include "style_output.h"
 #include "memory.h"
@@ -18,7 +18,7 @@
 #include "universe.h"
 #include "domain.h"
 
-using namespace SCADS_NS;
+using namespace CCB_NS;
 
 /**
  * @def DELTA_INOUT
@@ -31,8 +31,8 @@ using namespace SCADS_NS;
 
 #define DELTA_INOUT 4
 
-Scadsio::Scadsio(SCADS *scads) :
-		Pointers(scads) {
+Ccbio::Ccbio(CCB *ccb) :
+		Pointers(ccb) {
 
 	// Initialize some variables
 	noutput = maxoutput = 0;
@@ -40,12 +40,12 @@ Scadsio::Scadsio(SCADS *scads) :
 }
 
 /** 
- *  Scadsio Deconstructor
+ *  Ccbio Deconstructor
  *
  *  Cleans up and remaining inputs or outputs.
  */
 
-Scadsio::~Scadsio() {
+Ccbio::~Ccbio() {
 
 	// Delete Outputs
 	while (noutput)
@@ -58,7 +58,7 @@ Scadsio::~Scadsio() {
   // +-----------------------------------------+ 
 
 
-void Scadsio::add_output(int narg, const char **arg) {
+void Ccbio::add_output(int narg, const char **arg) {
 
 	if (narg < 3)
 		error->one(FLERR,"Illegal output command");
@@ -75,7 +75,7 @@ void Scadsio::add_output(int narg, const char **arg) {
 	// realloc more space if we don't have enough to create a new output
 	if (noutput == maxoutput) {
 		maxoutput += DELTA_INOUT;
-		output = (Output **) memory->srealloc(output, maxoutput * sizeof(Output *), "scadsio:output");
+		output = (Output **) memory->srealloc(output, maxoutput * sizeof(Output *), "ccbio:output");
 	}
 
 	//create the output
@@ -85,7 +85,7 @@ void Scadsio::add_output(int narg, const char **arg) {
 
 #define OUTPUT_CLASS
 #define OutputStyle(key,Class)\
-    else if (strcmp(arg[1],#key) == 0) output[noutput] = new Class(scads,narg,arg);
+    else if (strcmp(arg[1],#key) == 0) output[noutput] = new Class(ccb,narg,arg);
 #include "style_output.h"
 #undef OUTPUT_CLASS
 
@@ -97,7 +97,7 @@ void Scadsio::add_output(int narg, const char **arg) {
 
 }
 
-void Scadsio::delete_output(const char *id) {
+void Ccbio::delete_output(const char *id) {
 
 	// Find the input index
 	int ioutput = find_output(id);
@@ -116,7 +116,7 @@ void Scadsio::delete_output(const char *id) {
 
 }
 
-int Scadsio::find_output(const char *id) {
+int Ccbio::find_output(const char *id) {
 	int ioutput;
 	for (ioutput = 0; ioutput < noutput; ioutput++)
 		if (strcmp(id, output[ioutput]->id) == 0)
@@ -126,7 +126,7 @@ int Scadsio::find_output(const char *id) {
 	return ioutput;
 }
 
-void Scadsio::init_output(const char *id) {
+void Ccbio::init_output(const char *id) {
 	int ioutput = find_output(id);
 	if (ioutput < 0)
 		error->one(FLERR,"Could not find output type ID to initialize");
@@ -134,7 +134,7 @@ void Scadsio::init_output(const char *id) {
 	output[ioutput]->init();
 }
 
-void Scadsio::write_output(const char *id) {
+void Ccbio::write_output(const char *id) {
 	int ioutput = find_output(id);
 	if (ioutput < 0)
 		error->one(FLERR,"Could not find output type ID to write");
@@ -142,13 +142,13 @@ void Scadsio::write_output(const char *id) {
 	output[ioutput]->write();
 }
 
-void Scadsio::active_outputs() {
+void Ccbio::active_outputs() {
 	for (int i = 0; i < noutput; i++)
 		fprintf(screen, "%s\n", output[i]->id);
 }
 
 
-void Scadsio::memory_usage() {
+void Ccbio::memory_usage() {
 
 	bigint bytes = 0;
 

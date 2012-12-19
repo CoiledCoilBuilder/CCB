@@ -250,4 +250,4 @@ $(ROOT)-docs.pdf:
 
 #Emacs on-the-fly syntax checker
 check-syntax:
-	$(CC) -o /dev/null $(SCADS_INC) $(CCFLAGS) -S ${CHK_SOURCES}
+	$(CC) -o /dev/null $(CCB_INC) $(CCFLAGS) -S ${CHK_SOURCES}

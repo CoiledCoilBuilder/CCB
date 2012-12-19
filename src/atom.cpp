@@ -16,10 +16,10 @@
 #include "group.h"
 #include "atom.h"
 
-using namespace SCADS_NS;
+using namespace CCB_NS;
 
-Atom::Atom(SCADS *scads, int id) :
-    Pointers(scads) {
+Atom::Atom(CCB *ccb, int id) :
+    Pointers(ccb) {
 
     /// Initialize variables
     this->id = id;

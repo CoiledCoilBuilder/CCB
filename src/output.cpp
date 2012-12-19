@@ -11,26 +11,26 @@
 #include <string.h>
 #include <stdio.h>
 #include <ctype.h>
-#include "scadsio.h"
+#include "ccbio.h"
 #include "memory.h"
 #include "error.h"
 #include "output.h"
 #include "universe.h"
 
-using namespace SCADS_NS;
+using namespace CCB_NS;
 
 /** 
  * The Outtput Constructor, sets up the
  *
- * @param scads The scads class pointer
+ * @param ccb The ccb class pointer
  * @param narg number of arguments passed to constructor
  * @param arg the arguments passed to the constructor
  *
  * @return no return value
  */
 
-Output::Output(SCADS *scads, int /*narg*/, const char **arg) :
-		Pointers(scads) {
+Output::Output(CCB *ccb, int /*narg*/, const char **arg) :
+		Pointers(ccb) {
 
 	//Set the name of the input style
 	int n = strlen(arg[1]) + 1;

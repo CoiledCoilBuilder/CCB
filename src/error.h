@@ -21,12 +21,12 @@
  See the README file in the top-level LAMMPS directory.
  ------------------------------------------------------------------------- */
 
-#ifndef SCADS_ERROR_H
-#define SCADS_ERROR_H
+#ifndef CCB_ERROR_H
+#define CCB_ERROR_H
 
 #include "pointers.h"
 
-namespace SCADS_NS {
+namespace CCB_NS {
 
 	/**
 	 * Error Class
@@ -35,7 +35,7 @@ namespace SCADS_NS {
 
 	class Error: protected Pointers {
 		public:
-			Error(class SCADS *);
+			Error(class CCB *);
 
 			int verbosity_level; /**< Verbosity Level, higher = more verbose */
 

@@ -7,12 +7,12 @@
  * 
  */
 
-#ifndef SCADS_BACKBONE_H
-#define SCADS_BACKBONE_H
+#ifndef CCB_BACKBONE_H
+#define CCB_BACKBONE_H
 
 #include "pointers.h"
 
-namespace SCADS_NS {
+namespace CCB_NS {
   class Backbone: protected Pointers {
 
     public:
@@ -21,7 +21,7 @@ namespace SCADS_NS {
             char *style; /**< the name of the style */
 
             //Constructor and Destructor
-            Backbone(class SCADS *, int, const char **); /**< Backbone constructor */
+            Backbone(class CCB *, int, const char **); /**< Backbone constructor */
             virtual ~Backbone(); /**< Backbone destructor, must be virtual! */
 
             void init();

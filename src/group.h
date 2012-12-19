@@ -11,18 +11,18 @@
  *
  */
 
-#ifndef SCADS_GROUP_H
-#define SCADS_GROUP_H
+#ifndef CCB_GROUP_H
+#define CCB_GROUP_H
 
 #include "pointers.h"
 
-namespace SCADS_NS {
+namespace CCB_NS {
     class Group: protected Pointers {
 
     public:
 
         // Constructor and Destructor
-        Group(class SCADS *, int i); /**< Site constructor */
+        Group(class CCB *, int i); /**< Site constructor */
         ~Group(); /**< Site deconstructor */
         Group(const Group &); /**< Copy Constructor */
         Group& operator=(Group const &); /**< assignment operator */

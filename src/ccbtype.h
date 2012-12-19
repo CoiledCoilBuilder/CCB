@@ -1,5 +1,5 @@
 /**
- * @file   scadstype.h
+ * @file   ccbtype.h
  * @author Chris <chris@mount-doom.chem.upenn.edu>
  * @date   Tue Jun 21 15:00:46 2011
  * 
@@ -39,8 +39,8 @@
 //       but only "long" ints, then you will need to change
 //       MPI_LONG_LONG to MPI_LONG, and atoll to atol
 
-#ifndef SCADS_SCADSTYPE_H
-#define SCADS_SCADSTYPE_H
+#ifndef CCB_CCBTYPE_H
+#define CCB_CCBTYPE_H
 
 #define __STDC_LIMIT_MACROS
 #define __STDC_FORMAT_MACROS
@@ -49,7 +49,7 @@
 #include "stdint.h"
 #include "inttypes.h"
 
-namespace SCADS_NS {
+namespace CCB_NS {
 
 // reserve 2 hi bits in molecular system neigh list for special bonds flag
 // max local + ghost atoms per processor = 2^30 - 1

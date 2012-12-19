@@ -7,17 +7,17 @@
  * 
  */
 
-#ifndef SCADS_BACKBONEHANDLER_H
-#define SCADS_BACKBONEHANDLER_H
+#ifndef CCB_BACKBONEHANDLER_H
+#define CCB_BACKBONEHANDLER_H
 
 #include "pointers.h"
 
-namespace SCADS_NS {
+namespace CCB_NS {
 	class BackboneHandler: protected Pointers {
      public:
 
           //Constructor and Destructor
-          BackboneHandler(class SCADS *); /**< BackboneHandler constructor */
+          BackboneHandler(class CCB *); /**< BackboneHandler constructor */
           ~BackboneHandler(); /**< BackboneHandler deconstructor */
 
           // Memory Usage

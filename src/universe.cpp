@@ -12,17 +12,17 @@
 #include "universe.h"
 #include "version.h"
 
-using namespace SCADS_NS;
+using namespace CCB_NS;
 
 /** 
  * The universe constructor.
  *
- * @param scads The scads class pointer 
+ * @param ccb The ccb class pointer 
  */
 
-Universe::Universe(SCADS *scads) : Pointers(scads)
+Universe::Universe(CCB *ccb) : Pointers(ccb)
 {
-     version = (char *) SCADS_VERSION; 
+     version = (char *) CCB_VERSION; 
 
 	//Figure out how many threads running with
  	nthreads = 1;

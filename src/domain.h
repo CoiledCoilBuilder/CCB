@@ -13,18 +13,18 @@
  *
  */
 
-#ifndef SCADS_DOMAIN_H
-#define SCADS_DOMAIN_H
+#ifndef CCB_DOMAIN_H
+#define CCB_DOMAIN_H
 
 #include "pointers.h"
 
-namespace SCADS_NS {
+namespace CCB_NS {
     class Domain: protected Pointers {
 
     public:
 
         // Constructor and Destructor
-        Domain(class SCADS *); /**< Domain constructor */
+        Domain(class CCB *); /**< Domain constructor */
         ~Domain(); /**< Domain deconstructor */
 
         class Site **site; /**< list of sites */

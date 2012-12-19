@@ -16,8 +16,8 @@ BackboneStyle(coiledcoil,BackboneCoiledCoil)
 
 #else
 
-#ifndef SCADS_BACKBONE_COILEDCOIL_H
-#define SCADS_BACKBONE_COILEDCOIL_H
+#ifndef CCB_BACKBONE_COILEDCOIL_H
+#define CCB_BACKBONE_COILEDCOIL_H
 
 #include "backbone.h"
 #include "site.h"
@@ -38,12 +38,12 @@ BackboneStyle(coiledcoil,BackboneCoiledCoil)
 
 #define MAX_RES 500
 
-    namespace SCADS_NS {
+    namespace CCB_NS {
 
     class BackboneCoiledCoil : public Backbone {
 
     public:
-        BackboneCoiledCoil(class SCADS *, int, const char **);
+        BackboneCoiledCoil(class CCB *, int, const char **);
         ~BackboneCoiledCoil();
 
         // Member Functions

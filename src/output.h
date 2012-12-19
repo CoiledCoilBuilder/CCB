@@ -11,12 +11,12 @@
  * subclasses can still use the pointer notation error->all!
  */
 
-#ifndef SCADS_OUTPUT_H
-#define SCADS_OUTPUT_H
+#ifndef CCB_OUTPUT_H
+#define CCB_OUTPUT_H
 
 #include "pointers.h"
 
-namespace SCADS_NS {
+namespace CCB_NS {
 
 class Output: protected Pointers {
 
@@ -27,7 +27,7 @@ public:
 	char *style; /**< the name of the style */
 
 	//Constructor and Destructor
-	Output(class SCADS *, int, const char **); /**< Output constructor */
+	Output(class CCB *, int, const char **); /**< Output constructor */
 	virtual ~Output(); /**< Output destructor, must be virtual! */
 
 	void init();

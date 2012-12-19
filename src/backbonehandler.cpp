@@ -17,7 +17,7 @@
 #include "style_backbone.h"
 #include "backbone.h"
 
-using namespace SCADS_NS;
+using namespace CCB_NS;
 
 /**
  * @def BACKBONE_DELTA
@@ -30,8 +30,8 @@ using namespace SCADS_NS;
 
 #define BACKBONE_DELTA 2
 
-BackboneHandler::BackboneHandler(SCADS *scads) :
-		Pointers(scads) {
+BackboneHandler::BackboneHandler(CCB *ccb) :
+		Pointers(ccb) {
 
      nbackbone = maxbackbone = 0;
      backbone = NULL;
@@ -92,7 +92,7 @@ void BackboneHandler::add_backbone(int narg, const char **arg) {
 
 #define BACKBONE_CLASS
 #define BackboneStyle(key,Class)                                        \
-     else if (strcmp(arg[2],#key) == 0) backbone[nbackbone] = new Class(scads,narg,arg);
+     else if (strcmp(arg[2],#key) == 0) backbone[nbackbone] = new Class(ccb,narg,arg);
 #include "style_backbone.h"
 #undef BACKBONE_CLASS
 

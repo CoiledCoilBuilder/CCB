@@ -17,11 +17,11 @@
 #include <stdlib.h>
 #include <tcl.h>
 
-#include "scads.h"
+#include "ccb.h"
 #include "error.h"
 #include "backbonehandler.h"
 #include "backbone.h"
-#include "scadsio.h"
+#include "ccbio.h"
 #include "output.h"
 #include "domain.h"
 #include "site.h"
@@ -42,12 +42,12 @@
 
 #define MAX_ARGS 64
 
-using namespace SCADS_NS;
+using namespace CCB_NS;
 
 /**
  * @brief parse commands
  *
- * @param scads scads pointer
+ * @param ccb ccb pointer
  * @param interp tcl interp pointer
  * @param objc number of tcl objects passed
  * @param objv object array
@@ -62,7 +62,7 @@ int tcl_ccb(ClientData /**/, Tcl_Interp *interp,
 {
 
     //Fire up a ccb  instance
-    SCADS *scads = new SCADS(objc, NULL);
+    CCB *ccb = new CCB(objc, NULL);
 
     const char **newarg = new const char*[5];
 
@@ -71,8 +71,8 @@ int tcl_ccb(ClientData /**/, Tcl_Interp *interp,
     newarg[1] = (char *) "add";
     newarg[2] = (char *) "coiledcoil";
     newarg[3] = (char *) "bbcc1";
-    scads->backbone->add_backbone(4,newarg);
-    scads->backbone->init_backbone(newarg[3]);
+    ccb->backbone->add_backbone(4,newarg);
+    ccb->backbone->init_backbone(newarg[3]);
 
     // Parse the commandline options
     int argc = 0;
@@ -122,7 +122,7 @@ int tcl_ccb(ClientData /**/, Tcl_Interp *interp,
 
                 if(Tcl_GetIntFromObj(interp,objv[++i], &v) != TCL_OK)
                     return TCL_ERROR;
-                scads->error->verbosity_level = v;
+                ccb->error->verbosity_level = v;
 
             // VMD
             } else if (strcmp("-vmd", argv[argc]) == 0) {
@@ -139,10 +139,10 @@ int tcl_ccb(ClientData /**/, Tcl_Interp *interp,
     }
 
     //Pass parsed commands to the style
-    scads->backbone->update_backbone(newarg[3],argc,argv,0);
+    ccb->backbone->update_backbone(newarg[3],argc,argv,0);
 
     // Generate the coordinates
-    scads->backbone->generate_backbone(newarg[3]);
+    ccb->backbone->generate_backbone(newarg[3]);
 
     /// Write out the coordinates to a pdb file
     if (pdb) {
@@ -151,9 +151,9 @@ int tcl_ccb(ClientData /**/, Tcl_Interp *interp,
         newarg[2] = (char *) "pdb1";
         newarg[3] = outfile;
         newarg[4] = (char *) "all";
-        scads->scadsio->add_output(5, newarg);
-        scads->scadsio->init_output(newarg[2]);
-        scads->scadsio->write_output(newarg[2]);
+        ccb->ccbio->add_output(5, newarg);
+        ccb->ccbio->init_output(newarg[2]);
+        ccb->ccbio->write_output(newarg[2]);
     }
 
     /// Create TCL object and return coordinates if requested
@@ -162,13 +162,13 @@ int tcl_ccb(ClientData /**/, Tcl_Interp *interp,
          Tcl_Obj *resultPtr;
          resultPtr = Tcl_NewListObj(0,NULL);
 
-         for (int i = 0; i < scads->domain->nsite; i++)
-              for (int j = 0; j < scads->domain->site[i]->fixed_atoms->natom; j++) {
+         for (int i = 0; i < ccb->domain->nsite; i++)
+              for (int j = 0; j < ccb->domain->site[i]->fixed_atoms->natom; j++) {
 
                    Tcl_Obj *xyz;
 
                    double coords[3] = { 0.0 };
-                   scads->domain->site[i]->fixed_atoms->atom[j]->get_xyz(coords);
+                   ccb->domain->site[i]->fixed_atoms->atom[j]->get_xyz(coords);
 
                    xyz = Tcl_NewListObj(0,NULL);
 
@@ -182,7 +182,7 @@ int tcl_ccb(ClientData /**/, Tcl_Interp *interp,
     }
 
     // Delete ccb instance
-    delete scads;
+    delete ccb;
 
     return TCL_OK;
 }

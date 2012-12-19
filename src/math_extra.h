@@ -25,8 +25,8 @@
    Contributing author: Mike Brown (SNL)
    ------------------------------------------------------------------------- */
 
-#ifndef SCADS_MATH_EXTRA_H
-#define SCADS_MATH_EXTRA_H
+#ifndef CCB_MATH_EXTRA_H
+#define CCB_MATH_EXTRA_H
 
 #include "math.h"
 #include "stdio.h"

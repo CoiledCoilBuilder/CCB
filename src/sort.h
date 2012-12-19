@@ -14,17 +14,17 @@
  * We use templates to take advantage of the
  * differing types that can be sorted.
  *
- * Sort<int> sort(scads);
+ * Sort<int> sort(ccb);
  * sort.quicksort(sortme, 0, 1000);
  *
- * Sort<Group> sort(scads);
+ * Sort<Group> sort(ccb);
  * sort.quicksort(sortme, 0, 1000, compare_group_prob)
  *
  * \todo {parallelize the quicksort routine}
  */
 
-#ifndef SCADS_SORT_H
-#define SCADS_SORT_H
+#ifndef CCB_SORT_H
+#define CCB_SORT_H
 
 #include "pointers.h"
 #include "group.h"
@@ -33,13 +33,13 @@
 #include "site.h"
 #include "group.h"
 
-namespace SCADS_NS {
+namespace CCB_NS {
 
     template <class TYPE>
         class Sort : protected Pointers {
 
     public:
-    Sort(class SCADS *) : Pointers(scads) {/* ... */}
+    Sort(class CCB *) : Pointers(ccb) {/* ... */}
         ~Sort() {}
 
         // customized comparables MUST BE STATIC!!!

@@ -89,18 +89,22 @@ proc get_params_trajectory {psf dcd seltext {stride 1}} {
   set N [molinfo top get numframes]
 
   ## Loop over frames getting the params for each one
-  for {set i 0} {$i < N} {incr i $stride} {
+  for {set i 0} {$i < $N} {incr i $stride} {
 
     ## Update the frame
     molinfo top set frame $i
 
-    crick -molid $molid -params {pitch radius rotation rpt zoff} -text $seltext -asymmetric
+    crick -molid $molid -params {pitch radius rotation rpt zoff} -text $seltext
 
     $::crick::sys(sel_ccb_all) writepdb fits/$i\_$prefix\_fit.pdb
 
     set formatline {}
-    set nfloat [expr {$crick::sys(nhelix) * 3}]
-    
+    if {$::crick::params(asymmetric)} {
+      set nfloat [expr {$crick::sys(nhelix) * 3}]
+    } else {
+      set nfloat 3
+    }
+
     ## Variable number of rotations, rpts, zoffs
     set formatline [lrepeat $nfloat "%.4f"]
 
@@ -121,7 +125,7 @@ proc get_params_trajectory {psf dcd seltext {stride 1}} {
                  parray ::crick::params
 
     ## Cleanup after each frame
-    ## ::crick::veryclean
+    ::crick::veryclean
   }
 
   ##clean up
@@ -131,7 +135,11 @@ proc get_params_trajectory {psf dcd seltext {stride 1}} {
 }
 
 ## For cli runs
-if {0} {
+if {1} {
+       
         lassign $argv psf dcd
-        get_params_trajectory $psf $dcd
+
+        set seltext "protein and resid 8 to 28"
+        
+        get_params_trajectory $psf $dcd $seltext 1 
 }

@@ -25,13 +25,13 @@
  */
 #define ATOM_DELTA 30
 
-using namespace SCADS_NS;
+using namespace CCB_NS;
 
 /**
  * Group Constructor
  */
-Group::Group(SCADS *scads, int i) :
-    Pointers(scads) {
+Group::Group(CCB *ccb, int i) :
+    Pointers(ccb) {
 
     id = i;
     strcpy(name, "");
@@ -136,7 +136,7 @@ int Group::add_atom() {
         atom = (Atom **) memory->srealloc(atom, maxatom * sizeof(Atom *), "group:atom");
     }
 
-    atom[natom++] = new Atom(scads, natom_iter++);
+    atom[natom++] = new Atom(ccb, natom_iter++);
 
     return (natom - 1);
 }
