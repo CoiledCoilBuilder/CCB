@@ -1,6 +1,10 @@
 // -*- c++ -*-
 
 #include "ccb_compass.h"
+#include "ccb.h"
+#include "backbonehandler.h"
+
+using namespace CCB_NS;
 
 int plugin_init(plugin_t *p)
 {
@@ -45,6 +49,26 @@ CCB_Compass::~CCB_Compass() {
 
 void CCB_Compass::init(int argc, char **argv)
 {
+
+     //Fire up a ccb instance
+     CCB *ccb = new CCB(0, NULL);
+
+     const char **newarg = new const char*[5];
+
+     /// Add the coiled-coil plugin
+     newarg[0] = (char *) "backbone";
+     newarg[1] = (char *) "add";
+     newarg[2] = (char *) "coiledcoil";
+     newarg[3] = (char *) "bbcc1";
+     ccb->backbone->add_backbone(4,newarg);
+     ccb->backbone->init_backbone(newarg[3]);
+
+     // Generate the coordinates
+     ccb->backbone->generate_backbone(newarg[3]);
+
+     //Delete ccb instance
+     delete ccb;
+
      init_done = 1;
      return;
 }

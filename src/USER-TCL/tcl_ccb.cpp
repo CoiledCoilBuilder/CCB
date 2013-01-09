@@ -61,18 +61,18 @@ int tcl_ccb(ClientData /**/, Tcl_Interp *interp,
     int objc, Tcl_Obj *const objv[])
 {
 
-    //Fire up a ccb  instance
-    CCB *ccb = new CCB(objc, NULL);
+     //Fire up a ccb  instance
+     CCB *ccb = new CCB(objc, NULL);
 
-    const char **newarg = new const char*[5];
+     const char **newarg = new const char*[5];
 
-    /// Add the coiled-coil plugin
-    newarg[0] = (char *) "backbone";
-    newarg[1] = (char *) "add";
-    newarg[2] = (char *) "coiledcoil";
-    newarg[3] = (char *) "bbcc1";
-    ccb->backbone->add_backbone(4,newarg);
-    ccb->backbone->init_backbone(newarg[3]);
+     /// Add the coiled-coil plugin
+     newarg[0] = (char *) "backbone";
+     newarg[1] = (char *) "add";
+     newarg[2] = (char *) "coiledcoil";
+     newarg[3] = (char *) "bbcc1";
+     ccb->backbone->add_backbone(4,newarg);
+     ccb->backbone->init_backbone(newarg[3]);
 
     // Parse the commandline options
     int argc = 0;
