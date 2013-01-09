@@ -1,13 +1,13 @@
-#ifndef SCADS_MEMORY_H
-#define SCADS_MEMORY_H
+#ifndef CCB_MEMORY_H
+#define CCB_MEMORY_H
 
 #include "pointers.h"
 
-namespace SCADS_NS {
+namespace CCB_NS {
 
 class Memory : protected Pointers {
  public:
-  Memory(class SCADS *);
+  Memory(class CCB *);
 
   void *smalloc(bigint n, const char *);
   void *srealloc(void *, bigint n, const char *);

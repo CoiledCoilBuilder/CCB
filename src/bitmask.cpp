@@ -31,9 +31,9 @@
 
 #define MAX_BITMASK 32
 
-using namespace SCADS_NS;
+using namespace CCB_NS;
 
-Bitmask::Bitmask(SCADS *scads) : Pointers(scads) {
+Bitmask::Bitmask(CCB *ccb) : Pointers(ccb) {
 
   names = new char*[MAX_BITMASK];
   mask = new int[MAX_BITMASK];

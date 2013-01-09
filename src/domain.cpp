@@ -17,7 +17,7 @@
 #include "memory.h"
 #include "error.h"
 #include "universe.h"
-#include "scadsio.h"
+#include "ccbio.h"
 #include "domain.h"
 #include "site.h"
 #include "sort.h"
@@ -31,10 +31,10 @@
  */
 #define SITE_DELTA 256
 
-using namespace SCADS_NS;
+using namespace CCB_NS;
 
-Domain::Domain(SCADS *scads) :
-    Pointers(scads) {
+Domain::Domain(CCB *ccb) :
+    Pointers(ccb) {
 
     // Initialize variables
     nsite = maxsite = 0;
@@ -78,7 +78,7 @@ int Domain::add_site() {
         site = (Site **) memory->srealloc(site, maxsite * sizeof(Site *), "domain:site");
     }
 
-    site[nsite] = new Site(scads, nsite_iter);
+    site[nsite] = new Site(ccb, nsite_iter);
 
     nsite++;
     nsite_iter++;
@@ -198,7 +198,7 @@ int Domain::get_chains(char**& chain_list) {
         site_list[i] = site[i];
 
     //Sort them
-    Sort<Site> sort(scads);
+    Sort<Site> sort(ccb);
     int nchain_list;
     sort.unique(site_list, 0, nsite, sort.compare_site_chain, nchain_list);
 
@@ -230,7 +230,7 @@ int Domain::get_resids(const char *chain, int*& resid_list) {
             site_list[n++] = site[i];
 
     //Sort them
-    Sort<Site> sort(scads);
+    Sort<Site> sort(ccb);
     int nresid_list = 0;
     sort.unique(site_list, 0, n, sort.compare_site_resid, nresid_list);
 

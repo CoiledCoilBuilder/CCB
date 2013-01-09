@@ -34,11 +34,11 @@
 
 #define SITE_DELTA 64
 
-using namespace SCADS_NS;
+using namespace CCB_NS;
 using namespace MathExtra;
 
-BackboneCoiledCoil::BackboneCoiledCoil(SCADS *scads, int narg, const char **arg) :
-    Backbone(scads, narg, arg) {
+BackboneCoiledCoil::BackboneCoiledCoil(CCB *ccb, int narg, const char **arg) :
+    Backbone(ccb, narg, arg) {
 
     // Check to see that we have a legit style and the format is correct.
     if (strcmp(style, "coiledcoil") != 0 || narg < 3)
@@ -1328,7 +1328,7 @@ void BackboneCoiledCoil::terminate_asymmetric() {
 }
 
 /**
- * Passes the coordinates to scads by creating
+ * Passes the coordinates to ccb by creating
  * or updating the domain on the fly and adding the atoms.
  */
 
@@ -1543,7 +1543,7 @@ void BackboneCoiledCoil::ppx_to_xyz(char *filename) {
         error->one(FLERR, "Can't open output file");
 
     fprintf(fp, "%d\n", 5);
-    fprintf(fp, "Output from SCADS\n");
+    fprintf(fp, "Output from CCB\n");
     fprintf(fp, "%5s %10.4f %10.4f %10.4f\n", "CA", pp_x[0][0], pp_x[0][1], pp_x[0][2]);
     fprintf(fp, "%5s %10.4f %10.4f %10.4f\n", "C", pp_x[1][0], pp_x[1][1], pp_x[1][2]);
     fprintf(fp, "%5s %10.4f %10.4f %10.4f\n", "O", pp_x[2][0], pp_x[2][1], pp_x[2][2]);

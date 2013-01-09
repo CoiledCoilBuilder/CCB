@@ -55,18 +55,18 @@
 
 #define BLEN 200
 
-using namespace SCADS_NS;
+using namespace CCB_NS;
 
 /**
  * The OutputPDB Constructor
  *
- * @param scads The scads pointer
+ * @param ccb The ccb pointer
  * @param narg number of arguments passed
  * @param arg the arguments passed
  */
 
-OutputPDB::OutputPDB(SCADS *scads, int narg, const char **arg) :
-    Output(scads, narg, arg) {
+OutputPDB::OutputPDB(CCB *ccb, int narg, const char **arg) :
+    Output(ccb, narg, arg) {
     // Check to see that we have a legit style and the format is correct.
     if (strcmp(style, "PDB") != 0 && narg < 4)
         error->one(FLERR, "Illegal output PDB command");

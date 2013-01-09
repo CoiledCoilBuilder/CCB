@@ -8,18 +8,18 @@
  *
  */
 
-#ifndef SCADS_BITMASK_H
-#define SCADS_BITMASK_H
+#ifndef CCB_BITMASK_H
+#define CCB_BITMASK_H
 
 #include "pointers.h"
 
-namespace SCADS_NS {
+namespace CCB_NS {
 
   class Bitmask: protected Pointers {
       public:
   
           //Constructor and Destructor
-          Bitmask(class SCADS *);
+          Bitmask(class CCB *);
           ~Bitmask(); 
   
           int nmask;

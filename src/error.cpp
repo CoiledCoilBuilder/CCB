@@ -29,10 +29,10 @@
 #include "universe.h"
 #include "memory.h"
 
-using namespace SCADS_NS;
+using namespace CCB_NS;
 
-Error::Error(SCADS *scads) :
-		Pointers(scads) {
+Error::Error(CCB *ccb) :
+		Pointers(ccb) {
 
 	// Set the default verbosity level
 	verbosity_level = 1;

@@ -11,18 +11,18 @@
  *
  */
 
-#ifndef SCADS_SITE_H
-#define SCADS_SITE_H
+#ifndef CCB_SITE_H
+#define CCB_SITE_H
 
 #include "pointers.h"
 
-namespace SCADS_NS {
+namespace CCB_NS {
     class Site: protected Pointers {
 
     public:
 
         // Constructor and Destructor
-        Site(class SCADS *, int i); /**< Site constructor */
+        Site(class CCB *, int i); /**< Site constructor */
         ~Site(); /**< Site deconstructor */
         Site(const Site &);   /**< Copy Constructor */
         Site& operator=(Site const &); /**< assignment operator */

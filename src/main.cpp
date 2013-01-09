@@ -3,32 +3,32 @@
  * @author Chris <chris@mount-doom.chem.upenn.edu>
  * @date   Tue Jun 21 08:53:03 2011
  * 
- * @brief  Initialization of SCADS instance: sets up namespace, and cleans up. 
+ * @brief  Initialization of CCB instance: sets up namespace, and cleans up. 
  * 
  * 
  */
 
 #include <stdio.h>
-#include "scads.h"
+#include "ccb.h"
 
-using namespace SCADS_NS;
+using namespace CCB_NS;
 
 /**
- * Main Routine creates a new scads instance.
+ * Main Routine creates a new ccb instance.
  * 
  * Instead of putting the main computational routine here, it's been moved to
- * scads.h/scads.cpp. This way, the initilization and cleanup is straightforward,
- * e.g. SCADS *scads = new SCADS(argc, argv) 
- * e.g. delete scads
+ * ccb.h/ccb.cpp. This way, the initilization and cleanup is straightforward,
+ * e.g. CCB *ccb = new CCB(argc, argv) 
+ * e.g. delete ccb
  */
 
 int main(int argc, char **argv) {
 
-	// Create a SCADS instance, pass arguments;
-	SCADS *scads = new SCADS(argc, argv);
+	// Create a CCB instance, pass arguments;
+	CCB *ccb = new CCB(argc, argv);
 
-	// Delete the SCADS instance and clean up
-	delete scads;
+	// Delete the CCB instance and clean up
+	delete ccb;
 
 	return 0;
 }

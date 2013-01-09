@@ -8,12 +8,12 @@
  * 
  */
 
-#ifndef SCADS_UNIVERSE_H
-#define SCADS_UNIVERSE_H
+#ifndef CCB_UNIVERSE_H
+#define CCB_UNIVERSE_H
 
 #include "pointers.h"
 
-namespace SCADS_NS {
+namespace CCB_NS {
 
      /**
       * The Universe Class
@@ -23,10 +23,10 @@ namespace SCADS_NS {
        public:
  
          // Constructors and Destructors
-          Universe(class SCADS *); /**< The Universe Constructor */
+          Universe(class CCB *); /**< The Universe Constructor */
           ~Universe();                       /**< The Universe Deconstructor */
          
-          char *version;        /**< SCADS version */
+          char *version;        /**< CCB version */
           int nthreads;			/**< OMP_NUM_THREADS */
 
           int me;

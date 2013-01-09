@@ -10,16 +10,16 @@
 #include <string.h>
 #include <stdio.h>
 #include <ctype.h>
-#include "scadsio.h"
+#include "ccbio.h"
 #include "memory.h"
 #include "error.h"
 #include "universe.h"
 #include "backbone.h"
 
-using namespace SCADS_NS;
+using namespace CCB_NS;
 
-Backbone::Backbone(SCADS *scads, int /*narg*/, const char **arg) :
-		Pointers(scads) {
+Backbone::Backbone(CCB *ccb, int /*narg*/, const char **arg) :
+		Pointers(ccb) {
 
      /**
       * argv[0] = backbone

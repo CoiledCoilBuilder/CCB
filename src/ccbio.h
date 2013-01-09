@@ -1,5 +1,5 @@
 /**
- * @file   scadsio.h
+ * @file   ccbio.h
  * @author Chris <chris@mount-doom.chem.upenn.edu>
  * @date   Thu Jun 23 16:54:19 2011
  * 
@@ -18,18 +18,18 @@
  * fname = the path to the input file
  */
 
-#ifndef SCADS_SCADSIO_H
-#define SCADS_SCADSIO_H
+#ifndef CCB_CCBIO_H
+#define CCB_CCBIO_H
 
 #include "pointers.h"
 
-namespace SCADS_NS {
-	class Scadsio: protected Pointers {
+namespace CCB_NS {
+	class Ccbio: protected Pointers {
 		public:
 
 			//Constructor and Destructor
-			Scadsio(class SCADS *); /**< Scadsio constructor */
-			~Scadsio(); /**< Scadsio deconstructor (deletes all associated styles on termination) */
+			Ccbio(class CCB *); /**< Ccbio constructor */
+			~Ccbio(); /**< Ccbio deconstructor (deletes all associated styles on termination) */
 
 			// Memory Usage
 			void memory_usage();

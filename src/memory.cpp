@@ -1,16 +1,16 @@
 
-#include "scadstype.h"
+#include "ccbtype.h"
 #include "stdio.h"
 #include "stdlib.h"
 #include "string.h"
 #include "memory.h"
 #include "error.h"
 
-using namespace SCADS_NS;
+using namespace CCB_NS;
 
 /* ---------------------------------------------------------------------- */
 
-Memory::Memory(SCADS *scads) : Pointers(scads) {}
+Memory::Memory(CCB *ccb) : Pointers(ccb) {}
 
 /* ----------------------------------------------------------------------
    safe malloc 
@@ -20,9 +20,9 @@ void *Memory::smalloc(bigint nbytes, const char *name)
 {
   if (nbytes == 0) return NULL;
 
-#if defined(SCADS_MEMALIGN)
+#if defined(CCB_MEMALIGN)
   void *ptr;
-  posix_memalign(&ptr, SCADS_MEMALIGN, nbytes);
+  posix_memalign(&ptr, CCB_MEMALIGN, nbytes);
 #else
   void *ptr = malloc(nbytes);
 #endif

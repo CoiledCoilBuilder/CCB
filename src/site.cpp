@@ -18,7 +18,7 @@
 #include "site.h"
 #include "group.h"
 #include "atom.h"
-#include "scadsio.h"
+#include "ccbio.h"
 #include "sort.h"
 #include "universe.h"
 
@@ -36,10 +36,10 @@
  */
 #define TYPES_PER_GROUP 50
 
-using namespace SCADS_NS;
+using namespace CCB_NS;
 
-Site::Site(SCADS *scads, int i) :
-    Pointers(scads) {
+Site::Site(CCB *ccb, int i) :
+    Pointers(ccb) {
 
     // Initialize variables
     id = i;
@@ -47,7 +47,7 @@ Site::Site(SCADS *scads, int i) :
     strcpy(chain, "");
     strcpy(seg, "");
 
-    fixed_atoms = new Group(scads, -1);
+    fixed_atoms = new Group(ccb, -1);
     fixed_atoms->site = this;
     ngroup_iter = 1;
 
@@ -170,7 +170,7 @@ int Site::add_rotamer() {
         rotamer = (Group **) memory->srealloc(rotamer, maxrotamer * sizeof(Group *), "site:rotamer");
     }
 
-    rotamer[nrotamer] = new Group(scads, ngroup_iter);
+    rotamer[nrotamer] = new Group(ccb, ngroup_iter);
 
     nrotamer++;
     ngroup_iter++;

@@ -15,17 +15,17 @@ OutputStyle(pdb,OutputPDB)
 
 #else
 
-#ifndef SCADS_OUTPUT_PDB_H
-#define SCADS_OUTPUT_PDB_H
+#ifndef CCB_OUTPUT_PDB_H
+#define CCB_OUTPUT_PDB_H
 
 #include "output.h"
 
-namespace SCADS_NS {
+namespace CCB_NS {
      
      class OutputPDB : public Output {
      
      public:
-          OutputPDB(class SCADS *, int, const char **);
+          OutputPDB(class CCB *, int, const char **);
           ~OutputPDB() {}
      
      private:

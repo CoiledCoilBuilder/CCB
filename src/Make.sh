@@ -39,7 +39,7 @@ if (test $1 = "style") then
 
         # class name             fname.h         style_.h         dep .d file
   style BACKBONE_CLASS          backbone_        backbone        backbonehandler
-  style OUTPUT_CLASS            output_          output          scadsio
+  style OUTPUT_CLASS            output_          output          ccbio
 
 # edit Makefile.lib
 # called by "make makelib"
