@@ -89,6 +89,9 @@ void CCB_Compass::init(const int argc, const char **argv)
     ccb->backbone->add_backbone(4,newarg);
     ccb->backbone->init_backbone(name);
 
+    // Set the verbosity level
+    ccb->error->verbosity_level=4; 
+
     delete [] newarg;
 
     init_done = 1;

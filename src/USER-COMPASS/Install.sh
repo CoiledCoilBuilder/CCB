@@ -23,7 +23,7 @@ elif (test $1 = 0) then
   rm -f ../plugin.h 
   rm -f ../ccb_compass.h
   rm -f ../ccb_compass.cpp
-  rm -r ../plugin_baseclass.h
-  rm -r ../plugin_baseclass.cpp
+  rm -f ../plugin_baseclass.h
+  rm -f ../plugin_baseclass.cpp
 
 fi
