@@ -447,7 +447,7 @@ void BackboneCoiledCoil::generate() {
 
 
     // Print Header with info
-    if (error->verbosity_level >= 10)
+    if (error->verbosity_level >= 4)
         print_header();
 
     // Set initial peptide-plane coordiantes
@@ -551,7 +551,7 @@ void BackboneCoiledCoil::generate() {
 void BackboneCoiledCoil::generate_asymmetric() {
 
     // Print Header with info
-    if (error->verbosity_level >= 10) {
+    if (error->verbosity_level >= 4) {
         fprintf(screen, "Asymmetric Generation\n");
         print_header();
     }
@@ -1343,12 +1343,11 @@ void BackboneCoiledCoil::update_domain() {
 
     /**
      * Delete all the sites associated with the old
-     * coiled-coil, and create new sites. This is
-     * definitely more costly.
+     * coiled-coil, and create new sites. 
      */
 
+    domain->reset();    
     for (unsigned int i = 0; i < nsite; i++) {
-        domain->delete_site(site[i]->id);
         site[i] = NULL;
     }
 

@@ -35,7 +35,7 @@ Error::Error(CCB *ccb) :
 		Pointers(ccb) {
 
 	// Set the default verbosity level
-	verbosity_level = 1;
+	verbosity_level = 4;
 }
 
 /** 

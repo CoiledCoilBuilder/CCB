@@ -3,7 +3,9 @@
 #ifndef _CCB_COMPASS_H_
 #define _CCB_COMPASS_H_
 
-#include "base_class.h"
+#include <vector>
+#include "plugin_baseclass.h"
+#include "ccb.h"
 #include "plugin.h"
 
 extern "C"
@@ -13,7 +15,9 @@ extern "C"
     int plugin_init(plugin_t *);
 }
 
-class CCB_Compass : public BaseClass
+namespace SCADS_NS {
+
+class CCB_Compass : public Plugin_BaseClass
 {
   public:
     CCB_Compass(const char *, const char *);
@@ -22,11 +26,17 @@ class CCB_Compass : public BaseClass
   protected:
     CCB_Compass() {};
 
+  protected:
+    class CCB_NS::CCB *ccb;
+
   public:
-    virtual void init(int, char **);
+    virtual void init(const int, const char **);
     virtual void compute(int);
     virtual double single(int,int);
+    virtual bool get_atomic_data(std::vector<pluginatomic_t> &);
+
 };
 
+}
 
 #endif /* _CCB_COMPASS_H_ */

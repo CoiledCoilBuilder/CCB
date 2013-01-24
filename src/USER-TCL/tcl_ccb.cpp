@@ -87,7 +87,6 @@ int tcl_ccb(ClientData /**/, Tcl_Interp *interp,
     bool pdb = 0;
     const char *outfile;
     bool vmd = 0;
-    bool axis = 0;
 
     // Parse Arguments
     for (int i = 1; i < objc; ++i) {
@@ -127,9 +126,6 @@ int tcl_ccb(ClientData /**/, Tcl_Interp *interp,
             // VMD
             } else if (strcmp("-vmd", argv[argc]) == 0) {
                 vmd = 1;
-
-            } else if (strcmp("-axis", argv[argc]) == 0) {
-                 axis = 1;
 
             } else {
 
@@ -181,11 +177,20 @@ int tcl_ccb(ClientData /**/, Tcl_Interp *interp,
          Tcl_SetObjResult(interp, resultPtr);
     }
 
+    // Delete argv
+    delete [] argv;  
+
     // Delete ccb instance
     delete ccb;
 
     return TCL_OK;
 }
+
+/**
+ * Register the plugin with the TCL interpreter
+ * 
+ */
+
 
 
 extern "C" {

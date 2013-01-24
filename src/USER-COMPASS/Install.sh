@@ -15,15 +15,15 @@ if (test $1 = 1) then
   cp plugin.h ..
   cp ccb_compass.h ..
   cp ccb_compass.cpp ..
-  cp base_class.h ..
-  cp base_class.cpp ..
+  cp plugin_baseclass.h ..
+  cp plugin_baseclass.cpp ..
 
 elif (test $1 = 0) then
 
   rm -f ../plugin.h 
   rm -f ../ccb_compass.h
   rm -f ../ccb_compass.cpp
-  rm -r ../base_class.h
-  rm -r ../base_class.cpp
+  rm -r ../plugin_baseclass.h
+  rm -r ../plugin_baseclass.cpp
 
 fi
