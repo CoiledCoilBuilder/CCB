@@ -34,14 +34,12 @@
 using namespace CCB_NS;
 
 Domain::Domain(CCB *ccb) :
-    Pointers(ccb) {
-
-    // Initialize variables
-    nsite = maxsite = 0;
-    nsite_iter = 0;
-
-    site = NULL;
-}
+          Pointers(ccb), 
+          site(),
+          nsite(0), 
+          maxsite(0), 
+          nsite_iter(0)
+{}
 
 /**
  * Domain Deconstructor
@@ -187,65 +185,6 @@ int Domain::find_site(unsigned int resid, const char *chain) {
     if (isite == nsite)
         return -1;
     return isite;
-}
-
-int Domain::get_chains(char**& chain_list) {
-
-    //Get all the resids of this chain
-    Site **site_list = NULL;
-    site_list = (Site **) memory->srealloc(site_list, nsite * sizeof(Site *), "Domain::get_chains::site_list");
-
-    // Get all sites
-    for (int i = 0; i < nsite; i++)
-        site_list[i] = site[i];
-
-    //Sort them
-    Sort<Site> sort(ccb);
-    int nchain_list;
-    sort.unique(site_list, 0, nsite, sort.compare_site_chain, nchain_list);
-
-    //Determine the first and last resid of this chain
-    for (int i = 0; i < nchain_list; i++) {
-        int n = strlen(site_list[i]->chain) + 1;
-        chain_list[i] = new char[n];
-        strcpy(chain_list[i], site_list[i]->chain);
-    }
-
-    //for (int i = 0; i < nchain_list; i++)
-    //  fprintf(screen, "Chain: %s\n", chain_list[i]);
-
-    memory->sfree(site_list);
-
-    return nchain_list;
-}
-
-int Domain::get_resids(const char *chain, int*& resid_list) {
-
-    //Get all the resids of this chain
-    Site **site_list = NULL;
-    site_list = (Site **) memory->srealloc(site_list, nsite * sizeof(Site *), "Domain::get_resids::site_list");
-
-    // Get all sites belonging to the specified chain
-    int n = 0;
-    for (int i = 0; i < nsite; i++)
-        if (!strcmp(site[i]->chain, chain))
-            site_list[n++] = site[i];
-
-    //Sort them
-    Sort<Site> sort(ccb);
-    int nresid_list = 0;
-    sort.unique(site_list, 0, n, sort.compare_site_resid, nresid_list);
-
-    //Determine the first and last resid of this chain
-    for (int i = 0; i < nresid_list; i++)
-        resid_list[i] = site_list[i]->resid;
-
-    //    for (int i = 0; i < nresid_list; i++)
-    //    fprintf(screen, "Chain: %s Resid: %d\n", chain, resid_list[i]);
-
-    memory->sfree(site_list);
-
-    return nresid_list;
 }
 
 /**

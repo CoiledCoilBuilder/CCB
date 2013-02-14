@@ -78,6 +78,9 @@ int Ccbio::add_output(int narg, const char **arg) {
 		output = (Output **) memory->srealloc(output, maxoutput * sizeof(Output *), "ccbio:output");
 	}
 
+     if (output == NULL)
+          return CCB_ERROR;
+
 	//create the output
 
 	if (0)

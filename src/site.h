@@ -27,16 +27,17 @@ namespace CCB_NS {
         Site(const Site &);   /**< Copy Constructor */
         Site& operator=(Site const &); /**< assignment operator */
 
-        class Group *fixed_atoms; /**< Static site member of fixed, common atoms */
-        class Group **rotamer; /**< list of site members corresponding to fixed atoms (rotamers) */
-        class Group *most_probable; /**< The most probable group at this site */
-
-        int nrotamer; /**< Total number of rotamers */
-
         int id; /**< Internal indexing counter */
         unsigned int resid; /**< Site/Resid  number */
         char chain[10]; /**< Chain name */
         char seg[10]; /**< Segment Identifier */
+
+         class Group *fixed_atoms; /**< Static site member of fixed, common atoms */
+         class Group **rotamer; /**< list of site members corresponding to fixed atoms (rotamers) */
+         class Group *most_probable; /**< The most probable group at this site */
+
+
+        int nrotamer; /**< Total number of rotamers */
 
         // Functions to manage rotamers (dynamic groups);
         int add_rotamer();

@@ -18,27 +18,26 @@
 
 using namespace CCB_NS;
 
-Atom::Atom(CCB *ccb, int id) :
-    Pointers(ccb) {
+Atom::Atom(CCB *ccb, int myid) :
+        Pointers(ccb),
+        site(),
+        group(),
+        id(myid),
+        serial(0),
+        mask(1),
+        x(0.0),
+        y(0.0),
+        z(0.0),
+        o(0.0),
+        b(0.0),
+        fixed(0),
+        backbone(0)
+{
 
     /// Initialize variables
-    this->id = id;
-    serial = 0;
-    x = y = z = 0.0;
-    o = b = 0.0;
-    strcpy(name, "");
-    strcpy(type, "");
-    strcpy(element, "");
-
-    site = NULL;
-    group = NULL;
-
-    // Atoms automatically set "all" bitmask;
-    mask = 0;
-    mask |= 1;
-
-    fixed = 0;
-    backbone = 0;
+    name[0] = '\0';
+    type[0] = '\0';
+    element[0] = '\0';
 }
 
 Atom::~Atom() {

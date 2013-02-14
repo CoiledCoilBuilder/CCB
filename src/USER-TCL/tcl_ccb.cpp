@@ -77,8 +77,10 @@ int tcl_ccb(ClientData /**/, Tcl_Interp *interp,
     newarg[3] = (char *) "bbcc1";
 
     if (ccb->backbone->add_backbone(4,newarg) != CCB_OK ||
-        ccb->backbone->init_backbone(newarg[3]) != CCB_OK)
+        ccb->backbone->init_backbone(newarg[3]) != CCB_OK) {
+        delete ccb;
         return TCL_ERROR;
+    }
 
     // Parse the commandline options
     int argc = 0;
@@ -142,8 +144,10 @@ int tcl_ccb(ClientData /**/, Tcl_Interp *interp,
 
     //Pass parsed commands to the style
     if (ccb->backbone->update_backbone(newarg[3],argc,argv,0) != CCB_OK ||
-        ccb->backbone->generate_backbone(newarg[3]) != CCB_OK)
+        ccb->backbone->generate_backbone(newarg[3]) != CCB_OK) {
+        delete ccb;
         return TCL_ERROR;
+    }
 
     /// Write out the coordinates to a pdb file
     if (pdb) {
@@ -155,8 +159,10 @@ int tcl_ccb(ClientData /**/, Tcl_Interp *interp,
 
         if (ccb->ccbio->add_output(5, newarg) != CCB_OK ||
             ccb->ccbio->init_output(newarg[2]) != CCB_OK ||
-            ccb->ccbio->write_output(newarg[2]) != CCB_OK)
+            ccb->ccbio->write_output(newarg[2]) != CCB_OK) {
+            delete ccb;
             return TCL_ERROR;
+        }
     }
 
     /// Create TCL object and return coordinates if requested
@@ -197,8 +203,6 @@ int tcl_ccb(ClientData /**/, Tcl_Interp *interp,
  * Register the plugin with the TCL interpreter
  *
  */
-
-
 
 extern "C" {
 

@@ -109,6 +109,7 @@ BackboneCoiledCoil::BackboneCoiledCoil(CCB *ccb, int narg, const char **arg) :
     nsite = maxsite = 0;
 
     //Parse the provided parameters, if any
+    // This probably isn't necessary as the plugin
     set_params(narg, arg, 4);
 
     // Update symmetric parameters
@@ -317,7 +318,8 @@ int BackboneCoiledCoil::set_params(int argc, const char **argv, int n) {
 int BackboneCoiledCoil::update_style(int argc, const char **argv, int n) {
 
     // set the params
-    set_params(argc, argv, n);
+     if (set_params(argc, argv, n) != CCB_OK)
+          return CCB_ERROR;
 
     // Update parameter dependent values
     omega = -2 * PI * rpr / pitch;
@@ -384,7 +386,7 @@ int BackboneCoiledCoil::init_style() {
 
     // create/set the bitmask for the backbone atoms in this style
     // we set it to the user-provided style id
-     if (bitmask->add_bitmask(id) == CCB_ERROR) return CCB_ERROR;
+     if (bitmask->add_bitmask(id) != CCB_OK) return CCB_ERROR;
     mask = bitmask->find_mask(id);
 
     // allocate memory for initial peptide plane
@@ -445,7 +447,6 @@ int BackboneCoiledCoil::add_site(Site *s) {
     site[nsite++] = s;
 
     return CCB_OK;
-
 }
 
 /**
@@ -489,7 +490,7 @@ int BackboneCoiledCoil::generate() {
     build_plane();
 
     //see if we need to reallocate the coordinate array
-    allocate();
+    if (allocate() != CCB_OK) return CCB_ERROR;
 
     // zero out the coordinate and axis arrays
     azzero();
@@ -598,7 +599,7 @@ int BackboneCoiledCoil::generate_asymmetric() {
     build_plane();
 
     //see if we need to reallocate the coordinate array
-    allocate();
+    if (allocate() != CCB_OK) return CCB_ERROR;
 
     // zero out the coordinate and axis arrays
     azzero();
@@ -1410,7 +1411,7 @@ int BackboneCoiledCoil::update_domain() {
             cursite->mask |= mask;
 
             // add a pointer to this site to this style
-            add_site(cursite);
+            if (add_site(cursite) != CCB_OK) return CCB_ERROR;
 
             // Set the site resid number, chain
             // and seg id

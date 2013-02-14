@@ -54,7 +54,7 @@ void destroy_ccb(void *p)
 }
 
 CCB_Compass::CCB_Compass(const char *mytype, const char *myname)
-        : Plugin_BaseClass(mytype,myname)
+          : Plugin_BaseClass(mytype,myname), init_done(0)
 {
 
     ccb = NULL;
@@ -67,13 +67,16 @@ CCB_Compass::~CCB_Compass() {
 }
 
 
-void CCB_Compass::init(const int argc, const char **argv)
+int CCB_Compass::init(const int argc, const char **argv)
 {
 
-    // If we've initialized, only pass args 
+    // If we've initialized, only pass args
     if (init_done) {
-        ccb->backbone->update_backbone(name,argc,argv,0);
-        return;
+        if (ccb->backbone->update_backbone(name,argc,argv,0) != CCB_OK) {
+            delete ccb;
+            return PLUGIN_FAIL;
+        }
+        return PLUGIN_OK;
     }
 
     //Fire up a ccb instance
@@ -86,29 +89,38 @@ void CCB_Compass::init(const int argc, const char **argv)
     newarg[1] = (char *) "add";
     newarg[2] = (char *) "coiledcoil";
     newarg[3] = (char *) name;
-    ccb->backbone->add_backbone(4,newarg);
-    ccb->backbone->init_backbone(name);
+
+    if (ccb->backbone->add_backbone(4,newarg) != CCB_OK ||
+        ccb->backbone->init_backbone(name) != CCB_OK) {
+        delete ccb;
+        return PLUGIN_FAIL;
+    }
 
     // Set the verbosity level
-    ccb->error->verbosity_level=4; 
+    ccb->error->verbosity_level=4;
 
     delete [] newarg;
 
     init_done = 1;
-    return;
+    return PLUGIN_OK;
 }
 
-void CCB_Compass::compute(int flag)
+int CCB_Compass::compute(int flag)
 {
-  
-    if (!init_done) 
-     std::cout << "CCB:Compute: You must call 'init' first" << std::endl;
+
+    if (!init_done) {
+        std::cout << "CCB:Compute: You must call 'init' first" << std::endl;
+        return PLUGIN_FAIL;
+    }
 
     // Generate the coordinates
-    ccb->backbone->generate_backbone(name);
+    if (ccb->backbone->generate_backbone(name) != CCB_OK) {
+        delete ccb;
+        return PLUGIN_FAIL;
+    }
 
     ++num_compute;
-    return;
+    return PLUGIN_OK;
 }
 
 double CCB_Compass::single(int flag1, int flag2)
@@ -130,7 +142,7 @@ bool CCB_Compass::get_atomic_data(std::vector<pluginatomic_t> &v) {
     CCB_NS::Site *s = NULL;
 
     pluginatomic_t p;
-    pluginatomic_t *pd = &p; 
+    pluginatomic_t *pd = &p;
 
 
     // Print out the coordinates
@@ -138,7 +150,7 @@ bool CCB_Compass::get_atomic_data(std::vector<pluginatomic_t> &v) {
         s = ccb->domain->site[i];
 
         for (int j = 0; j < ccb->domain->site[i]->fixed_atoms->natom; j++) {
-            
+
             a = ccb->domain->site[i]->fixed_atoms->atom[j];
 
             // atom base quantities
@@ -167,7 +179,7 @@ bool CCB_Compass::get_atomic_data(std::vector<pluginatomic_t> &v) {
         }
     }
 
-    // Make sure "update" knows we've returned atomic data to be 
+    // Make sure "update" knows we've returned atomic data to be
     // added to the domain
     return true;
 

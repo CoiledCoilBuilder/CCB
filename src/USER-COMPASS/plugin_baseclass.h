@@ -35,8 +35,8 @@ public:
     
      // virtual methods to be overridded in derived classes
 public:
-     virtual void init(const int, const char **) = 0;
-     virtual void compute(int) = 0;
+     virtual int init(const int, const char **) = 0;
+     virtual int compute(int) = 0;
      virtual bool get_atomic_data(std::vector<pluginatomic_t> &) = 0;
      virtual double single(int, int) { ++num_single; return 0.0;};
 };

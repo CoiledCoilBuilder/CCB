@@ -30,10 +30,13 @@ class CCB_Compass : public Plugin_BaseClass
     class CCB_NS::CCB *ccb;
 
   public:
-    virtual void init(const int, const char **);
-    virtual void compute(int);
+    virtual int init(const int, const char **);
+    virtual int compute(int);
     virtual double single(int,int);
     virtual bool get_atomic_data(std::vector<pluginatomic_t> &);
+
+   private:
+     int init_done;
 
 };
 

@@ -83,6 +83,9 @@ int BackboneHandler::add_backbone(int narg, const char **arg) {
 		backbone = (Backbone **) memory->srealloc(backbone, maxbackbone * sizeof(Backbone *), "backbonehandler::backbone");
 	}
 
+     if (backbone == NULL)
+          return CCB_ERROR;
+
 	//create the backbone modeler 
 
 	if (0)

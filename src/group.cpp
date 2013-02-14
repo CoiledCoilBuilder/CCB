@@ -30,17 +30,17 @@ using namespace CCB_NS;
 /**
  * Group Constructor
  */
-Group::Group(CCB *ccb, int i) :
-    Pointers(ccb) {
-
-    id = i;
-    strcpy(name, "");
-    strcpy(type, "");
-    natom = maxatom = 0;
-    atom = NULL;
-    site = NULL;
-    
-    natom_iter = 0;
+Group::Group(CCB *ccb, int myid) :
+          Pointers(ccb), 
+          id(myid),
+          atom(),
+          natom(0),
+          site(),
+          natom_iter(0),
+          maxatom(0)
+ {
+      name[0] = '\0';
+      type[0] = '\0';
 }
 
 /**

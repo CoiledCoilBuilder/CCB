@@ -38,24 +38,25 @@
 
 using namespace CCB_NS;
 
-Site::Site(CCB *ccb, int i) :
-    Pointers(ccb) {
+Site::Site(CCB *ccb, int myid) :
+        Pointers(ccb),
+        id(myid),
+        resid(0),
+        fixed_atoms(),
+        rotamer(),
+        most_probable(),
+        nrotamer(0),
+        mask(1),
+        ngroup_iter(0),
+        maxrotamer(0)
+{
 
     // Initialize variables
-    id = i;
-    resid = 0;
-    strcpy(chain, "");
-    strcpy(seg, "");
+    chain[0] = '\0';
+    seg[0] = '\0';
 
     fixed_atoms = new Group(ccb, -1);
     fixed_atoms->site = this;
-    ngroup_iter = 1;
-
-    nrotamer = maxrotamer = 0;
-    rotamer = NULL;
-
-    // The site bitmask
-    mask = 1;
 }
 
 /**

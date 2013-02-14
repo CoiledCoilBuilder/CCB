@@ -17,41 +17,41 @@
 #include "pointers.h"
 
 namespace CCB_NS {
-    class Group: protected Pointers {
+class Group: protected Pointers {
 
-    public:
+  public:
 
-        // Constructor and Destructor
-        Group(class CCB *, int i); /**< Site constructor */
-        ~Group(); /**< Site deconstructor */
-        Group(const Group &); /**< Copy Constructor */
-        Group& operator=(Group const &); /**< assignment operator */
+    // Constructor and Destructor
+    Group(class CCB *, int i); /**< Site constructor */
+    ~Group(); /**< Site deconstructor */
+    Group(const Group &); /**< Copy Constructor */
+    Group& operator=(Group const &); /**< assignment operator */
 
-        class Site *site; /**< Pointer to the site this group belongs to */
+    int id; /**< Internal indexing counter */
+    char name[15]; /**< group name */
+    char type[15]; /**< group type, ALA, ASP etc.. */
 
-        int id; /**< Internal indexing counter */
-        char name[15]; /**< group name */
-        char type[15]; /**< group type, ALA, ASP etc.. */
+    class Atom **atom; /**< list of atoms */
+    int natom; /**< Total number of atoms in static part */
 
-        class Atom **atom; /**< list of atoms */
-        int natom; /**< Total number of atoms in static part */
+    class Site *site; /**< Pointer to the site this group belongs to */
 
-        // Functions to manage atoms
-        int add_atom();
-        int add_atom(Atom *a);
-        int overwrite_atom(Atom *a);
-        int add_atom(Atom &a); /**< add an atom using the copy constructor */
-        int delete_atom(int id);
-        int delete_atom_name(const char *name);
-        int find_atom(int id);
-        int find_atom_name(const char *name);
+    // Functions to manage atoms
+    int add_atom();
+    int add_atom(Atom *a);
+    int overwrite_atom(Atom *a);
+    int add_atom(Atom &a); /**< add an atom using the copy constructor */
+    int delete_atom(int id);
+    int delete_atom_name(const char *name);
+    int find_atom(int id);
+    int find_atom_name(const char *name);
 
-        double memory_usage();
+    double memory_usage();
 
-    private:
-        bigint natom_iter; /** < The unique atom id iterator, this should only be increased */
-        int maxatom; /**< Maximum number of atoms in based on currently allocated space */
-    };
+  private:
+    bigint natom_iter; /** < The unique atom id iterator, this should only be increased */
+    int maxatom; /**< Maximum number of atoms in based on currently allocated space */
+};
 }
 
 #endif
