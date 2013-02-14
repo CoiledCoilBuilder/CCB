@@ -42,7 +42,7 @@ namespace CCB_NS {
         int add_rotamer();
         int add_rotamer(Group *res);
         int add_rotamer(Group &g); /**< add a group using the copy-constructor */
-        void delete_rotamer(int id);
+        int delete_rotamer(int id);
         int find_rotamer(int id);
         void delete_all_rotamers();
 

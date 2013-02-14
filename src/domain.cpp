@@ -117,7 +117,7 @@ int Domain::add_site(unsigned int resid, const char *chain) {
     int isite = find_site(resid, chain);
 
     if (isite > 0)
-        error->one(FLERR, "Site already exists, cannot add this site");
+         error->one(FLERR, "Site already exists, cannot add this site");
 
     isite = domain->add_site();
 
@@ -137,13 +137,13 @@ int Domain::add_site(unsigned int resid, const char *chain) {
  *
  * @param   id the sites internal ID.
  */
-void Domain::delete_site(int id) {
+int Domain::delete_site(int id) {
     /// Find the site with the specified index
     int isite = find_site(id);
 
     /// Delete the site
     if (isite < 0)
-        error->one(FLERR, "Can't find site to delete");
+        return error->one(FLERR, "Can't find site to delete");
     delete site[isite];
 
     /// Update the array of sites to reflect the deletion
@@ -151,6 +151,8 @@ void Domain::delete_site(int id) {
         site[i - 1] = site[i];
 
     nsite--;
+
+    return CCB_OK;
 }
 
 /**

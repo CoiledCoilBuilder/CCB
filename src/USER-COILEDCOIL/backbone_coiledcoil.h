@@ -19,6 +19,7 @@ BackboneStyle(coiledcoil,BackboneCoiledCoil)
 #ifndef CCB_BACKBONE_COILEDCOIL_H
 #define CCB_BACKBONE_COILEDCOIL_H
 
+#include "pointers.h"
 #include "backbone.h"
 #include "site.h"
 
@@ -47,14 +48,14 @@ BackboneStyle(coiledcoil,BackboneCoiledCoil)
         ~BackboneCoiledCoil();
 
         // Member Functions
-        void generate();                                              /**< build coiled-coil, update coordinates in x */
-        void update_domain();                                         /**< set the domain coordinates to the backbone coordianates*/
-        void set_params(int argc, const char **argv, int n);          /**< set the backbone parameters before generation*/
+        int generate();                                              /**< build coiled-coil, update coordinates in x */
+        int update_domain();                                         /**< set the domain coordinates to the backbone coordianates*/
+        int set_params(int argc, const char **argv, int n);          /**< set the backbone parameters before generation*/
 
     protected:
-        virtual void init_style();                                     /**< Initialize the style (declare member variables, etc.. */
-        virtual void update_style(int argc, const char **argv, int n); /**< Update the parameters and re-generate the structure */
-        virtual void generate_style();                                 /**< Generate coordinates */
+        virtual int init_style();                                     /**< Initialize the style (declare member variables, etc.. */
+        virtual int update_style(int argc, const char **argv, int n); /**< Update the parameters and re-generate the structure */
+        virtual int generate_style();                                 /**< Generate coordinates */
 
     private:
 
@@ -62,9 +63,9 @@ BackboneStyle(coiledcoil,BackboneCoiledCoil)
         unsigned int natom;           /**< number of atoms = numres*numhelix*4 */
         unsigned int natomlarge;      /**< Largest number of atoms in a chain */
         unsigned int maxatom;         /**< maximum number of atoms allowed before realloc of atom vector */
+        int nhelix;                   /**< number of helices per coiled-coil */
         int nreslarge;                /**< Largest number of residues in a chain */
         int nrestotal;                /**< Total number of residues in the coiled-coil */
-        int nhelix;                   /**< number of helices per coiled-coil */
 
         // Symmetric Parameters
         double pitch;                 /**< pitch of the coiled-coil */
@@ -99,7 +100,7 @@ BackboneStyle(coiledcoil,BackboneCoiledCoil)
         Site **site;                  /**< Array of sites that this style created and can update or delete */
         unsigned int nsite;           /**< current number of sites that belong to this style */
         unsigned int maxsite;         /**< maximum number of sites before realloc is necessary */
-        void add_site(Site *s);       /**< adds a site for this style to keep track of*/
+        int add_site(Site *s);       /**< adds a site for this style to keep track of*/
 
         int mask;                     /**< sets the backbone atom's bitmask */
 
@@ -107,8 +108,8 @@ BackboneStyle(coiledcoil,BackboneCoiledCoil)
         void align_plane(double *w);    /**< align the peptide-plane rotation vector with w (axis) */
         void helix_axis(); /**< generate the axis of the minor helix */
         void symmetry();                /**< apply symmetry operations to helix to generate coil */
-        void allocate();                /**< increase size of x, axis if necessary */
         void azzero();                  /**< zero out coordinates in x array */
+        int allocate();                /**< increase size of x, axis if necessary */
 
 
         void get_pp_params(double *axis0, double *axis1,
@@ -122,7 +123,7 @@ BackboneStyle(coiledcoil,BackboneCoiledCoil)
 
         // Stuff for asymmetry
         void symmetry_axis();
-        void generate_asymmetric();
+        int generate_asymmetric();
 
         /**
          * Helper Functions
@@ -132,8 +133,8 @@ BackboneStyle(coiledcoil,BackboneCoiledCoil)
         void print_plane();
         void print_coordinates();
         void print_axis();      /**< Print the helix axis coodinates to screen */
-        void ppx_to_xyz(char *filename);
-        void axis_to_xyz(char *filename);
+        int  ppx_to_xyz(char *filename);
+        int  axis_to_xyz(char *filename);
         void inner_to_outer(double *&a, double *&b, double *&c,
             double bond, double angle, double chi, double *&z);
         bool isfloat(const char *str);

@@ -31,8 +31,8 @@ namespace CCB_NS {
           int find_unused();
           int find_mask(const char *name);
 
-          void add_bitmask(const char *name);
-          void delete_bitmask(const char *name);
+          int add_bitmask(const char *name);
+          int delete_bitmask(const char *name);
 
       private:
   

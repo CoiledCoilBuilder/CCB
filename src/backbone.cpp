@@ -46,19 +46,18 @@ Backbone::Backbone(CCB *ccb, int /*narg*/, const char **arg) :
 }
 
 Backbone::~Backbone() {
-
 	delete[] id;
 	delete[] style;
 }
 
-void Backbone::init() {
-	init_style();
+int Backbone::init() {
+	return init_style();
 }
 
-void Backbone::update(int argc, const char **argv, int n) {
-     update_style(argc, argv, n);
+int Backbone::update(int argc, const char **argv, int n) {
+     return update_style(argc, argv, n);
 }
 
-void Backbone::generate() {
-     generate_style();
+int Backbone::generate() {
+     return generate_style();
 }

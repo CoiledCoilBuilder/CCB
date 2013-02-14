@@ -205,15 +205,14 @@ int Group::add_atom(Atom *a) {
  *
  * @param   id the atoms internal ID.
  */
-void Group::delete_atom(int id) {
+int Group::delete_atom(int id) {
 
     /// Find the atom with the specified index
     int iatom = find_atom(id);
 
     /// Delete the atom
     if (iatom < 0)
-        return;
-    //error->all(FLERR, "Can't find  atom to delete");
+       return error->all(FLERR, "Can't find atom to delete");
 
     delete atom[iatom];
 
@@ -222,6 +221,9 @@ void Group::delete_atom(int id) {
         atom[i - 1] = atom[i];
 
     natom--;
+
+    return CCB_OK;
+
 }
 
 /**
@@ -229,15 +231,14 @@ void Group::delete_atom(int id) {
  *
  * @param   id the atoms internal ID.
  */
-void Group::delete_atom_name(const char *name) {
+int Group::delete_atom_name(const char *name) {
 
     /// Find the atom with the specified index
     int iatom = find_atom_name(name);
 
     /// Delete the atom
     if (iatom < 0)
-        return;
-    //error->all(FLERR, "Can't find  atom to delete");
+         return error->all(FLERR, "Can't find  atom to delete");
 
     delete atom[iatom];
 
@@ -246,6 +247,8 @@ void Group::delete_atom_name(const char *name) {
         atom[i - 1] = atom[i];
 
     natom--;
+
+    return CCB_OK;
 
 }
 

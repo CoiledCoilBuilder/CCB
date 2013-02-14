@@ -31,11 +31,9 @@ using namespace CCB_NS;
 #define BACKBONE_DELTA 2
 
 BackboneHandler::BackboneHandler(CCB *ccb) :
-		Pointers(ccb) {
+		Pointers(ccb),nbackbone(0),maxbackbone(0) {
 
-     nbackbone = maxbackbone = 0;
      backbone = NULL;
-
 
 }
 
@@ -63,10 +61,10 @@ BackboneHandler::~BackboneHandler() {
  * @param arg the arguments passed
  */
 
-void BackboneHandler::add_backbone(int narg, const char **arg) {
+int BackboneHandler::add_backbone(int narg, const char **arg) {
 
 	if (narg < 3) 
-		error->one(FLERR, "Illegal backbone command");
+		return error->one(FLERR, "Illegal backbone command");
 
 	// Check to see if the backbone is already defined.
 	int ibackbone = 0;
@@ -75,7 +73,7 @@ void BackboneHandler::add_backbone(int narg, const char **arg) {
 			break;
 
 	if (ibackbone < nbackbone)
-		error->one(FLERR, "The backbone style already exists");
+		return error->one(FLERR, "The backbone style already exists");
 
 	// realloc more space if we don't have enough to create a new backbone
      // modeler class
@@ -88,7 +86,7 @@ void BackboneHandler::add_backbone(int narg, const char **arg) {
 	//create the backbone modeler 
 
 	if (0)
-		return;
+		return CCB_OK;
 
 #define BACKBONE_CLASS
 #define BackboneStyle(key,Class)                                        \
@@ -97,10 +95,12 @@ void BackboneHandler::add_backbone(int narg, const char **arg) {
 #undef BACKBONE_CLASS
 
 	else
-		error->one(FLERR, "Invalid backbone style");
+		return error->one(FLERR, "Invalid backbone style");
 
 	//Update the total number of active backbone modelers.
 	nbackbone++;
+
+     return CCB_OK;
 }
 
 /** 
@@ -111,20 +111,22 @@ void BackboneHandler::add_backbone(int narg, const char **arg) {
  * @param id backbone style ID
  */
 
-void BackboneHandler::delete_backbone(const char *id) {
+int BackboneHandler::delete_backbone(const char *id) {
 
 	// Find the backbone index
 	int ibackbone = find_backbone(id);
 
 	// Delete the backbone
 	if (ibackbone < 0)
-		error->one(FLERR, "Could not find backbone style type ID to delete");
+		return error->one(FLERR, "Could not find backbone style type ID to delete");
 	delete backbone[ibackbone];
 
 	for (int i = ibackbone + 1; i < nbackbone; i++)
 		backbone[i - 1] = backbone[i];
 
 	nbackbone--;
+
+     return CCB_OK;
 }
 
 /** 
@@ -146,35 +148,35 @@ int BackboneHandler::find_backbone(const char *id) {
         return ibackbone;  
 }
 
-void BackboneHandler::init_backbone(const char *id) {
+int BackboneHandler::init_backbone(const char *id) {
 
 	int ibackbone = find_backbone(id);
 	if (ibackbone < 0)
-		error->one(FLERR, "Could not find backbone type ID to initialize");
+		return error->one(FLERR, "Could not find backbone type ID to initialize");
 
-	backbone[ibackbone]->init();
+	return backbone[ibackbone]->init();
 }
 
-void BackboneHandler::update_backbone(const char *id, int argc, const char **argv, int n) {
+int BackboneHandler::update_backbone(const char *id, int argc, const char **argv, int n) {
 
      int ibackbone = find_backbone(id);
      if (ibackbone < 0) {
           char str[128];
           sprintf(str, "Could not find backbone id %s to update", id);
-          error->one(FLERR, str);
+          return error->one(FLERR, str);
      }
 
-     backbone[ibackbone]->update(argc, argv, n);
+     return backbone[ibackbone]->update(argc, argv, n);
 }
 
-void BackboneHandler::generate_backbone(const char *id) {
+int BackboneHandler::generate_backbone(const char *id) {
 
      int ibackbone = find_backbone(id);
      if (ibackbone < 0) {
           char str[128];
           sprintf(str, "Could not find backbone id %s to generate", id);
-          error->one(FLERR, str);
+          return error->one(FLERR, str);
      }
 
-     backbone[ibackbone]->generate();
+     return backbone[ibackbone]->generate();
 }

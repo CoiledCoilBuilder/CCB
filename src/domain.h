@@ -38,7 +38,7 @@ namespace CCB_NS {
         int add_site(); /**< add an empty site */
         int add_site(unsigned int resid, const char *chain); /**< Add a site to the domain, set resid,chain */
         int add_site(const Site &s); /**< add a site to the domain using the copy constructor */
-        void delete_site(int id);
+        int delete_site(int id);
         int find_site(int id);
         int find_site(unsigned int resid, const char *chain);
         void writeDomain();

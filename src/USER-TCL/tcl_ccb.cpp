@@ -42,6 +42,10 @@
 
 #define MAX_ARGS 64
 
+//Error flags for CCB
+//#define CCB_OK 0
+//#define CCB_ERROR 1
+
 using namespace CCB_NS;
 
 /**
@@ -58,21 +62,23 @@ using namespace CCB_NS;
 /* Tcl plugin wrapper. it parses the arguments, calls the
    real code and then passes the result to the interpreter. */
 int tcl_ccb(ClientData /**/, Tcl_Interp *interp,
-    int objc, Tcl_Obj *const objv[])
+            int objc, Tcl_Obj *const objv[])
 {
 
-     //Fire up a ccb  instance
-     CCB *ccb = new CCB(objc, NULL);
+    //Fire up a ccb  instance
+    CCB *ccb = new CCB(objc, NULL);
 
-     const char **newarg = new const char*[5];
+    const char **newarg = new const char*[5];
 
-     /// Add the coiled-coil plugin
-     newarg[0] = (char *) "backbone";
-     newarg[1] = (char *) "add";
-     newarg[2] = (char *) "coiledcoil";
-     newarg[3] = (char *) "bbcc1";
-     ccb->backbone->add_backbone(4,newarg);
-     ccb->backbone->init_backbone(newarg[3]);
+    /// Add the coiled-coil plugin
+    newarg[0] = (char *) "backbone";
+    newarg[1] = (char *) "add";
+    newarg[2] = (char *) "coiledcoil";
+    newarg[3] = (char *) "bbcc1";
+
+    if (ccb->backbone->add_backbone(4,newarg) != CCB_OK ||
+        ccb->backbone->init_backbone(newarg[3]) != CCB_OK)
+        return TCL_ERROR;
 
     // Parse the commandline options
     int argc = 0;
@@ -102,10 +108,10 @@ int tcl_ccb(ClientData /**/, Tcl_Interp *interp,
             // Check for PDB
             if (strcmp("-pdb", argv[argc]) == 0) {
 
-                 if (i + 1 == objc) {
-                      Tcl_AppendResult(interp, "Missing argument to -pdb\n", NULL);
-                      return TCL_ERROR;
-                 }
+                if (i + 1 == objc) {
+                    Tcl_AppendResult(interp, "Missing argument to -pdb\n", NULL);
+                    return TCL_ERROR;
+                }
 
                 pdb = 1;
                 outfile = Tcl_GetString(objv[++i]);
@@ -113,17 +119,17 @@ int tcl_ccb(ClientData /**/, Tcl_Interp *interp,
                 // Verbosity
             } else if (strcmp("-v", argv[argc]) == 0) {
                 int v = 0;
-                
+
                 if (i + 1 == objc) {
-                     Tcl_AppendResult(interp, "Missing argument to -v\n", NULL);
-                     return TCL_ERROR;
+                    Tcl_AppendResult(interp, "Missing argument to -v\n", NULL);
+                    return TCL_ERROR;
                 }
 
                 if(Tcl_GetIntFromObj(interp,objv[++i], &v) != TCL_OK)
                     return TCL_ERROR;
                 ccb->error->verbosity_level = v;
 
-            // VMD
+                // VMD
             } else if (strcmp("-vmd", argv[argc]) == 0) {
                 vmd = 1;
 
@@ -135,10 +141,9 @@ int tcl_ccb(ClientData /**/, Tcl_Interp *interp,
     }
 
     //Pass parsed commands to the style
-    ccb->backbone->update_backbone(newarg[3],argc,argv,0);
-
-    // Generate the coordinates
-    ccb->backbone->generate_backbone(newarg[3]);
+    if (ccb->backbone->update_backbone(newarg[3],argc,argv,0) != CCB_OK ||
+        ccb->backbone->generate_backbone(newarg[3]) != CCB_OK)
+        return TCL_ERROR;
 
     /// Write out the coordinates to a pdb file
     if (pdb) {
@@ -147,38 +152,40 @@ int tcl_ccb(ClientData /**/, Tcl_Interp *interp,
         newarg[2] = (char *) "pdb1";
         newarg[3] = outfile;
         newarg[4] = (char *) "all";
-        ccb->ccbio->add_output(5, newarg);
-        ccb->ccbio->init_output(newarg[2]);
-        ccb->ccbio->write_output(newarg[2]);
+
+        if (ccb->ccbio->add_output(5, newarg) != CCB_OK ||
+            ccb->ccbio->init_output(newarg[2]) != CCB_OK ||
+            ccb->ccbio->write_output(newarg[2]) != CCB_OK)
+            return TCL_ERROR;
     }
 
     /// Create TCL object and return coordinates if requested
     if (vmd) {
 
-         Tcl_Obj *resultPtr;
-         resultPtr = Tcl_NewListObj(0,NULL);
+        Tcl_Obj *resultPtr;
+        resultPtr = Tcl_NewListObj(0,NULL);
 
-         for (int i = 0; i < ccb->domain->nsite; i++)
-              for (int j = 0; j < ccb->domain->site[i]->fixed_atoms->natom; j++) {
+        for (int i = 0; i < ccb->domain->nsite; i++)
+            for (int j = 0; j < ccb->domain->site[i]->fixed_atoms->natom; j++) {
 
-                   Tcl_Obj *xyz;
+                Tcl_Obj *xyz;
 
-                   double coords[3] = { 0.0 };
-                   ccb->domain->site[i]->fixed_atoms->atom[j]->get_xyz(coords);
+                double coords[3] = { 0.0 };
+                ccb->domain->site[i]->fixed_atoms->atom[j]->get_xyz(coords);
 
-                   xyz = Tcl_NewListObj(0,NULL);
+                xyz = Tcl_NewListObj(0,NULL);
 
-                   for (int k = 0; k < 3; k++)
-                        Tcl_ListObjAppendElement(interp,xyz,Tcl_NewDoubleObj(coords[k]));
+                for (int k = 0; k < 3; k++)
+                    Tcl_ListObjAppendElement(interp,xyz,Tcl_NewDoubleObj(coords[k]));
 
-                   Tcl_ListObjAppendElement(interp,resultPtr,xyz);
-              }
+                Tcl_ListObjAppendElement(interp,resultPtr,xyz);
+            }
 
-         Tcl_SetObjResult(interp, resultPtr);
+        Tcl_SetObjResult(interp, resultPtr);
     }
 
     // Delete argv
-    delete [] argv;  
+    delete [] argv;
 
     // Delete ccb instance
     delete ccb;
@@ -188,14 +195,14 @@ int tcl_ccb(ClientData /**/, Tcl_Interp *interp,
 
 /**
  * Register the plugin with the TCL interpreter
- * 
+ *
  */
 
 
 
 extern "C" {
 
-/* register the plugin with the tcl interpreters */
+    /* register the plugin with the tcl interpreters */
 #if defined(CCBTCLDLL_EXPORTS) && defined(_WIN32)
 #  undef TCL_STORAGE_CLASS
 #  define TCL_STORAGE_CLASS DLLEXPORT
@@ -204,8 +211,8 @@ extern "C" {
 #include <windows.h>
 
     BOOL APIENTRY DllMain( HANDLE hModule,
-        DWORD  ul_reason_for_call,
-        LPVOID lpReserved )
+                           DWORD  ul_reason_for_call,
+                           LPVOID lpReserved )
     {
         return TRUE;
     }
@@ -214,23 +221,23 @@ extern "C" {
 
 #else
 
-    int Ccb_Init(Tcl_Interp *interp)
+            int Ccb_Init(Tcl_Interp *interp)
 
 #endif
     {
 
 #if defined(USE_TCL_STUBS)
-       if (Tcl_InitStubs(interp, TCL_VERSION, 0) == NULL)
-                    return TCL_ERROR;
-       if (Tcl_PkgRequire(interp, "Tcl", TCL_VERSION, 0) == NULL)
-                    return TCL_ERROR;
+        if (Tcl_InitStubs(interp, TCL_VERSION, 0) == NULL)
+            return TCL_ERROR;
+        if (Tcl_PkgRequire(interp, "Tcl", TCL_VERSION, 0) == NULL)
+            return TCL_ERROR;
 #endif
 
-       if (Tcl_PkgProvide(interp, PACKAGE_NAME, PACKAGE_VERSION) != TCL_OK)
+        if (Tcl_PkgProvide(interp, PACKAGE_NAME, PACKAGE_VERSION) != TCL_OK)
             return TCL_ERROR;
 
         Tcl_CreateObjCommand(interp,"ccb",tcl_ccb,
-            (ClientData)NULL, (Tcl_CmdDeleteProc*)NULL);
+                             (ClientData)NULL, (Tcl_CmdDeleteProc*)NULL);
 
         return TCL_OK;
     }
@@ -243,8 +250,8 @@ extern "C" {
 #include <windows.h>
 
     BOOL APIENTRY DllMain( HANDLE hModule,
-        DWORD  ul_reason_for_call,
-        LPVOID lpReserved )
+                           DWORD  ul_reason_for_call,
+                           LPVOID lpReserved )
     {
         return TRUE;
     }
@@ -253,7 +260,7 @@ extern "C" {
 
 #else
 
-    int Ccb_SafeInit(Tcl_Interp *)
+            int Ccb_SafeInit(Tcl_Interp *)
 
 #endif
     {
@@ -268,8 +275,8 @@ extern "C" {
 #include <windows.h>
 
     BOOL APIENTRY DllMain( HANDLE hModule,
-        DWORD  ul_reason_for_call,
-        LPVOID lpReserved )
+                           DWORD  ul_reason_for_call,
+                           LPVOID lpReserved )
     {
         return TRUE;
     }
@@ -278,7 +285,7 @@ extern "C" {
 
 #else
 
-    int Ccb_SafeUnload(Tcl_Interp *)
+            int Ccb_SafeUnload(Tcl_Interp *)
 
 #endif
     {
@@ -293,8 +300,8 @@ extern "C" {
 #include <windows.h>
 
     BOOL APIENTRY DllMain( HANDLE hModule,
-        DWORD  ul_reason_for_call,
-        LPVOID lpReserved )
+                           DWORD  ul_reason_for_call,
+                           LPVOID lpReserved )
     {
         return TRUE;
     }
@@ -303,7 +310,7 @@ extern "C" {
 
 #else
 
-    int Ccb_Unload(Tcl_Interp *)
+            int Ccb_Unload(Tcl_Interp *)
 
 #endif
     {

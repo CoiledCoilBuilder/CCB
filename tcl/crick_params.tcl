@@ -14,7 +14,9 @@ proc get_params {pdb} {
 
     set molid [mol new $pdb type pdb waitfor all]
 
-    crick -molid $molid -params {pitch radius rotation rpt zoff} -asymmetric
+    if {[catch {crick -molid $molid -params {pitch radius rotation rpt zoff} -asymmetric} errmsg]} {
+	return $errmsg
+    }
 
     $::crick::sys(sel_ccb_all) writepdb $prefix\_fit.pdb
 
@@ -135,7 +137,7 @@ proc get_params_trajectory {psf dcd seltext {stride 1}} {
 }
 
 ## For cli runs
-if {1} {
+if {0} {
        
         lassign $argv psf dcd
 

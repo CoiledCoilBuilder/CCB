@@ -24,16 +24,16 @@ namespace CCB_NS {
             Backbone(class CCB *, int, const char **); /**< Backbone constructor */
             virtual ~Backbone(); /**< Backbone destructor, must be virtual! */
 
-            void init();
-            void update(int argc, const char **argv, int n); /**< Update parameters */
-            void generate();    /**< Generate coordiantes */
+            int init();
+            int update(int argc, const char **argv, int n); /**< Update parameters */
+            int generate();    /**< Generate coordiantes */
 
     protected:
 
             // Child Class Functions
-            virtual void init_style() = 0; /**< Initialize the style (declare member variables, etc.. */
-            virtual void update_style(int argc, const char **argv, int n) = 0; /**< update coordinates based on passed params*/
-            virtual void generate_style() = 0; /**< Generate Coordiantes for the particular style */
+            virtual int init_style() = 0; /**< Initialize the style (declare member variables, etc.. */
+            virtual int update_style(int argc, const char **argv, int n) = 0; /**< update coordinates based on passed params*/
+            virtual int generate_style() = 0; /**< Generate Coordiantes for the particular style */
 
     private:
 

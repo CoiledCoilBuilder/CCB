@@ -30,7 +30,6 @@
 
 namespace CCB_NS {
 
-#define FLERR __FILE__,__LINE__
 
     class Pointers {
     public:

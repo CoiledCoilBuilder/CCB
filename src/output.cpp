@@ -70,20 +70,23 @@ Output::~Output() {
 
 }
 
-void Output::init() {
-	init_style();
+int Output::init() {
+	return init_style();
 }
 
-void Output::write() {
-	write_style();
+int Output::write() {
+	return write_style();
 }
 
-void Output::openfile() {
+int Output::openfile() {
 	fp = fopen(filename, "w");
 	if (fp == NULL && universe->me == 0) 
-          error->one(FLERR, "Can't open output file");
+          return error->one(FLERR, "Can't open output file");
+
+     return CCB_OK;
 }
 
-void Output::closefile() {
+int Output::closefile() {
 	if (universe->me == 0 && fp != NULL) fclose(fp);
+     return CCB_OK;
 }

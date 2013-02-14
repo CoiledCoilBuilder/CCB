@@ -30,17 +30,18 @@ public:
 	Output(class CCB *, int, const char **); /**< Output constructor */
 	virtual ~Output(); /**< Output destructor, must be virtual! */
 
-	void init();
-	void write();
+	int init();
+	int write();
 
 protected:
 	int me; /**< Processors info */
 
 	// Child Class Functions
-	virtual void init_style() = 0; /**< Initialize the style (declare member variables, etc.. */
-	virtual void openfile(); /**< open the file, note this is NOT pure virtual */
-	virtual void write_style() = 0; /**< read the file */
-	virtual void closefile();
+	virtual int init_style() = 0; /**< Initialize the style (declare member variables, etc.. */
+	virtual int write_style() = 0; /**< read the file */
+
+	virtual int openfile(); /**< open the file, note this is NOT pure virtual */
+	virtual int closefile();
 
 	FILE *fp; /**< file pointer */
 private:

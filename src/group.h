@@ -41,8 +41,8 @@ namespace CCB_NS {
         int add_atom(Atom *a);
         int overwrite_atom(Atom *a);
         int add_atom(Atom &a); /**< add an atom using the copy constructor */
-        void delete_atom(int id);
-        void delete_atom_name(const char *name);
+        int delete_atom(int id);
+        int delete_atom_name(const char *name);
         int find_atom(int id);
         int find_atom_name(const char *name);
 

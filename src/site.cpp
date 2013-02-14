@@ -207,14 +207,14 @@ int Site::add_rotamer(Group &g) {
  * @param   id the romater's internal ID.
  */
 
-void Site::delete_rotamer(int id) {
+int Site::delete_rotamer(int id) {
 
     /// Find the rotamer with the specified index
     int irotamer = find_rotamer(id);
 
     /// Delete the rotamer
     if (irotamer < 0)
-        error->all(FLERR, "Can't find rotamer to delete");
+        return error->all(FLERR, "Can't find rotamer to delete");
     delete rotamer[irotamer];
 
     /// Update the array of rotamer to reflect the deletion
@@ -222,6 +222,9 @@ void Site::delete_rotamer(int id) {
         rotamer[i - 1] = rotamer[i];
 
     nrotamer--;
+
+    return CCB_OK;
+
 }
 
 void Site::delete_all_rotamers() {

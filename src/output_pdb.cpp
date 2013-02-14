@@ -91,7 +91,9 @@ OutputPDB::OutputPDB(CCB *ccb, int narg, const char **arg) :
  *
  */
 
-void OutputPDB::init_style() {
+int OutputPDB::init_style() {
+
+     return CCB_OK;
 
 }
 
@@ -100,7 +102,7 @@ void OutputPDB::init_style() {
  *
  */
 
-void OutputPDB::write_style() {
+int OutputPDB::write_style() {
 
     int serial = 1;
     Atom *atom = NULL;
@@ -155,11 +157,13 @@ void OutputPDB::write_style() {
         } else {
             char str[128];
             sprintf(str, "Unable to open %s for writing", filename);
-            error->one(FLERR, str);
+            return error->one(FLERR, str);
         }
 
         closefile();
     }
+
+    return CCB_OK;
 
 }
 

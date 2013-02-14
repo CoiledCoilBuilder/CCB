@@ -38,21 +38,23 @@ using namespace CCB_NS;
 using namespace MathExtra;
 
 BackboneCoiledCoil::BackboneCoiledCoil(CCB *ccb, int narg, const char **arg) :
-    Backbone(ccb, narg, arg) {
+          Backbone(ccb, narg, arg),
+          natom(0),
+          natomlarge(0),
+          maxatom(0),
+          nhelix(2),
+          nreslarge(35),
+          nrestotal(0),
+          pitch(120.0),
+          square(0.0),
+          phi(-65.0),
+          psi(-40.0),
+          rpr(1.495)
+{
 
     // Check to see that we have a legit style and the format is correct.
     if (strcmp(style, "coiledcoil") != 0 || narg < 3)
         error->all(FLERR, "Illegal backbone coiled-coil command");
-
-    // Set some default values for the coiled coil geometries
-
-    nhelix = 2;
-    nreslarge = 35;
-    pitch = 120.0;
-    square = 0.0;
-    phi = -65.0;
-    psi = -40.0;
-    rpr = 1.495;
 
     // Asymmetric parameters, assume parallel, 3.64 rpt
     for (int i = 0; i < MAX_HELIX; i++) {
@@ -137,7 +139,6 @@ BackboneCoiledCoil::BackboneCoiledCoil(CCB *ccb, int narg, const char **arg) :
     natomlarge = nreslarge * 4;
 
     // Set parameter dependent values
-    maxatom = 0;
     omega = -2 * PI * rpr / pitch;
     omega_alpha = 2 * PI / rpt[0];
 
@@ -172,7 +173,7 @@ BackboneCoiledCoil::~BackboneCoiledCoil() {
  * @param n where in the array of arguments to start parsing
  *
  */
-void BackboneCoiledCoil::set_params(int argc, const char **argv, int n) {
+int BackboneCoiledCoil::set_params(int argc, const char **argv, int n) {
 
     if (error->verbosity_level == 10)
         for (int i = 0; i < argc; i++)
@@ -182,30 +183,30 @@ void BackboneCoiledCoil::set_params(int argc, const char **argv, int n) {
 
         if (strcmp(argv[n], "-pitch") == 0) {
             n++;
-            if (n == argc) error->one(FLERR, "Missing argument to -pitch");
+            if (n == argc) return error->one(FLERR, "Missing argument to -pitch");
             isfloat(argv[n]);
             pitch = atof(argv[n]);
 
         } else if (strcmp(argv[n], "-rpr") == 0) {
             n++;
-            if (n == argc) error->one(FLERR, "Missing argument to -rpr");
+            if (n == argc) return error->one(FLERR, "Missing argument to -rpr");
             isfloat(argv[n]);
             rpr = atof(argv[n]);
 
         } else if (strcmp(argv[n], "-square") == 0) {
             n++;
-            if (n == argc) error->one(FLERR, "Missing argument to -square");
+            if (n == argc) return error->one(FLERR, "Missing argument to -square");
             isfloat(argv[n]);
             square = atof(argv[n]) * DEG2RAD;
 
         } else if (strcmp(argv[n], "-nhelix") == 0) {
             n++;
-            if (n == argc) error->one(FLERR, "Missing argument to -nhelix");
+            if (n == argc) return error->one(FLERR, "Missing argument to -nhelix");
             isfloat(argv[n]);
             nhelix = atoi(argv[n]);
             rebuild_domain = true;
 
-            if (nhelix < 1) error->one(FLERR, "nhelix must be greater than 0");
+            if (nhelix < 1) return error->one(FLERR, "nhelix must be greater than 0");
 
         } else if (strcmp(argv[n], "-antiparallel") == 0) {
             anti_flag = true;
@@ -224,7 +225,7 @@ void BackboneCoiledCoil::set_params(int argc, const char **argv, int n) {
 
         } else if (strcmp(argv[n], "-rotation") == 0) {
             n++;
-            if (n == argc) error->one(FLERR, "Missing argument to -rotation");
+            if (n == argc) return error->one(FLERR, "Missing argument to -rotation");
             int i = 0;
             while (n < argc && isfloat(argv[n])) {
 
@@ -241,7 +242,7 @@ void BackboneCoiledCoil::set_params(int argc, const char **argv, int n) {
 
         } else if (strcmp(argv[n], "-rpt") == 0) {
             n++;
-            if (n == argc) error->one(FLERR, "Missing argument to -rpt");
+            if (n == argc) return error->one(FLERR, "Missing argument to -rpt");
             int i = 0;
             while (n < argc && isfloat(argv[n])) {
                 rpt[i++] = atof(argv[n]);
@@ -251,7 +252,7 @@ void BackboneCoiledCoil::set_params(int argc, const char **argv, int n) {
 
         } else if (strcmp(argv[n], "-zoff") == 0) {
             n++;
-            if (n == argc) error->one(FLERR, "Missing argument to -zoff");
+            if (n == argc) return error->one(FLERR, "Missing argument to -zoff");
             int i = 0;
             while (n < argc && isfloat(argv[n])) {
                 zoff[i++] = atof(argv[n]);
@@ -261,7 +262,7 @@ void BackboneCoiledCoil::set_params(int argc, const char **argv, int n) {
 
         } else if (strcmp(argv[n], "-order") == 0) {
             n++;
-            if (n == argc) error->one(FLERR, "Missing argument to -order");
+            if (n == argc) return error->one(FLERR, "Missing argument to -order");
             int i = 0;
             while (n < argc && isfloat(argv[n])) {
                 order[i++] = atoi(argv[n]);
@@ -271,7 +272,7 @@ void BackboneCoiledCoil::set_params(int argc, const char **argv, int n) {
 
         } else if (strcmp(argv[n], "-nres") == 0) {
             n++;
-            if (n == argc) error->one(FLERR, "Missing argument to -nres");
+            if (n == argc) return error->one(FLERR, "Missing argument to -nres");
             int i = 0;
             while (n < argc && isfloat(argv[n])) {
                 this->nres[i] = atoi(argv[n]);
@@ -285,11 +286,11 @@ void BackboneCoiledCoil::set_params(int argc, const char **argv, int n) {
 
         } else if (strcmp(argv[n], "-radius") == 0) {
             n++;
-            if (n == argc) error->one(FLERR, "Missing argument to -radius");
+            if (n == argc) return error->one(FLERR, "Missing argument to -radius");
             int i = 0;
             while (n < argc && isfloat(argv[n])) {
                 if (i > 3)
-                    error->one(FLERR, "Too many arguments passed to -radius");
+                    return error->one(FLERR, "Too many arguments passed to -radius");
                 r0_params[i++] = atof(argv[n]);
                 n++;
             }
@@ -302,15 +303,18 @@ void BackboneCoiledCoil::set_params(int argc, const char **argv, int n) {
         } else {
             char str[128];
             sprintf(str, "CCB: unknown option: %s", argv[n]);
-            error->one(FLERR, str);
+            return error->one(FLERR, str);
         }
 
         // Next Argument
         n++;
     }
+
+    return CCB_OK;
+
 }
 
-void BackboneCoiledCoil::update_style(int argc, const char **argv, int n) {
+int BackboneCoiledCoil::update_style(int argc, const char **argv, int n) {
 
     // set the params
     set_params(argc, argv, n);
@@ -344,20 +348,30 @@ void BackboneCoiledCoil::update_style(int argc, const char **argv, int n) {
             nreslarge = nres[i];
 
     natomlarge = nreslarge * 4;
+
+    return CCB_OK;
+
 }
 
 /**
  * @brief Generate Coordinates
  *
  */
-void BackboneCoiledCoil::generate_style() {
+int BackboneCoiledCoil::generate_style() {
 
-    // generate the coiled-coil
-    if (asymmetric_flag) generate_asymmetric();
-    else generate();
+     int code = CCB_OK;
+
+     if (asymmetric_flag)
+          code = generate_asymmetric();
+     else
+          code = generate();
+
+     if (code != CCB_OK) return CCB_ERROR; 
 
     // update the domain
-    update_domain();
+     if (update_domain() != CCB_OK) return CCB_ERROR;
+
+    return CCB_OK;
 }
 
 /**
@@ -366,23 +380,28 @@ void BackboneCoiledCoil::generate_style() {
  * Allocate memory for the peptide plane
  */
 
-void BackboneCoiledCoil::init_style() {
+int BackboneCoiledCoil::init_style() {
 
     // create/set the bitmask for the backbone atoms in this style
     // we set it to the user-provided style id
-    bitmask->add_bitmask(id);
+     if (bitmask->add_bitmask(id) == CCB_ERROR) return CCB_ERROR;
     mask = bitmask->find_mask(id);
 
     // allocate memory for initial peptide plane
     // and construct it
     memory->create(pp_x, 5, 4, "backbonecoiledcoil:ppx");
+
+    if (pp_x == NULL)
+         return CCB_ERROR;
+
+    return CCB_OK;
 }
 
 /**
  * Allocates memory to store coordinates
  * for the entire helical system.
  */
-void BackboneCoiledCoil::allocate() {
+int BackboneCoiledCoil::allocate() {
 
     //reallocate coordinate array if natom >= maxatom
 
@@ -392,9 +411,19 @@ void BackboneCoiledCoil::allocate() {
         // reallocate the array to store coordinates of the atoms
         x = memory->grow(x, nhelix, natomlarge, 4, "backbonecoiledcoil:x");
 
+        if (x == NULL)
+             return CCB_ERROR;
+
         // reallocate the array to store the coodinates of the helical axis
         axis_x = memory->grow(axis_x, nhelix, nreslarge + 2, 4, "backbonecoiledcoild:axis_x");
+
+        if (axis_x == NULL)
+             return CCB_ERROR;
+                                
     }
+
+    return CCB_OK;
+
 }
 
 /**
@@ -403,14 +432,20 @@ void BackboneCoiledCoil::allocate() {
  *
  * @param s
  */
-void BackboneCoiledCoil::add_site(Site *s) {
+int BackboneCoiledCoil::add_site(Site *s) {
 
     if (nsite >= maxsite) {
         maxsite += SITE_DELTA;
         site = (Site **) memory->srealloc(site, maxsite * sizeof(Site *), "backbonecoiledcoil:site");
     }
 
+    if (site == NULL)
+         return CCB_ERROR;
+
     site[nsite++] = s;
+
+    return CCB_OK;
+
 }
 
 /**
@@ -443,7 +478,7 @@ void BackboneCoiledCoil::azzero() {
  * the helical system
  */
 
-void BackboneCoiledCoil::generate() {
+int BackboneCoiledCoil::generate() {
 
 
     // Print Header with info
@@ -533,6 +568,8 @@ void BackboneCoiledCoil::generate() {
 
     // Generate helical symmetry mates
     symmetry();
+
+    return CCB_OK;
 }
 
 /**
@@ -548,7 +585,7 @@ void BackboneCoiledCoil::generate() {
  */
 
 
-void BackboneCoiledCoil::generate_asymmetric() {
+int BackboneCoiledCoil::generate_asymmetric() {
 
     // Print Header with info
     if (error->verbosity_level >= 4) {
@@ -663,6 +700,8 @@ void BackboneCoiledCoil::generate_asymmetric() {
 
     // Terminate the helices
     terminate_asymmetric();
+
+    return CCB_OK;
 }
 
 /**
@@ -873,7 +912,7 @@ void BackboneCoiledCoil::align_plane(double *w) {
     double theta = 2*acos(m2[0][0]);
 
     double u[3] = { 0.0 };
-    double sinthetaover2 = sin(theta/2);
+    double sinthetaover2 = sin(theta/2.0);
     u[0] = m2[0][1] / sinthetaover2;
     u[1] = m2[0][2] / sinthetaover2;
     u[2] = m2[0][3] / sinthetaover2;
@@ -1332,7 +1371,7 @@ void BackboneCoiledCoil::terminate_asymmetric() {
  * or updating the domain on the fly and adding the atoms.
  */
 
-void BackboneCoiledCoil::update_domain() {
+int BackboneCoiledCoil::update_domain() {
 
     Site *cursite = NULL;
     Atom *curatom = NULL;
@@ -1356,7 +1395,7 @@ void BackboneCoiledCoil::update_domain() {
     for (int i = 0; i < nhelix; i++) {
 
         if (order[i] >= nhelix)
-            error->one(FLERR, "Order must be less than the number of helices\n"
+            return error->one(FLERR, "Order must be less than the number of helices\n"
                 "e.g. if nhelix = 2, order is either {0 1} or {1 0}");
 
         // Calculate the offset w.r.t the user specified order
@@ -1468,6 +1507,8 @@ void BackboneCoiledCoil::update_domain() {
 
         }
     }
+
+    return CCB_OK;
 }
 
 
@@ -1525,7 +1566,7 @@ void BackboneCoiledCoil::print_plane() {
  * @param filename the name of the file to output
  */
 
-void BackboneCoiledCoil::ppx_to_xyz(char *filename) {
+int BackboneCoiledCoil::ppx_to_xyz(char *filename) {
 
     // outputs the peptide plane to
     // a file in xyz format
@@ -1539,7 +1580,7 @@ void BackboneCoiledCoil::ppx_to_xyz(char *filename) {
     fp = fopen(str, "w");
 
     if (fp == NULL && universe->me == 0)
-        error->one(FLERR, "Can't open output file");
+        return error->one(FLERR, "Can't open output file");
 
     fprintf(fp, "%d\n", 5);
     fprintf(fp, "Output from CCB\n");
@@ -1550,6 +1591,9 @@ void BackboneCoiledCoil::ppx_to_xyz(char *filename) {
     fprintf(fp, "%5s %10.4f %10.4f %10.4f\n", "CA", pp_x[4][0], pp_x[4][1], pp_x[4][2]);
 
     fclose(fp);
+
+    return CCB_OK;
+
 }
 
 /**
@@ -1558,7 +1602,7 @@ void BackboneCoiledCoil::ppx_to_xyz(char *filename) {
  * @param filename the name of the file to output
  */
 
-void BackboneCoiledCoil::axis_to_xyz(char *filename) {
+int BackboneCoiledCoil::axis_to_xyz(char *filename) {
 
     FILE *fp = NULL; /**< file pointer */
 
@@ -1569,7 +1613,7 @@ void BackboneCoiledCoil::axis_to_xyz(char *filename) {
     fp = fopen(str, "w");
 
     if (fp == NULL && universe->me == 0)
-        error->one(FLERR, "Can't open output file");
+        return error->one(FLERR, "Can't open output file");
 
     fprintf(fp, "%d\n", nrestotal + 1);
     fprintf(fp, "Helical Axes from CCB\n");
@@ -1579,6 +1623,8 @@ void BackboneCoiledCoil::axis_to_xyz(char *filename) {
             fprintf(fp, "%5s %10.4f %10.4f %10.4f\n", "CA", axis_x[i][j][0], axis_x[i][j][1], axis_x[i][j][2]);
 
     fclose(fp);
+
+    return CCB_OK;
 }
 
 /**

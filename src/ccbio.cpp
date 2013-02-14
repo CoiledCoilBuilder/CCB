@@ -58,10 +58,10 @@ Ccbio::~Ccbio() {
   // +-----------------------------------------+ 
 
 
-void Ccbio::add_output(int narg, const char **arg) {
+int Ccbio::add_output(int narg, const char **arg) {
 
 	if (narg < 3)
-		error->one(FLERR,"Illegal output command");
+		return error->one(FLERR,"Illegal output command");
 
 	// Check to see if the output is already defined.
 	int ioutput;
@@ -70,7 +70,7 @@ void Ccbio::add_output(int narg, const char **arg) {
 			break;
 
 	if (ioutput < noutput)
-		error->one(FLERR,"The output already exists");
+		return error->one(FLERR,"The output already exists");
 
 	// realloc more space if we don't have enough to create a new output
 	if (noutput == maxoutput) {
@@ -81,7 +81,7 @@ void Ccbio::add_output(int narg, const char **arg) {
 	//create the output
 
 	if (0)
-		return;
+		return CCB_OK;
 
 #define OUTPUT_CLASS
 #define OutputStyle(key,Class)\
@@ -90,14 +90,16 @@ void Ccbio::add_output(int narg, const char **arg) {
 #undef OUTPUT_CLASS
 
 	else
-		error->one(FLERR,"Invalid output style");
+		return error->one(FLERR,"Invalid output style");
 
 	//Update the total number of active outputs.
 	noutput++;
 
+     return CCB_OK;
+
 }
 
-void Ccbio::delete_output(const char *id) {
+int Ccbio::delete_output(const char *id) {
 
 	// Find the input index
 	int ioutput = find_output(id);
@@ -106,7 +108,7 @@ void Ccbio::delete_output(const char *id) {
 
 	// Delete the output
 	if (ioutput < 0)
-		error->one(FLERR,"Could not find output type ID to delete");
+		return error->one(FLERR,"Could not find output type ID to delete");
 	delete output[ioutput];
 
 	for (int i = ioutput + 1; i < noutput; i++)
@@ -114,6 +116,7 @@ void Ccbio::delete_output(const char *id) {
 
 	noutput--;
 
+     return CCB_OK;
 }
 
 int Ccbio::find_output(const char *id) {
@@ -126,20 +129,26 @@ int Ccbio::find_output(const char *id) {
 	return ioutput;
 }
 
-void Ccbio::init_output(const char *id) {
+int Ccbio::init_output(const char *id) {
 	int ioutput = find_output(id);
 	if (ioutput < 0)
-		error->one(FLERR,"Could not find output type ID to initialize");
+		return error->one(FLERR,"Could not find output type ID to initialize");
 
 	output[ioutput]->init();
+
+     return CCB_OK;
+
 }
 
-void Ccbio::write_output(const char *id) {
+int Ccbio::write_output(const char *id) {
 	int ioutput = find_output(id);
 	if (ioutput < 0)
-		error->one(FLERR,"Could not find output type ID to write");
+		return error->one(FLERR,"Could not find output type ID to write");
 
 	output[ioutput]->write();
+
+     return CCB_OK;
+
 }
 
 void Ccbio::active_outputs() {

@@ -31,11 +31,11 @@ namespace CCB_NS {
 
           // Public Functions for manipulating backbone modelers 
 
-          void init_backbone(const char *);
-          void add_backbone(int, const char **);
-          void delete_backbone(const char *);
-          void update_backbone(const char *id, int argc, const char **argv, int n);
-          void generate_backbone(const char *id);
+          int init_backbone(const char *);
+          int add_backbone(int, const char **);
+          int delete_backbone(const char *);
+          int update_backbone(const char *id, int argc, const char **argv, int n);
+          int generate_backbone(const char *id);
           int find_backbone(const char *);
                
      private:

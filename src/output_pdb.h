@@ -30,8 +30,8 @@ namespace CCB_NS {
      
      private:
           int mask;                   /**< bitmask for atoms to output */
-          void init_style();          /**< Initialize the style */
-          void write_style();         /**< read the file based on style */
+          int init_style();          /**< Initialize the style */
+          int write_style();         /**< read the file based on style */
           void chomp(char *s, int n); /**< Shorten string to n characters */
      };
 }
