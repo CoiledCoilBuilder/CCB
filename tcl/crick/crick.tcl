@@ -7,35 +7,8 @@ package require minimize 1.0;  # Do CG fit between bundles
 namespace eval ::crick:: {
     namespace export crick
 
-    catch {array unset sys}
-    catch {array unset params}
-
     variable sys
-    set sys(aligntext) "name CA"; # The atoms to align for RMSD
-    set sys(usertext) "backbone"; # optional user text
-    set sys(userparams) {pitch radius rotation zoff rpt square rpr}; #params to fit
-    set sys(tol) 0.0001; # CG Tollerance
-
-    if {[info exists env(TMPDIR)]} {
-        set sys(TMPDIR) $env(TMPDIR)
-    } else {
-        set sys(TMPDIR) /tmp
-    }
-
-    # Define initial params
-    variable params;  # CCB parameters
-    set params(nhelix) 2
-    set params(nres) 28
-    set params(pitch) 179
-    set params(radius) 4.5
-    set params(rpt) 3.64
-    set params(rotation) 0.0
-    set params(zoff) 0.0
-    set params(square) 0.0
-    set params(rpr) 1.5
-    set params(antiparallel) 0
-    set params(asymmetric) 0
-    set params(order) {0 1}
+    variable params
 }
 
 proc crick { args } {
@@ -50,15 +23,11 @@ proc ::crick::crick { args } {
     ## Cleanup past systems
     cleanup
 
+    ## Clear up sys array
+    clearsys
+
     # Default mol is the top one
     set sys(molid) [molinfo top]
-
-    # Set per-run defaults
-    set params(asymmetric) 0
-    set sys(tol) 0.0001;          # CG Tollerance
-    set sys(aligntext) "name CA"; # The atoms to align for RMSD
-    set sys(usertext) "backbone"; # optional user text
-    set sys(orderflag) 0;         # user specified chain order 
 
     # Parse the passed arguments
     eval parse $args
@@ -91,7 +60,7 @@ proc ::crick::parse { args } {
         if {$i == "-text"} {set sys(usertext) $j; continue}
         if {$i == "-params"} {set sys(userparams) [lsort -unique $j]; continue}
         if {$i == "-tol"} {set sys(tol) $j; continue}
-        if {$i == "-order"} {set sys(orderflag) 1; set params(order) $j; continue}  
+        if {$i == "-order"} {set sys(orderflag) 1; set params(order) $j; continue}
     }
 
     ## Single Argument Flags
@@ -216,6 +185,8 @@ proc ::crick::clearparams { args } {
 
     variable params
 
+    catch {array unset params}
+
     set params(nhelix) 2
     set params(nres) 28
     set params(pitch) 179
@@ -228,15 +199,28 @@ proc ::crick::clearparams { args } {
     set params(antiparallel) 0
     set params(asymmetric) 0
     set params(order) {0 1}
+
+}
+
+proc ::crick::clearsys { args } {
+
+    variable sys
+
+    catch {array unset sys}
+
+    set sys(aligntext) "name CA"; # The atoms to align for RMSD
+    set sys(usertext) "backbone"; # optional user text
+    set sys(userparams) {pitch radius rotation zoff rpt square rpr}; #params to fit
+    set sys(tol) 0.0001; # CG Tollerance
+    set sys(orderflag) 0;
+    set sys(TMPDIR) /tmp
+
 }
 
 ## Reset everything to vanilla
 proc ::crick::veryclean { args } {
-
-    variable params
-    variable sys
-
     cleanup
+    clearsys
     clearparams
 }
 
@@ -283,6 +267,36 @@ proc ::crick::topology { args } {
     set sys(com) {}
     set sys(nhelix) 0
 
+    ## Unique segment identifier index
+    set segid 0
+
+    ## Move the coiled-coil to the origin, and point the first
+    ## helix's axis along +z
+    set sel [atomselect $sys(molid) "name CA"]
+    set all [atomselect $sys(molid) "all"]
+    set com [measure center $sel weight mass]
+    $all moveby [vecinvert $com]
+    $sel delete
+
+    lassign $ter_index nter cter
+    set sel [atomselect $sys(molid)\
+                     "($sys(usertext)) and index >= $nter and index <= $cter and name CA"]
+    
+    set xyz [$sel get {x y z}]
+    set nter_xyz [lindex $xyz 0]
+    set cter_xyz [lindex $xyz end]
+    $sel delete
+
+    ## Move along x-axis
+    set R [transvecinv [vecsub $cter_xyz $nter_xyz]]
+    $all move $R
+    
+    ## Rotate about +y +90 to bring along +z
+    set R [transaxis y 90 deg]
+    $all move $R
+
+    $all delete
+
     foreach {nter cter} $ter_index {
         set sel [atomselect $sys(molid)\
                      "($sys(usertext)) and index >= $nter and index <= $cter and name CA"]
@@ -294,7 +308,8 @@ proc ::crick::topology { args } {
 
         ## Chains
         set chain [$sel get chain]
-        lappend sys(chain) [lsort -unique $chain]
+	set chain [lsort -unique $chain]
+        lappend sys(chain) $chain
 
         ## Residues per
         lappend sys(nres) [llength $resids]
@@ -310,6 +325,14 @@ proc ::crick::topology { args } {
 
         ## Number of helices
         incr sys(nhelix)
+
+	## Assign a unique segname for chain identification
+	## always consistent with the program, e.g. not
+	## dependent on how the user lettered the chains
+	set segname "$chain$segid"
+	$sel set segname $segname
+	lappend sys(segname) $segname
+	incr segid
 
         $sel delete
     }
@@ -329,36 +352,31 @@ proc ::crick::topology { args } {
     }
 
     ## Calculate how the bundles are arranged
-    ## when looking down the z-axis counterclockwise
+    ## when looking down the coild coil axis counterclockwise
     ## Calculate the angles between the centers of mass
     ## of the helices, the com of the bundle and com of helix 1
     set com1 [lindex $sys(com) 0]
     set com_avg [vecscale [vecadd {*}$sys(com)] [expr {1.0 / $sys(nhelix)}]]
-    set r1 [vecnorm [vecsub $com_avg $com1]]
+
+    set r1 [vecnorm [vecsub $com1 $com_avg]]
     set i 0
-    foreach com2 $sys(com) chain $sys(chain) {
+    foreach com2 $sys(com) segname $sys(segname) {
 
-        set r2 [vecnorm [vecsub $com_avg $com2]]
+        set r2 [vecnorm [vecsub $com2 $com_avg]]
 
-        # Angle between r1_r2
-        set angle [vecdot $r1 $r2]
+	set n [veccross $r1 $r2]
+	set length [veclength $n]
 
-        ## Watch out for floatng point error 
-        if {$angle > 1.000} {set angle [expr {$angle - 0.0001}]}
-        if {$angle < -1.000} {set angle [expr {$angle + 0.0001}]}
+	## Get the angle with the correct direction
+        set angle [expr {atan2($length, [vecdot $r1 $r2])}]
 
-        ## Angle between coms
-        set angle [expr {acos($angle)}]
+	## Make sure we've got the correct direction
+	if {[lindex $n 2] < 0} {
+	    set angle [expr {$angle + 3.14159265}]
+	}
 
-        ## Angle Direction
-        set n [veccross $r1 $r2]
-        set orient [vecdot $n [list 0 0 1]]
-
-        if {$orient > 0.0} {
-            set angle [expr {$angle + 3.1415926}]
-        }
-
-        lappend sys(order) [list $i $chain $angle]
+	## Make an associated list with index, segid and angle value
+        lappend sys(order) [list $i $segname $angle]
         incr i
     }
 
@@ -371,13 +389,6 @@ proc ::crick::setmol { args } {
 
     variable sys
     variable params
-
-    # Set number of residues, make sure each chain is the same length
-    #set nres [lsort -unique -integer $sys(nres)]
-    #if {[llength $nres] > 1} {
-    #    vmdcon -error "ccb:number of residues per helix is variable: $sys(nres)"
-    #    return -1
-    #}
 
     set params(nres) $sys(nres)
     set params(nhelix) $sys(nhelix)

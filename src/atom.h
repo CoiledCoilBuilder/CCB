@@ -30,6 +30,7 @@ namespace CCB_NS {
 
         class Site *site; /**< The site this atom belongs to */
         class Group *group; /**< The group this atom belongs to */
+
         Atom(const Atom &); /**< Copy Constructor */
         Atom& operator=(Atom const &); /**< assignment operator */
 

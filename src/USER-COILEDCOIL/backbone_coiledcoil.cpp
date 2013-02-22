@@ -1402,7 +1402,7 @@ int BackboneCoiledCoil::update_domain() {
         // Calculate the offset w.r.t the user specified order
         int hindex = order[i];
 
-        for (int j = 0, offset = 0; j < nres[i]; j++, offset += 4) {
+        for (int j = 0, offset = 0; j < nres[hindex]; j++, offset += 4) {
 
             int isite = domain->add_site();
             cursite = domain->site[isite];
