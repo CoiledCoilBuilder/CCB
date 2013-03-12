@@ -38,18 +38,18 @@ using namespace CCB_NS;
 using namespace MathExtra;
 
 BackboneCoiledCoil::BackboneCoiledCoil(CCB *ccb, int narg, const char **arg) :
-          Backbone(ccb, narg, arg),
-          natom(0),
-          natomlarge(0),
-          maxatom(0),
-          nhelix(2),
-          nreslarge(35),
-          nrestotal(0),
-          pitch(120.0),
-          square(0.0),
-          phi(-65.0),
-          psi(-40.0),
-          rpr(1.495)
+        Backbone(ccb, narg, arg),
+        natom(0),
+        natomlarge(0),
+        maxatom(0),
+        nhelix(2),
+        nreslarge(35),
+        nrestotal(0),
+        pitch(120.0),
+        square(0.0),
+        phi(-65.0),
+        psi(-40.0),
+        rpr(1.495)
 {
 
     // Check to see that we have a legit style and the format is correct.
@@ -61,6 +61,7 @@ BackboneCoiledCoil::BackboneCoiledCoil(CCB *ccb, int narg, const char **arg) :
         nres[i] = 35;
         rotation[i] = 0.0;
         zoff[i] = 0.0;
+        z[i] = 0.0;
         rpt[i] = 3.64;
     }
 
@@ -119,6 +120,7 @@ BackboneCoiledCoil::BackboneCoiledCoil(CCB *ccb, int narg, const char **arg) :
             nres[i] = nres[0];
             rotation[i] = rotation[0];
             zoff[i] = zoff[0];
+            z[i] = z[0];
             rpt[i] = rpt[0];
         }
     }
@@ -241,6 +243,7 @@ int BackboneCoiledCoil::set_params(int argc, const char **argv, int n) {
             }
             continue;
 
+        // Residues per turn of the minorhelices
         } else if (strcmp(argv[n], "-rpt") == 0) {
             n++;
             if (n == argc) return error->one(FLERR, "Missing argument to -rpt");
@@ -251,6 +254,7 @@ int BackboneCoiledCoil::set_params(int argc, const char **argv, int n) {
             }
             continue;
 
+        // Offset along the minorhelical axis    
         } else if (strcmp(argv[n], "-zoff") == 0) {
             n++;
             if (n == argc) return error->one(FLERR, "Missing argument to -zoff");
@@ -261,6 +265,18 @@ int BackboneCoiledCoil::set_params(int argc, const char **argv, int n) {
             }
             continue;
 
+        // Offset along the coiled-coil axis
+        } else if (strcmp(argv[n], "-Z") == 0) {
+            n++;
+            if (n == argc) return error->one(FLERR, "Missing argument to -Z");
+            int i = 0;
+            while (n < argc && isfloat(argv[n])) {
+                z[i++] = atof(argv[n]);
+                n++;
+            }
+            continue;
+
+        // Adjust the order that the helices are written to the pdb file
         } else if (strcmp(argv[n], "-order") == 0) {
             n++;
             if (n == argc) return error->one(FLERR, "Missing argument to -order");
@@ -318,8 +334,8 @@ int BackboneCoiledCoil::set_params(int argc, const char **argv, int n) {
 int BackboneCoiledCoil::update_style(int argc, const char **argv, int n) {
 
     // set the params
-     if (set_params(argc, argv, n) != CCB_OK)
-          return CCB_ERROR;
+    if (set_params(argc, argv, n) != CCB_OK)
+        return CCB_ERROR;
 
     // Update parameter dependent values
     omega = -2 * PI * rpr / pitch;
@@ -332,6 +348,7 @@ int BackboneCoiledCoil::update_style(int argc, const char **argv, int n) {
             nres[i] = nres[0];
             rotation[i] = rotation[0];
             zoff[i] = zoff[0];
+            z[i] = z[0];
             rpt[i] = rpt[0];
         }
     }
@@ -361,17 +378,17 @@ int BackboneCoiledCoil::update_style(int argc, const char **argv, int n) {
  */
 int BackboneCoiledCoil::generate_style() {
 
-     int code = CCB_OK;
+    int code = CCB_OK;
 
-     if (asymmetric_flag)
-          code = generate_asymmetric();
-     else
-          code = generate();
+    if (asymmetric_flag)
+        code = generate_asymmetric();
+    else
+        code = generate();
 
-     if (code != CCB_OK) return CCB_ERROR; 
+    if (code != CCB_OK) return CCB_ERROR;
 
     // update the domain
-     if (update_domain() != CCB_OK) return CCB_ERROR;
+    if (update_domain() != CCB_OK) return CCB_ERROR;
 
     return CCB_OK;
 }
@@ -386,7 +403,7 @@ int BackboneCoiledCoil::init_style() {
 
     // create/set the bitmask for the backbone atoms in this style
     // we set it to the user-provided style id
-     if (bitmask->add_bitmask(id) != CCB_OK) return CCB_ERROR;
+    if (bitmask->add_bitmask(id) != CCB_OK) return CCB_ERROR;
     mask = bitmask->find_mask(id);
 
     // allocate memory for initial peptide plane
@@ -394,7 +411,7 @@ int BackboneCoiledCoil::init_style() {
     memory->create(pp_x, 5, 4, "backbonecoiledcoil:ppx");
 
     if (pp_x == NULL)
-         return CCB_ERROR;
+        return CCB_ERROR;
 
     return CCB_OK;
 }
@@ -414,14 +431,14 @@ int BackboneCoiledCoil::allocate() {
         x = memory->grow(x, nhelix, natomlarge, 4, "backbonecoiledcoil:x");
 
         if (x == NULL)
-             return CCB_ERROR;
+            return CCB_ERROR;
 
         // reallocate the array to store the coodinates of the helical axis
         axis_x = memory->grow(axis_x, nhelix, nreslarge + 2, 4, "backbonecoiledcoild:axis_x");
 
         if (axis_x == NULL)
-             return CCB_ERROR;
-                                
+            return CCB_ERROR;
+
     }
 
     return CCB_OK;
@@ -442,7 +459,7 @@ int BackboneCoiledCoil::add_site(Site *s) {
     }
 
     if (site == NULL)
-         return CCB_ERROR;
+        return CCB_ERROR;
 
     site[nsite++] = s;
 
@@ -750,7 +767,7 @@ void BackboneCoiledCoil::helix_axis() {
         for (j = 0; j <= nres[i] + 1; j++) {
             axis_x[i][j][0] = radius[j] * cos(j * omega + ((z0 + zoff[i]) * omega / rpr));
             axis_x[i][j][1] = radius[j] * sin(j * omega + ((z0 + zoff[i]) * omega / rpr));
-            axis_x[i][j][2] = j * rpr + z0 + zoff[i];
+            axis_x[i][j][2] = j * rpr + z0 + zoff[i] + z[i];
             axis_x[i][j][3] = 1.0;
         }
     }
@@ -1383,10 +1400,10 @@ int BackboneCoiledCoil::update_domain() {
 
     /**
      * Delete all the sites associated with the old
-     * coiled-coil, and create new sites. 
+     * coiled-coil, and create new sites.
      */
 
-    domain->reset();    
+    domain->reset();
     for (unsigned int i = 0; i < nsite; i++) {
         site[i] = NULL;
     }
@@ -1397,7 +1414,7 @@ int BackboneCoiledCoil::update_domain() {
 
         if (order[i] >= nhelix)
             return error->one(FLERR, "Order must be less than the number of helices\n"
-                "e.g. if nhelix = 2, order is either {0 1} or {1 0}");
+                              "e.g. if nhelix = 2, order is either {0 1} or {1 0}");
 
         // Calculate the offset w.r.t the user specified order
         int hindex = order[i];
@@ -1516,27 +1533,29 @@ int BackboneCoiledCoil::update_domain() {
 void BackboneCoiledCoil::print_header() {
 
     fprintf(screen, "\nGenerating a coiled-coil with the following parameters:\n"
-        "N helices:            %d\n"
-        "Pitch (angstroms):    %.2f\n"
-        "Radius (angstroms):   %.2f\n"
-        "Rotation (degrees):   %.2f\n"
-        "Residues per turn:    %.2f\n"
-        "Zoff (angstroms):     %.2f\n"
-        "Squareness (degrees): %.2f\n"
-        "Rise per residue:     %.2f\n"
-        "Antiparallel:         %d\n\n", nhelix, pitch, radius[0], rotation[0] * RAD2DEG,
-        rpt[0], zoff[0], square * RAD2DEG, rpr, anti_flag);
+            "N helices:            %d\n"
+            "Pitch (angstroms):    %.2f\n"
+            "Radius (angstroms):   %.2f\n"
+            "Rotation (degrees):   %.2f\n"
+            "Residues per turn:    %.2f\n"
+            "Zoff (angstroms):     %.2f\n"
+            "Z (angstroms):        %.2f\n"
+            "Squareness (degrees): %.2f\n"
+            "Rise per residue:     %.2f\n"
+            "Antiparallel:         %d\n\n", nhelix, pitch, radius[0], rotation[0] * RAD2DEG,
+            rpt[0], zoff[0], z[0], square * RAD2DEG, rpr, anti_flag);
 
     if (asymmetric_flag)
         fprintf(screen, "Asymmetric Parameters:\n");
     for (int i = 0; i < nhelix; i++)
         fprintf(screen,
-            "N residues:        %d: %3d\n"
-            "Rotation (degrees) %d: %.2f\n"
-            "Zoff (angstrom)    %d: %.2f\n"
-            "Residues per Turn  %d: %.2f\n",
-            i+1, nres[i], i+1, rotation[i] * RAD2DEG,
-            i+1, zoff[i], i+1, rpt[i]);
+                "N residues:        %d: %3d\n"
+                "Rotation (degrees) %d: %.2f\n"
+                "Zoff (angstrom)    %d: %.2f\n"
+                "Z (angstrom)       %d: %.2f\n"
+                "Residues per Turn  %d: %.2f\n",
+                i+1, nres[i], i+1, rotation[i] * RAD2DEG,
+                i+1, zoff[i], i+1, z[i], i+1, rpt[i]);
     fprintf(screen, "\n\n");
 
 }
@@ -1650,7 +1669,7 @@ void BackboneCoiledCoil::print_axis() {
     for (int i = 0; i < nhelix; i++)
         for (int j = 0; j < nres[i]; j++)
             fprintf(screen, "%d\t%d\t%10.4f\t%10.4f\t%10.4f\n", i, j,
-                axis_x[i][j][0], axis_x[i][j][1], axis_x[i][j][2]);
+                    axis_x[i][j][0], axis_x[i][j][1], axis_x[i][j][2]);
 }
 
 /**
@@ -1740,7 +1759,7 @@ bool BackboneCoiledCoil::isfloat(const char *str) {
 
     unsigned int i = 0;
     while (isdigit(str[i]) || str[i] == '.'
-        || str[i] == '-' || str[i] == 'e')
+           || str[i] == '-' || str[i] == 'e')
         i++;
 
     if (i == strlen(str))

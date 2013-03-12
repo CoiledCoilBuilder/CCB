@@ -39,123 +39,124 @@ BackboneStyle(coiledcoil,BackboneCoiledCoil)
 
 #define MAX_RES 500
 
-    namespace CCB_NS {
+namespace CCB_NS {
 
-    class BackboneCoiledCoil : public Backbone {
+class BackboneCoiledCoil : public Backbone {
 
-    public:
-        BackboneCoiledCoil(class CCB *, int, const char **);
-        ~BackboneCoiledCoil();
+  public:
+    BackboneCoiledCoil(class CCB *, int, const char **);
+    ~BackboneCoiledCoil();
 
-        // Member Functions
-        int generate();                                              /**< build coiled-coil, update coordinates in x */
-        int update_domain();                                         /**< set the domain coordinates to the backbone coordianates*/
-        int set_params(int argc, const char **argv, int n);          /**< set the backbone parameters before generation*/
+    // Member Functions
+    int generate();                                              /**< build coiled-coil, update coordinates in x */
+    int update_domain();                                         /**< set the domain coordinates to the backbone coordianates*/
+    int set_params(int argc, const char **argv, int n);          /**< set the backbone parameters before generation*/
 
-    protected:
-        virtual int init_style();                                     /**< Initialize the style (declare member variables, etc.. */
-        virtual int update_style(int argc, const char **argv, int n); /**< Update the parameters and re-generate the structure */
-        virtual int generate_style();                                 /**< Generate coordinates */
+  protected:
+    virtual int init_style();                                     /**< Initialize the style (declare member variables, etc.. */
+    virtual int update_style(int argc, const char **argv, int n); /**< Update the parameters and re-generate the structure */
+    virtual int generate_style();                                 /**< Generate coordinates */
 
-    private:
+  private:
 
-        // Variables that describe the backbone topology
-        unsigned int natom;           /**< number of atoms = numres*numhelix*4 */
-        unsigned int natomlarge;      /**< Largest number of atoms in a chain */
-        unsigned int maxatom;         /**< maximum number of atoms allowed before realloc of atom vector */
-        int nhelix;                   /**< number of helices per coiled-coil */
-        int nreslarge;                /**< Largest number of residues in a chain */
-        int nrestotal;                /**< Total number of residues in the coiled-coil */
+    // Variables that describe the backbone topology
+    unsigned int natom;           /**< number of atoms = numres*numhelix*4 */
+    unsigned int natomlarge;      /**< Largest number of atoms in a chain */
+    unsigned int maxatom;         /**< maximum number of atoms allowed before realloc of atom vector */
+    int nhelix;                   /**< number of helices per coiled-coil */
+    int nreslarge;                /**< Largest number of residues in a chain */
+    int nrestotal;                /**< Total number of residues in the coiled-coil */
 
-        // Symmetric Parameters
-        double pitch;                 /**< pitch of the coiled-coil */
-        double square;                /**< squareness of the coiled-coil */
-        double phi;                   /**< initial phi angle used to build the peptide plane */
-        double psi;                   /**< initial psi angle used to build the peptide plane */
-        double rpr;                   /**< rise per residue, major helix frame, d */
-        double omega;                 /**< major helix angular yield per residue; -2*PI*rpr/pitch */
-        double omega_alpha;           /**< minor helix angular yield per residue; 2*pi/rpt */
+    // Symmetric Parameters
+    double pitch;                 /**< pitch of the coiled-coil */
+    double square;                /**< squareness of the coiled-coil */
+    double phi;                   /**< initial phi angle used to build the peptide plane */
+    double psi;                   /**< initial psi angle used to build the peptide plane */
+    double rpr;                   /**< rise per residue, major helix frame, d */
+    double omega;                 /**< major helix angular yield per residue; -2*PI*rpr/pitch */
+    double omega_alpha;           /**< minor helix angular yield per residue; 2*pi/rpt */
 
-        // Radius expansion/contraction
-        double radius[MAX_RES];       /**<Radius of the coiled-coil*/
-        double r0_params[4];          /**<Array of radius parameters for expansion/contraction r0_start, r0_end, res_start, res_end */
+    // Radius expansion/contraction
+    double radius[MAX_RES];       /**<Radius of the coiled-coil*/
+    double r0_params[4];          /**<Array of radius parameters for expansion/contraction r0_start, r0_end, res_start, res_end */
 
-        // Asymmetric Parameters
-        int nres[MAX_HELIX];          /**< number of residues per helix */
-        double rotation[MAX_HELIX];   /**< rotation of the helices, for asymmetric, a list of rotations for each helix */
-        double rpt[MAX_HELIX];        /**< residues per turn of the helices */
-        double zoff[MAX_HELIX];       /**< z-axis displacement of helices, for asymmetric, a list of offsets for each helix */
+    // Asymmetric Parameters
+    int nres[MAX_HELIX];          /**< number of residues per helix */
+    double rotation[MAX_HELIX];   /**< rotation of the helices, for asymmetric, a list of rotations for each helix */
+    double rpt[MAX_HELIX];        /**< residues per turn of the helices */
+    double zoff[MAX_HELIX];       /**< z-axis displacement of helices along their axis, for asymmetric, a list of offsets for each helix */
+    double z[MAX_HELIX];          /**< z-axis displacement of helices along the coiled-coil axis*/
 
-        bool anti_flag;               /**< antiparallel flag, specifies construction of antiparallel coiled-coil */
-        bool asymmetric_flag;         /**< Are the helices in the coiled-coil symmetric? **/
-        bool rebuild_domain;          /**< if true, we erase the existing coiled coil when we update */
+    bool anti_flag;               /**< antiparallel flag, specifies construction of antiparallel coiled-coil */
+    bool asymmetric_flag;         /**< Are the helices in the coiled-coil symmetric? **/
+    bool rebuild_domain;          /**< if true, we erase the existing coiled coil when we update */
 
-        double **pp_x;                /**< 2D-array of initial peptide-plane coordinates */
-        double ***axis_x;             /**< coordinates of the minor-helical axis */
-        double ***x;                  /**< 3D-array of coordinates for coiled-coil */
+    double **pp_x;                /**< 2D-array of initial peptide-plane coordinates */
+    double ***axis_x;             /**< coordinates of the minor-helical axis */
+    double ***x;                  /**< 3D-array of coordinates for coiled-coil */
 
-        //Order of output by chain
-        int order[64];                /**< Order of chain output, e.g. {0 3 1 2} switches {A B C D} to {A D B C} */
+    //Order of output by chain
+    int order[64];                /**< Order of chain output, e.g. {0 3 1 2} switches {A B C D} to {A D B C} */
 
-        Site **site;                  /**< Array of sites that this style created and can update or delete */
-        unsigned int nsite;           /**< current number of sites that belong to this style */
-        unsigned int maxsite;         /**< maximum number of sites before realloc is necessary */
-        int add_site(Site *s);       /**< adds a site for this style to keep track of*/
+    Site **site;                  /**< Array of sites that this style created and can update or delete */
+    unsigned int nsite;           /**< current number of sites that belong to this style */
+    unsigned int maxsite;         /**< maximum number of sites before realloc is necessary */
+    int add_site(Site *s);       /**< adds a site for this style to keep track of*/
 
-        int mask;                     /**< sets the backbone atom's bitmask */
+    int mask;                     /**< sets the backbone atom's bitmask */
 
-        void build_plane();             /**< build the first peptide plane */
-        void align_plane(double *w);    /**< align the peptide-plane rotation vector with w (axis) */
-        void helix_axis(); /**< generate the axis of the minor helix */
-        void symmetry();                /**< apply symmetry operations to helix to generate coil */
-        void azzero();                  /**< zero out coordinates in x array */
-        int allocate();                /**< increase size of x, axis if necessary */
-
-
-        void get_pp_params(double *axis0, double *axis1,
-            double *u, double *v, double *r, double &theta);             /**< Determines the screw-rotation parameters from the peptide plane */
-        void crick(double *u, double rho, double *r1, double *r2);       /**< Sets the rotation angle to correspond to the crick angle */
-        void next_plane(double *u, double *v, double theta);             /**< Generates the next plane given u, v, theat */
-        void terminate();                                                /**< Adds the n-terminal nitrogen, rearranges coordinates */
-        void terminate_asymmetric();                                     /**< Adds the n-terminal nitrogen, rearranges coordinates */
-        double memory_usage();                                           /**< Calculates the memory usage of this style */
-        void print_header();                                             /**< Prints the header information each time a coil is generated*/
-
-        // Stuff for asymmetry
-        void symmetry_axis();
-        int generate_asymmetric();
-
-        /**
-         * Helper Functions
-         *
-         */
-
-        void print_plane();
-        void print_coordinates();
-        void print_axis();      /**< Print the helix axis coodinates to screen */
-        int  ppx_to_xyz(char *filename);
-        int  axis_to_xyz(char *filename);
-        void inner_to_outer(double *&a, double *&b, double *&c,
-            double bond, double angle, double chi, double *&z);
-        bool isfloat(const char *str);
+    void build_plane();             /**< build the first peptide plane */
+    void align_plane(double *w);    /**< align the peptide-plane rotation vector with w (axis) */
+    void helix_axis(); /**< generate the axis of the minor helix */
+    void symmetry();                /**< apply symmetry operations to helix to generate coil */
+    void azzero();                  /**< zero out coordinates in x array */
+    int allocate();                /**< increase size of x, axis if necessary */
 
 
-        // Hardcoded bond lenghts and angles for
-        // peptide plane construction
+    void get_pp_params(double *axis0, double *axis1,
+                       double *u, double *v, double *r, double &theta);             /**< Determines the screw-rotation parameters from the peptide plane */
+    void crick(double *u, double rho, double *r1, double *r2);       /**< Sets the rotation angle to correspond to the crick angle */
+    void next_plane(double *u, double *v, double theta);             /**< Generates the next plane given u, v, theat */
+    void terminate();                                                /**< Adds the n-terminal nitrogen, rearranges coordinates */
+    void terminate_asymmetric();                                     /**< Adds the n-terminal nitrogen, rearranges coordinates */
+    double memory_usage();                                           /**< Calculates the memory usage of this style */
+    void print_header();                                             /**< Prints the header information each time a coil is generated*/
 
-        // bond lengths
-        double ca_c;
-        double c_o;
-        double c_n;
-        double n_ca;
+    // Stuff for asymmetry
+    void symmetry_axis();
+    int generate_asymmetric();
 
-        //bond angles
-        double ca_c_o;
-        double ca_c_n;
-        double c_n_ca;
-        double n_ca_c;
+    /**
+     * Helper Functions
+     *
+     */
 
-    };
+    void print_plane();
+    void print_coordinates();
+    void print_axis();      /**< Print the helix axis coodinates to screen */
+    int  ppx_to_xyz(char *filename);
+    int  axis_to_xyz(char *filename);
+    void inner_to_outer(double *&a, double *&b, double *&c,
+                        double bond, double angle, double chi, double *&z);
+    bool isfloat(const char *str);
+
+
+    // Hardcoded bond lenghts and angles for
+    // peptide plane construction
+
+    // bond lengths
+    double ca_c;
+    double c_o;
+    double c_n;
+    double n_ca;
+
+    //bond angles
+    double ca_c_o;
+    double ca_c_n;
+    double c_n_ca;
+    double n_ca_c;
+
+};
 }
 
 #endif
