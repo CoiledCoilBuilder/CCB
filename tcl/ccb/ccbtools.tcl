@@ -496,7 +496,7 @@ proc ::ccbtools::gui {args} {
         -command [namespace code {symcmdwrap "zoff" %s}]
 
     spinbox $wid.scales.box_z -width 10 -from -20.00 -to 20.00 -increment 1.0 -format %10.2f\
-        -command [namespace code {symcmdwrap "Z" %s}]
+        -command [namespace code {symcmdwrap "z" %s}]
 
     ## Scales for main window
     scale $wid.scales.scl_nhelix -label "Number of helices:" -orient h -digit 1 -from 1 -to 12\
