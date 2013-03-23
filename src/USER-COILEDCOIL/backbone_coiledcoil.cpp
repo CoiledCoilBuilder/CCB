@@ -63,17 +63,15 @@ BackboneCoiledCoil::BackboneCoiledCoil(CCB *ccb, int narg, const char **arg) :
         zoff[i] = 0.0;
         z[i] = 0.0;
         rpt[i] = 3.64;
-    }
-
-    // Initial Output Order, maximum 64 chains
-    for (int i = 0; i < MAX_HELIX; i++)
         order[i] = i;
+        ap_order[i] = 0;
+    }
 
     // Radius expansion/contraction parameters
     r0_params[0] = 4.65;        /**< r0_start */
     r0_params[1] = 4.65;        /**< r0_end */
     r0_params[2] = 0;           /**< res_start */
-    r0_params[3] = 0;          /**< res_end */
+    r0_params[3] = 0;           /**< res_end */
 
     // Fill radius array with default values
     for (int i = 0; i < MAX_RES; i++)
@@ -212,8 +210,20 @@ int BackboneCoiledCoil::set_params(int argc, const char **argv, int n) {
             if (nhelix < 1) return error->one(FLERR, "nhelix must be greater than 0");
 
         } else if (strcmp(argv[n], "-antiparallel") == 0) {
+             n++;
+             
+             // Set default antiparallel option, e.g. 0 1 0 1...
+             for (int i = 1; i < MAX_HELIX; i += 2) {
+                  ap_order[i] = 1;
+             }
+             
+             int i = 0;
+             while (n < argc && isfloat(argv[n])) {
+                  ap_order[i++] = atoi(argv[n]);
+                  n++;
+             }
+
             anti_flag = true;
-            n++;
             continue;
 
         } else if (strcmp(argv[n], "-asymmetric") == 0) {
@@ -278,14 +288,14 @@ int BackboneCoiledCoil::set_params(int argc, const char **argv, int n) {
 
         // Adjust the order that the helices are written to the pdb file
         } else if (strcmp(argv[n], "-order") == 0) {
-            n++;
-            if (n == argc) return error->one(FLERR, "Missing argument to -order");
-            int i = 0;
-            while (n < argc && isfloat(argv[n])) {
-                order[i++] = atoi(argv[n]);
-                n++;
-            }
-            continue;
+             n++;
+             if (n == argc) return error->one(FLERR, "Missing argument to -order");
+             int i = 0;
+             while (n < argc && isfloat(argv[n])) {
+                  order[i++] = atoi(argv[n]);
+                  n++;
+             }
+             continue;
 
         } else if (strcmp(argv[n], "-nres") == 0) {
             n++;
@@ -753,6 +763,10 @@ void BackboneCoiledCoil::helix_axis() {
                 radius[j++] = r0_params[1];
         }
 
+        // Reverse order if antiparallel
+        if (ap_order[i] != 0)
+             reverse(&radius[0],nres[i]);
+
         // Output radius values if debugging
         if (error->verbosity_level > 8) {
             for (j = 0; j < nres[i]; j++)
@@ -1209,10 +1223,7 @@ void BackboneCoiledCoil::symmetry() {
 
     /**
      * rotation about r2d a magnitude pi and about
-     * z a magnitude 2*pi*i/nhelix. Odd helices
-     * are offset along z if specified, even
-     * helices are offset in x/y depending on
-     * squareness.
+     * z a magnitude 2*pi*i/nhelix. 
      */
 
     for (int i = 0; i < nhelix; i++) {
@@ -1220,15 +1231,23 @@ void BackboneCoiledCoil::symmetry() {
         copy4(m4, ident);
         double theta = (2 * PI * i / nhelix);
 
-        if ((i % 2) == 0) {
-            v[2] = 0.0;
-            theta += square;
+        if (ap_order[i] == 0) {
+             v[2] = 0.0;
+             theta += square;
         } else {
-            //v[2] = zoff[0];
-
-            if (anti_flag)
-                copy4(m4, m1);
+             if (anti_flag)
+                  copy4(m4,m1);
         }
+
+        //if ((i % 2) == 0) {
+        //    v[2] = 0.0;
+        //    theta += square;
+        //} else {
+        //    //v[2] = zoff[0];
+        // 
+        //    if (anti_flag)
+        //        copy4(m4, m1);
+        //}
 
         // Rotation matrix about z
         axis_angle_to_mat_trans4(theta, z, v, m2);
@@ -1768,3 +1787,19 @@ bool BackboneCoiledCoil::isfloat(const char *str) {
     return false;
 
 }
+
+void BackboneCoiledCoil::reverse(double *a, int n) {
+
+     double *start = a;
+     double *end = a+n-1;
+
+     while (start < end) {
+          double temp = *start;
+          *start = *end;
+          *end = temp;
+          start++;
+          end--;
+     }
+}
+                   
+                     
