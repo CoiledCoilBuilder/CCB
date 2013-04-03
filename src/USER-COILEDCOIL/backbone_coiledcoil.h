@@ -87,7 +87,6 @@ class BackboneCoiledCoil : public Backbone {
     double zoff[MAX_HELIX];       /**< z-axis displacement of helices along their axis, for asymmetric, a list of offsets for each helix */
     double z[MAX_HELIX];          /**< z-axis displacement of helices along the coiled-coil axis*/
 
-    bool anti_flag;               /**< antiparallel flag, specifies construction of antiparallel coiled-coil */
     bool asymmetric_flag;         /**< Are the helices in the coiled-coil symmetric? **/
     bool rebuild_domain;          /**< if true, we erase the existing coiled coil when we update */
 
@@ -96,7 +95,11 @@ class BackboneCoiledCoil : public Backbone {
     double ***x;                  /**< 3D-array of coordinates for coiled-coil */
 
     //Order of output by chain
-    int order[64];                /**< Order of chain output, e.g. {0 3 1 2} switches {A B C D} to {A D B C} */
+    int order[MAX_HELIX];         /**< Order of chain output, e.g. {0 3 1 2} switches {A B C D} to {A D B C} */
+
+    // Specify Antiparallel and individual helical orientations
+    bool anti_flag;               /**< antiparallel flag, specifies construction of antiparallel coiled-coil */
+    int ap_order[MAX_HELIX];      /**< Specifies order of helices with respect to first helix. e.g. an up-down-up is 0 1 0 */
 
     Site **site;                  /**< Array of sites that this style created and can update or delete */
     unsigned int nsite;           /**< current number of sites that belong to this style */
@@ -139,6 +142,7 @@ class BackboneCoiledCoil : public Backbone {
     void inner_to_outer(double *&a, double *&b, double *&c,
                         double bond, double angle, double chi, double *&z);
     bool isfloat(const char *str);
+    void reverse(double *a, int n);
 
 
     // Hardcoded bond lenghts and angles for
