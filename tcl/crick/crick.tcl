@@ -144,7 +144,7 @@ proc ::crick::updatemol { args } {
     }
 
     if {$params(antiparallel)} {
-        lappend opts "-antiparallel"
+        lappend opts "-antiparallel $sys(orient)"
     }
 
     # Generate structure
@@ -244,6 +244,7 @@ proc ::crick::topology { args } {
     ## of unique chains. Assume there is at least 1 chain
     ## Looking for a break in C-N Connectivity
     ## This may not be completely robust
+    ## Perhaps use VMDs "fragment" option
 
     ## list is {nter cter nter cter nter cter ...}
     set ter_index [lindex $BL {0 0}]
@@ -266,12 +267,15 @@ proc ::crick::topology { args } {
     set sys(order) {}
     set sys(com) {}
     set sys(nhelix) 0
+    set sys(orient) 0
 
     ## Unique segment identifier index
     set segid 0
 
     ## Move the coiled-coil to the origin, and point the first
-    ## helix's axis along +z
+    ## helix's axis along +z, this is necessary so we 
+    ## we have a global frame of reference, e.g. coiled-coil
+    ## axis along the Z-ordinate
     set sel [atomselect $sys(molid) "name CA"]
     set all [atomselect $sys(molid) "all"]
     set com [measure center $sel weight mass]
@@ -351,6 +355,16 @@ proc ::crick::topology { args } {
         lappend sys(crossangle) [expr {acos($angle)/3.14159*180}]
     }
 
+    ## Check for parallel vs. antiparallel and specify 
+    ## if necessary in the orient array
+    foreach angle $sys(crossangle) {
+	if {$angle > 90} {
+	    lappend sys(orient) 1
+	} else {
+	    lappend sys(orient) 0
+	}
+    }
+
     ## Calculate how the bundles are arranged
     ## when looking down the coild coil axis counterclockwise
     ## Calculate the angles between the centers of mass
@@ -370,7 +384,7 @@ proc ::crick::topology { args } {
 	## Get the angle with the correct direction
         set angle [expr {atan2($length, [vecdot $r1 $r2])}]
 
-	## Make sure we've got the correct direction
+	# Make sure we've got the correct direction
 	if {[lindex $n 2] < 0} {
 	    set angle [expr {$angle + 3.14159265}]
 	}
