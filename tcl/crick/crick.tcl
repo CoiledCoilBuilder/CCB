@@ -180,7 +180,7 @@ proc ::crick::resetmol { args } {
     newmol
 }
 
-## Clear the params 
+## Clear the params
 proc ::crick::clearparams { args } {
 
     variable params
@@ -273,7 +273,7 @@ proc ::crick::topology { args } {
     set segid 0
 
     ## Move the coiled-coil to the origin, and point the first
-    ## helix's axis along +z, this is necessary so we 
+    ## helix's axis along +z, this is necessary so we
     ## we have a global frame of reference, e.g. coiled-coil
     ## axis along the Z-ordinate
     set sel [atomselect $sys(molid) "name CA"]
@@ -284,8 +284,8 @@ proc ::crick::topology { args } {
 
     lassign $ter_index nter cter
     set sel [atomselect $sys(molid)\
-                     "($sys(usertext)) and index >= $nter and index <= $cter and name CA"]
-    
+                 "($sys(usertext)) and index >= $nter and index <= $cter and name CA"]
+
     set xyz [$sel get {x y z}]
     set nter_xyz [lindex $xyz 0]
     set cter_xyz [lindex $xyz end]
@@ -294,7 +294,7 @@ proc ::crick::topology { args } {
     ## Move along x-axis
     set R [transvecinv [vecsub $cter_xyz $nter_xyz]]
     $all move $R
-    
+
     ## Rotate about +y +90 to bring along +z
     set R [transaxis y 90 deg]
     $all move $R
@@ -312,7 +312,7 @@ proc ::crick::topology { args } {
 
         ## Chains
         set chain [$sel get chain]
-	set chain [lsort -unique $chain]
+        set chain [lsort -unique $chain]
         lappend sys(chain) $chain
 
         ## Residues per
@@ -330,13 +330,13 @@ proc ::crick::topology { args } {
         ## Number of helices
         incr sys(nhelix)
 
-	## Assign a unique segname for chain identification
-	## always consistent with the program, e.g. not
-	## dependent on how the user lettered the chains
-	set segname "$chain$segid"
-	$sel set segname $segname
-	lappend sys(segname) $segname
-	incr segid
+        ## Assign a unique segname for chain identification
+        ## always consistent with the program, e.g. not
+        ## dependent on how the user lettered the chains
+        set segname "$chain$segid"
+        $sel set segname $segname
+        lappend sys(segname) $segname
+        incr segid
 
         $sel delete
     }
@@ -348,21 +348,19 @@ proc ::crick::topology { args } {
     foreach r2 [lrange $sys(direction) 1 end] {
         set angle [vecdot [vecnorm $r1] [vecnorm $r2]]
 
-        ## Watch out for floatng point error 
+        ## Watch out for floatng point error
         if {$angle > 1.000} {set angle [expr {$angle - 0.0001}]}
         if {$angle < -1.000} {set angle [expr {$angle + 0.0001}]}
- 
-        lappend sys(crossangle) [expr {acos($angle)/3.14159*180}]
-    }
 
-    ## Check for parallel vs. antiparallel and specify 
-    ## if necessary in the orient array
-    foreach angle $sys(crossangle) {
-	if {$angle > 90} {
-	    lappend sys(orient) 1
-	} else {
-	    lappend sys(orient) 0
-	}
+        ## Check for parallel vs. antiparallel and specify
+        ## if necessary in the orient list
+        if {$angle < 0} {
+            lappend sys(orient) 1
+        } else {
+            lappend sys(orient) 0
+        }
+
+        lappend sys(crossangle) [expr {acos($angle)/3.14159*180}]
     }
 
     ## Calculate how the bundles are arranged
@@ -378,25 +376,36 @@ proc ::crick::topology { args } {
 
         set r2 [vecnorm [vecsub $com2 $com_avg]]
 
-	set n [veccross $r1 $r2]
-	set length [veclength $n]
+        set n [veccross $r1 $r2]
+        set length [veclength $n]
 
-	## Get the angle with the correct direction
+        ## Get the angle with the correct direction
         set angle [expr {atan2($length, [vecdot $r1 $r2])}]
 
-	# Make sure we've got the correct direction
-	if {[lindex $n 2] < 0} {
-	    set angle [expr {$angle + 3.14159265}]
-	}
+        # Make sure we've got the correct direction
+        if {[lindex $n 2] < 0} {
+            set angle [expr {$angle + 3.14159265}]
+        }
 
-	## Make an associated list with index, segid and angle value
-        lappend sys(order) [list $i $segname $angle]
+        ## Make an associated list with index, segid and angle value
+        lappend order [list $i $segname $angle]
         incr i
     }
 
     # Sort according to increasing angle, gives counterclockwise
     # order
-    set sys(order) [lsort -increasing -real -index 2 $sys(order)]
+    set order [lsort -increasing -real -index 2 $order]
+
+    ## Assign an order index to each
+    set i 0
+    foreach x $order {
+        lappend sys(order) [concat $x $i]
+        incr i
+    }
+
+    ## Resort, so we have the output order counterclockwise
+    set sys(order) [lsort -increasing -real -index 0 $sys(order)]
+
 }
 
 proc ::crick::setmol { args } {
@@ -418,10 +427,10 @@ proc ::crick::setmol { args } {
     ## Set output order as determined from input structure
     ## Cool little hack to get columnwise from a list
     if {!$sys(orderflag)} {
-      set params(order) [lsearch -all -index 0 -subindices -inline $sys(order) *]
+        set params(order) [lsearch -all -index 0 -subindices -inline $sys(order) *]
     }
 
-    ## Create a new mol consistent with determined topology 
+    ## Create a new mol consistent with determined topology
     resetmol
 }
 
@@ -449,9 +458,9 @@ proc ::crick::run { args } {
 
     ## if asymmetric, assume we want everything to be asymmetric
     if {$params(asymmetric)} {
-      set params(rotation) [lrepeat $sys(nhelix) 0.0]
-      set params(zoff)     [lrepeat $sys(nhelix) 0.0]
-      set params(rpt)      [lrepeat $sys(nhelix) 3.64]
+        set params(rotation) [lrepeat $sys(nhelix) 0.0]
+        set params(zoff)     [lrepeat $sys(nhelix) 0.0]
+        set params(rpt)      [lrepeat $sys(nhelix) 3.64]
     }
 
     # user specific minimization parameters
@@ -524,11 +533,11 @@ proc ::crick::compare x {
     }
 
     ## Make sure rotations are [-180 180]
-    set newtheta {} 
-    foreach theta $params(rotation) { 
-      while {$theta > 180} {set theta [expr {$theta - 360}]}     
-      while {$theta < -180} {set theta [expr {$theta + 360}]}     
-      lappend newtheta $theta
+    set newtheta {}
+    foreach theta $params(rotation) {
+        while {$theta > 180} {set theta [expr {$theta - 360}]}
+        while {$theta < -180} {set theta [expr {$theta + 360}]}
+        lappend newtheta $theta
     }
     set params(rotation) $newtheta
 
