@@ -1,27 +1,27 @@
 // -*-c++-*-
 
-  // +------------------------------------------------------------------------------------+ 
-  // |  This file is part of Coiled-Coil Builder.                                         | 
-  // |                                                                                    | 
-  // |  Coiled-Coil Builder is free software: you can redistribute it and/or modify       | 
-  // |  it under the terms of the GNU General Public License as published by              | 
-  // |  the Free Software Foundation, either version 3 of the License, or                 | 
-  // |  (at your option) any later version.                                               | 
-  // |                                                                                    | 
-  // |  Coiled-Coil Builder is distributed in the hope that it will be useful,            | 
-  // |  but WITHOUT ANY WARRANTY without even the implied warranty of                     | 
-  // |  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                     | 
-  // |  GNU General Public License for more details.                                      | 
-  // |                                                                                    | 
-  // |  You should have received a copy of the GNU General Public License                 | 
-  // |  along with Coiled-Coil Builder.  If not, see <http:www.gnu.org/licenses/>.        | 
-  // |                                                                                    | 
-  // |   *cr                                                                              | 
-  // |   *cr            (C) Copyright 1995-2013 The Board of Trustees of the              | 
-  // |   *cr                        University of Pennsylvania                            | 
-  // |   *cr                         All Rights Reserved                                  | 
-  // |   *cr                                                                              | 
-  // +------------------------------------------------------------------------------------+ 
+// +------------------------------------------------------------------------------------+
+// |  This file is part of Coiled-Coil Builder.                                         |
+// |                                                                                    |
+// |  Coiled-Coil Builder is free software: you can redistribute it and/or modify       |
+// |  it under the terms of the GNU General Public License as published by              |
+// |  the Free Software Foundation, either version 3 of the License, or                 |
+// |  (at your option) any later version.                                               |
+// |                                                                                    |
+// |  Coiled-Coil Builder is distributed in the hope that it will be useful,            |
+// |  but WITHOUT ANY WARRANTY without even the implied warranty of                     |
+// |  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                     |
+// |  GNU General Public License for more details.                                      |
+// |                                                                                    |
+// |  You should have received a copy of the GNU General Public License                 |
+// |  along with Coiled-Coil Builder.  If not, see <http:www.gnu.org/licenses/>.        |
+// |                                                                                    |
+// |   *cr                                                                              |
+// |   *cr            (C) Copyright 1995-2013 The Board of Trustees of the              |
+// |   *cr                        University of Pennsylvania                            |
+// |   *cr                         All Rights Reserved                                  |
+// |   *cr                                                                              |
+// +------------------------------------------------------------------------------------+
 
 /**
  * @file   backbone_coiledcoil.cpp
@@ -71,7 +71,6 @@ BackboneCoiledCoil::BackboneCoiledCoil(CCB *ccb, int narg, const char **arg) :
         nreslarge(35),
         nrestotal(0),
         pitch(120.0),
-        square(0.0),
         phi(-65.0),
         psi(-40.0),
         rpr(1.495)
@@ -88,6 +87,7 @@ BackboneCoiledCoil::BackboneCoiledCoil(CCB *ccb, int narg, const char **arg) :
         zoff[i] = 0.0;
         z[i] = 0.0;
         rpt[i] = 3.64;
+        square[i] = 0;
         order[i] = i;
         ap_order[i] = 0;
     }
@@ -125,9 +125,9 @@ BackboneCoiledCoil::BackboneCoiledCoil(CCB *ccb, int narg, const char **arg) :
     c_n_ca = 123.2700;
     n_ca_c = 108.9400;
 
-    // convert square, rotation to RAD
-    square *= DEG2RAD;
+    // rotation to RAD
     rotation[0] *= DEG2RAD;
+    square[0] *= DEG2RAD;
 
     site = NULL;
     nsite = maxsite = 0;
@@ -145,6 +145,7 @@ BackboneCoiledCoil::BackboneCoiledCoil(CCB *ccb, int narg, const char **arg) :
             zoff[i] = zoff[0];
             z[i] = z[0];
             rpt[i] = rpt[0];
+            square[i] = square[0];
         }
     }
 
@@ -165,6 +166,8 @@ BackboneCoiledCoil::BackboneCoiledCoil(CCB *ccb, int narg, const char **arg) :
     natomlarge = nreslarge * 4;
 
     // Set parameter dependent values
+    // Omega is negative because coiled-coils
+    // are left-handed. Opposite to the helices.
     omega = -2 * PI * rpr / pitch;
     omega_alpha = 2 * PI / rpt[0];
 
@@ -219,12 +222,6 @@ int BackboneCoiledCoil::set_params(int argc, const char **argv, int n) {
             isfloat(argv[n]);
             rpr = atof(argv[n]);
 
-        } else if (strcmp(argv[n], "-square") == 0) {
-            n++;
-            if (n == argc) return error->one(FLERR, "Missing argument to -square");
-            isfloat(argv[n]);
-            square = atof(argv[n]) * DEG2RAD;
-
         } else if (strcmp(argv[n], "-nhelix") == 0) {
             n++;
             if (n == argc) return error->one(FLERR, "Missing argument to -nhelix");
@@ -235,18 +232,18 @@ int BackboneCoiledCoil::set_params(int argc, const char **argv, int n) {
             if (nhelix < 1) return error->one(FLERR, "nhelix must be greater than 0");
 
         } else if (strcmp(argv[n], "-antiparallel") == 0) {
-             n++;
-             
-             // Set default antiparallel option, e.g. 0 1 0 1...
-             for (int i = 1; i < MAX_HELIX; i += 2) {
-                  ap_order[i] = 1;
-             }
-             
-             int i = 0;
-             while (n < argc && isfloat(argv[n])) {
-                  ap_order[i++] = atoi(argv[n]);
-                  n++;
-             }
+            n++;
+
+            // Set default antiparallel option, e.g. 0 1 0 1...
+            for (int i = 1; i < MAX_HELIX; i += 2) {
+                ap_order[i] = 1;
+            }
+
+            int i = 0;
+            while (n < argc && isfloat(argv[n])) {
+                ap_order[i++] = atoi(argv[n]);
+                n++;
+            }
 
             anti_flag = true;
             continue;
@@ -278,7 +275,24 @@ int BackboneCoiledCoil::set_params(int argc, const char **argv, int n) {
             }
             continue;
 
-        // Residues per turn of the minorhelices
+        } else if (strcmp(argv[n], "-square") == 0) {
+            n++;
+            if (n == argc) return error->one(FLERR, "Missing argument to -square");
+            int i = 0;
+            while (n < argc && isfloat(argv[n])) {
+
+                double sq = atof(argv[n]);
+
+                // Make sure rotation is between [-180, 180]
+                while (sq > 180) sq -= 360;
+                while (sq < -180) sq += 360;
+
+                square[i++] = sq * DEG2RAD;
+                n++;
+            }
+            continue;
+
+            // Residues per turn of the minorhelices
         } else if (strcmp(argv[n], "-rpt") == 0) {
             n++;
             if (n == argc) return error->one(FLERR, "Missing argument to -rpt");
@@ -289,7 +303,7 @@ int BackboneCoiledCoil::set_params(int argc, const char **argv, int n) {
             }
             continue;
 
-        // Offset along the minorhelical axis    
+            // Offset along the minorhelical axis
         } else if (strcmp(argv[n], "-zoff") == 0) {
             n++;
             if (n == argc) return error->one(FLERR, "Missing argument to -zoff");
@@ -300,7 +314,7 @@ int BackboneCoiledCoil::set_params(int argc, const char **argv, int n) {
             }
             continue;
 
-        // Offset along the coiled-coil axis
+            // Offset along the coiled-coil axis
         } else if (strcmp(argv[n], "-Z") == 0) {
             n++;
             if (n == argc) return error->one(FLERR, "Missing argument to -Z");
@@ -311,16 +325,16 @@ int BackboneCoiledCoil::set_params(int argc, const char **argv, int n) {
             }
             continue;
 
-        // Adjust the order that the helices are written to the pdb file
+            // Adjust the order that the helices are written to the pdb file
         } else if (strcmp(argv[n], "-order") == 0) {
-             n++;
-             if (n == argc) return error->one(FLERR, "Missing argument to -order");
-             int i = 0;
-             while (n < argc && isfloat(argv[n])) {
-                  order[i++] = atoi(argv[n]);
-                  n++;
-             }
-             continue;
+            n++;
+            if (n == argc) return error->one(FLERR, "Missing argument to -order");
+            int i = 0;
+            while (n < argc && isfloat(argv[n])) {
+                order[i++] = atoi(argv[n]);
+                n++;
+            }
+            continue;
 
         } else if (strcmp(argv[n], "-nres") == 0) {
             n++;
@@ -790,7 +804,7 @@ void BackboneCoiledCoil::helix_axis() {
 
         // Reverse order if antiparallel
         if (ap_order[i] != 0)
-             reverse(&radius[0],nres[i]);
+            reverse(&radius[0],nres[i]);
 
         // Output radius values if debugging
         if (error->verbosity_level > 8) {
@@ -1230,6 +1244,14 @@ void BackboneCoiledCoil::symmetry() {
     identity4(m4);
     identity4(ident);
 
+    // Legacy squareness for symmetric systems
+    // odd index helices are offset.
+    square[1] = square[0];
+    for (int i = 0, j = 1; i < nhelix; i+=2, j+=2) {
+        square[i] = 0.0;
+        square[j] = square[1];
+    }
+
     if (anti_flag) {
 
         // antiparallel
@@ -1248,31 +1270,20 @@ void BackboneCoiledCoil::symmetry() {
 
     /**
      * rotation about r2d a magnitude pi and about
-     * z a magnitude 2*pi*i/nhelix. 
+     * z a magnitude 2*pi*i/nhelix.
      */
 
     for (int i = 0; i < nhelix; i++) {
 
         copy4(m4, ident);
-        double theta = (2 * PI * i / nhelix);
+        double theta = (2 * PI * i / nhelix) + square[i];
 
         if (ap_order[i] == 0) {
-             v[2] = 0.0;
-             theta += square;
+            v[2] = 0.0;
         } else {
-             if (anti_flag)
-                  copy4(m4,m1);
+            if (anti_flag)
+                copy4(m4,m1);
         }
-
-        //if ((i % 2) == 0) {
-        //    v[2] = 0.0;
-        //    theta += square;
-        //} else {
-        //    //v[2] = zoff[0];
-        // 
-        //    if (anti_flag)
-        //        copy4(m4, m1);
-        //}
 
         // Rotation matrix about z
         axis_angle_to_mat_trans4(theta, z, v, m2);
@@ -1348,16 +1359,13 @@ void BackboneCoiledCoil::symmetry_axis() {
          */
 
         copy4(m4, ident);
-        double theta = (2 * PI * i / nhelix);
+        double theta = (2 * PI * i / nhelix) + square[i];
 
-        if ((i % 2) == 0) {
-            //v[2] = zoff[i];
-            theta += square;
+        if (ap_order[i] == 0) {
+            v[2] = 0.0;
         } else {
-            //v[2] = zoff[i];
-
             if (anti_flag)
-                copy4(m4, m1);
+                copy4(m4,m1);
         }
 
         // Rotation matrix about z
@@ -1586,22 +1594,29 @@ void BackboneCoiledCoil::print_header() {
             "Z (angstroms):        %.2f\n"
             "Squareness (degrees): %.2f\n"
             "Rise per residue:     %.2f\n"
-            "Antiparallel:         %d\n\n", nhelix, pitch, radius[0], rotation[0] * RAD2DEG,
-            rpt[0], zoff[0], z[0], square * RAD2DEG, rpr, anti_flag);
+            "Antiparallel:         %d\n\n",
+            nhelix, pitch, radius[0], rotation[0] * RAD2DEG,
+            rpt[0], zoff[0], z[0], square[0] * RAD2DEG, rpr, anti_flag);
 
     if (asymmetric_flag)
         fprintf(screen, "Asymmetric Parameters:\n");
     for (int i = 0; i < nhelix; i++)
         fprintf(screen,
-                "N residues:        %d: %3d\n"
-                "Rotation (degrees) %d: %.2f\n"
-                "Zoff (angstrom)    %d: %.2f\n"
-                "Z (angstrom)       %d: %.2f\n"
-                "Residues per Turn  %d: %.2f\n",
-                i+1, nres[i], i+1, rotation[i] * RAD2DEG,
-                i+1, zoff[i], i+1, z[i], i+1, rpt[i]);
+                "N residues:          %d: %3d\n"
+                "Rotation (degrees)   %d: %.2f\n"
+                "Squareness (degrees) %d: %.2f\n"
+                "Zoff (angstrom)      %d: %.2f\n"
+                "Z (angstrom)         %d: %.2f\n"
+                "Residues per Turn    %d: %.2f\n"
+                "Antiparallel         %d: %1d\n",
+                i+1, nres[i],
+                i+1, rotation[i] * RAD2DEG,
+                i+1, square[i] * RAD2DEG,
+                i+1, zoff[i],
+                i+1, z[i],
+                i+1, rpt[i],
+                i+1, ap_order[i]);
     fprintf(screen, "\n\n");
-
 }
 
 /* ---------------------------------------------------------
@@ -1815,16 +1830,14 @@ bool BackboneCoiledCoil::isfloat(const char *str) {
 
 void BackboneCoiledCoil::reverse(double *a, int n) {
 
-     double *start = a;
-     double *end = a+n-1;
+    double *start = a;
+    double *end = a+n-1;
 
-     while (start < end) {
-          double temp = *start;
-          *start = *end;
-          *end = temp;
-          start++;
-          end--;
-     }
+    while (start < end) {
+        double temp = *start;
+        *start = *end;
+        *end = temp;
+        start++;
+        end--;
+    }
 }
-                   
-                     

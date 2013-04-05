@@ -130,7 +130,7 @@ int CCB_Compass::init(const int argc, const char **argv)
     return PLUGIN_OK;
 }
 
-int CCB_Compass::compute(int flag)
+int CCB_Compass::compute(int UNUSED(flag))
 {
 
     if (!init_done) {
@@ -148,7 +148,7 @@ int CCB_Compass::compute(int flag)
     return PLUGIN_OK;
 }
 
-double CCB_Compass::single(int flag1, int flag2)
+double CCB_Compass::single(int UNUSED(flag1), int UNUSED(flag2))
 {
     ++num_single;
     return 1.0;

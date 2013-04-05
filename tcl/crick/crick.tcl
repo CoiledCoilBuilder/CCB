@@ -22,6 +22,7 @@
   # |  *cr                         All Rights Reserved                                   | 
   # |  *cr                                                                               | 
   # +------------------------------------------------------------------------------------+ 
+
 package provide crick 1.0
 
 package require ccb 1.0;       # For coiled-coil generation
@@ -110,16 +111,17 @@ proc ::crick::newmol { args } {
                   -rpt $params(rpt)\
                   -rotation $params(rotation)\
                   -zoff $params(zoff)\
+		  -Z $params(Z)\
                   -square $params(square)\
                   -rpr $params(rpr)\
                   -order $params(order)]
 
-    if {$params(asymmetric)} {
-        lappend opts "-asymmetric"
+    if {$params(antiparallel)} {
+        lappend opts "-antiparallel $sys(orient)"
     }
 
-    if {$params(antiparallel)} {
-        lappend opts "-antiparallel"
+    if {$params(asymmetric)} {
+        lappend opts "-asymmetric"
     }
 
     # Generate structure
@@ -159,16 +161,17 @@ proc ::crick::updatemol { args } {
                   -rpt $params(rpt)\
                   -rotation $params(rotation)\
                   -zoff $params(zoff)\
+                  -Z $params(Z)\
                   -square $params(square)\
                   -rpr $params(rpr)\
                   -order $params(order)]
 
-    if {$params(asymmetric)} {
-        lappend opts "-asymmetric"
-    }
-
     if {$params(antiparallel)} {
         lappend opts "-antiparallel $sys(orient)"
+    }
+
+    if {$params(asymmetric)} {
+        lappend opts "-asymmetric"
     }
 
     # Generate structure
@@ -214,15 +217,17 @@ proc ::crick::clearparams { args } {
     set params(nhelix) 2
     set params(nres) 28
     set params(pitch) 179
-    set params(radius) 4.5
+    set params(radius) 5.5
     set params(rpt) 3.64
     set params(rotation) 0.0
     set params(zoff) 0.0
+    set params(Z) 0.0
     set params(square) 0.0
     set params(rpr) 1.5
     set params(antiparallel) 0
     set params(asymmetric) 0
     set params(order) {0 1}
+    set params(orient) {0 0}
 
 }
 
@@ -234,7 +239,7 @@ proc ::crick::clearsys { args } {
 
     set sys(aligntext) "name CA"; # The atoms to align for RMSD
     set sys(usertext) "backbone"; # optional user text
-    set sys(userparams) {pitch radius rotation zoff rpt square rpr}; #params to fit
+    set sys(userparams) {pitch radius rotation zoff Z rpt square rpr}; #params to fit
     set sys(tol) 0.0001; # CG Tollerance
     set sys(orderflag) 0;
     set sys(TMPDIR) /tmp
@@ -427,7 +432,7 @@ proc ::crick::topology { args } {
         incr i
     }
 
-    ## Resort, so we have the output order counterclockwise
+    ## Re-sort, so we have the output order counterclockwise
     set sys(order) [lsort -increasing -real -index 0 $sys(order)]
 
 }
@@ -484,7 +489,9 @@ proc ::crick::run { args } {
     if {$params(asymmetric)} {
         set params(rotation) [lrepeat $sys(nhelix) 0.0]
         set params(zoff)     [lrepeat $sys(nhelix) 0.0]
+	set params(Z)        [lrepeat $sys(nhelix) 0.0]
         set params(rpt)      [lrepeat $sys(nhelix) 3.64]
+	set params(square)   [lrepeat $sys(nhelix) 0.0]
     }
 
     # user specific minimization parameters

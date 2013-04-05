@@ -1,27 +1,27 @@
 // -*-c++-*-
 
-  // +------------------------------------------------------------------------------------+ 
-  // |  This file is part of Coiled-Coil Builder.                                         | 
-  // |                                                                                    | 
-  // |  Coiled-Coil Builder is free software: you can redistribute it and/or modify       | 
-  // |  it under the terms of the GNU General Public License as published by              | 
-  // |  the Free Software Foundation, either version 3 of the License, or                 | 
-  // |  (at your option) any later version.                                               | 
-  // |                                                                                    | 
-  // |  Coiled-Coil Builder is distributed in the hope that it will be useful,            | 
-  // |  but WITHOUT ANY WARRANTY without even the implied warranty of                     | 
-  // |  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                     | 
-  // |  GNU General Public License for more details.                                      | 
-  // |                                                                                    | 
-  // |  You should have received a copy of the GNU General Public License                 | 
-  // |  along with Coiled-Coil Builder.  If not, see <http:www.gnu.org/licenses/>.        | 
-  // |                                                                                    | 
-  // |   *cr                                                                              | 
-  // |   *cr            (C) Copyright 1995-2013 The Board of Trustees of the              | 
-  // |   *cr                        University of Pennsylvania                            | 
-  // |   *cr                         All Rights Reserved                                  | 
-  // |   *cr                                                                              | 
-  // +------------------------------------------------------------------------------------+ 
+// +------------------------------------------------------------------------------------+
+// |  This file is part of Coiled-Coil Builder.                                         |
+// |                                                                                    |
+// |  Coiled-Coil Builder is free software: you can redistribute it and/or modify       |
+// |  it under the terms of the GNU General Public License as published by              |
+// |  the Free Software Foundation, either version 3 of the License, or                 |
+// |  (at your option) any later version.                                               |
+// |                                                                                    |
+// |  Coiled-Coil Builder is distributed in the hope that it will be useful,            |
+// |  but WITHOUT ANY WARRANTY without even the implied warranty of                     |
+// |  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                     |
+// |  GNU General Public License for more details.                                      |
+// |                                                                                    |
+// |  You should have received a copy of the GNU General Public License                 |
+// |  along with Coiled-Coil Builder.  If not, see <http:www.gnu.org/licenses/>.        |
+// |                                                                                    |
+// |   *cr                                                                              |
+// |   *cr            (C) Copyright 1995-2013 The Board of Trustees of the              |
+// |   *cr                        University of Pennsylvania                            |
+// |   *cr                         All Rights Reserved                                  |
+// |   *cr                                                                              |
+// +------------------------------------------------------------------------------------+
 
 /**
  * @file   backbone_coiledcoil.h
@@ -94,7 +94,6 @@ class BackboneCoiledCoil : public Backbone {
 
     // Symmetric Parameters
     double pitch;                 /**< pitch of the coiled-coil */
-    double square;                /**< squareness of the coiled-coil */
     double phi;                   /**< initial phi angle used to build the peptide plane */
     double psi;                   /**< initial psi angle used to build the peptide plane */
     double rpr;                   /**< rise per residue, major helix frame, d */
@@ -111,6 +110,7 @@ class BackboneCoiledCoil : public Backbone {
     double rpt[MAX_HELIX];        /**< residues per turn of the helices */
     double zoff[MAX_HELIX];       /**< z-axis displacement of helices along their axis, for asymmetric, a list of offsets for each helix */
     double z[MAX_HELIX];          /**< z-axis displacement of helices along the coiled-coil axis*/
+    double square[MAX_HELIX];     /**< phi_0 offset in addition to the normal 2*pi/i placement about the superhelix */
 
     bool asymmetric_flag;         /**< Are the helices in the coiled-coil symmetric? **/
     bool rebuild_domain;          /**< if true, we erase the existing coiled coil when we update */

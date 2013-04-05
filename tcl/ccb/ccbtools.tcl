@@ -55,12 +55,14 @@ namespace eval ::ccbtools:: {
     set gui(nres_box) {1 300 1}
     set gui(rpt_box) {3.00 5.00 0.01}
     set gui(rotation_box) {-180.00 180.00 1.0}
+    set gui(square_box) {-180.00 180.00 1.0}
     set gui(zoff_box) {-20.00 20.00 0.5}
     set gui(z_box) {-20.00 20.00 0.5}
 
     set gui(nres_scl) {1 300 1}
     set gui(rpt_scl) {3.00 5.00 5}
     set gui(rotation_scl) {-180.00 180.00 5}
+    set gui(square_scl) {-180.00 180.00 5}
     set gui(zoff_scl) {-20.00 20.00 5}
     set gui(z_scl) {-20.00 20.00 5}
 }
@@ -279,7 +281,7 @@ proc ::ccbtools::setasym {args} {
     if {$params(asymmetric)} {
 
         ## Setup the necessary lists with N values
-        foreach x {nres rotation rpt zoff z} {
+        foreach x {nres rotation square rpt zoff z} {
 
             set N [llength $params($x)]
 
@@ -304,7 +306,7 @@ proc ::ccbtools::setasym {args} {
 	## all fields should match for consistency
 
         ## Set to values of first helix
-        foreach x {nres rotation rpt zoff z} {
+        foreach x {nres rotation square rpt zoff z} {
             set params($x) [lrepeat $params(nhelix) [lindex $params($x) 0]]
         }
 
@@ -497,6 +499,7 @@ proc ::ccbtools::gui {args} {
     button $wid.scales.azymZ -text Asymmetric -command [namespace code {asymwid "z"}]
     button $wid.scales.asymC -text Asymmetric -command [namespace code {asymwid "rpt"}]
     button $wid.scales.asymH -text Asymmetric -command [namespace code {asymwid "rotation"}]
+    button $wid.scales.asymS -text Asymmetric -command [namespace code {asymwid "square"}]
 
     ## Spinboxes for main window
     spinbox $wid.scales.box_nhelix -width 10 -textvariable ccbtools::params(nhelix) -from 1 -to 12 -increment 1\
@@ -516,6 +519,9 @@ proc ::ccbtools::gui {args} {
 
     spinbox $wid.scales.box_rotation -width 10 -from -180.00 -to 180.00 -increment 1.0 -format %10.2f\
         -command [namespace code {symcmdwrap "rotation" %s}]
+
+    spinbox $wid.scales.box_square -width 10 -from -180.00 -to 180.00 -increment 1.0 -format %10.2f\
+        -command [namespace code {symcmdwrap "square" %s}]
 
     spinbox $wid.scales.box_zoff -width 10 -from -20.00 -to 20.00 -increment 1.0 -format %10.2f\
         -command [namespace code {symcmdwrap "zoff" %s}]
@@ -542,6 +548,9 @@ proc ::ccbtools::gui {args} {
     scale $wid.scales.scl_rotation -label "Helical Rotation :" -orient h -resolution 0 -digit 5 -from -180.00 -to 180.00\
         -tickinterval 0 -length 300 -command [namespace code {symcmdwrap "rotation"}]
 
+    scale $wid.scales.scl_square -label "Square :" -orient h -resolution 0 -digit 5 -from -180.00 -to 180.00\
+        -tickinterval 0 -length 300 -command [namespace code {symcmdwrap "square"}]
+
     scale $wid.scales.scl_zoff -label "Z-Offset (helices):" -orient h -resolution 0 -digit 5 -from -20.00 -to 20.00\
         -tickinterval 0 -length 300 -command [namespace code {symcmdwrap "zoff"}]
 
@@ -549,7 +558,7 @@ proc ::ccbtools::gui {args} {
         -tickinterval 0 -length 300 -command [namespace code {symcmdwrap "z"}]
 
     ## Set initial params
-    foreach x {nhelix nres pitch radius rpt rotation zoff z} {
+    foreach x {nhelix nres pitch radius rpt rotation square zoff z} {
         $wid.scales.box_$x set [lindex $params($x) 0]
         $wid.scales.scl_$x set [lindex $params($x) 0]
     }
@@ -558,11 +567,11 @@ proc ::ccbtools::gui {args} {
 
     ## Buttons
     grid $wid.scales -row 0 -column 0
-    grid $wid.scales.new    -row 9  -column 1  ;# New Button
-    grid $wid.scales.update -row 9  -column 2  ;# Update Button
-    grid $wid.scales.reset  -row 9  -column 3  ;# Reset Button
-    grid $wid.scales.ap     -row 10 -column 1  ;# Antiparallel Checkbutton
-    grid $wid.scales.asym   -row 10 -column 2  ;# asym button
+    grid $wid.scales.new    -row 10  -column 1  ;# New Button
+    grid $wid.scales.update -row 10  -column 2  ;# Update Button
+    grid $wid.scales.reset  -row 10  -column 3  ;# Reset Button
+    grid $wid.scales.ap     -row 11  -column 1  ;# Antiparallel Checkbutton
+    grid $wid.scales.asym   -row 11  -column 2  ;# asym button
 
     ##Scales
     grid $wid.scales.scl_nhelix     -row 1 -column 1 -columnspan 2
@@ -571,8 +580,9 @@ proc ::ccbtools::gui {args} {
     grid $wid.scales.scl_radius     -row 4 -column 1 -columnspan 2
     grid $wid.scales.scl_rpt        -row 5 -column 1 -columnspan 2
     grid $wid.scales.scl_rotation   -row 6 -column 1 -columnspan 2
-    grid $wid.scales.scl_zoff       -row 7 -column 1 -columnspan 2
-    grid $wid.scales.scl_z          -row 8 -column 1 -columnspan 2
+    grid $wid.scales.scl_square     -row 7 -column 1 -columnspan 2
+    grid $wid.scales.scl_zoff       -row 8 -column 1 -columnspan 2
+    grid $wid.scales.scl_z          -row 9 -column 1 -columnspan 2
 
     ## Spinboxes
     grid $wid.scales.box_nhelix     -row 1  -column 3
@@ -581,10 +591,11 @@ proc ::ccbtools::gui {args} {
     grid $wid.scales.box_radius     -row 4  -column 3
     grid $wid.scales.box_rpt        -row 5  -column 3
     grid $wid.scales.box_rotation   -row 6  -column 3
-    grid $wid.scales.box_zoff       -row 7  -column 3
-    grid $wid.scales.box_z          -row 8  -column 3
+    grid $wid.scales.box_square     -row 7  -column 3
+    grid $wid.scales.box_zoff       -row 8  -column 3
+    grid $wid.scales.box_z          -row 9  -column 3
 
-    grid $wid.ccbcommand    -row 11 -rowspan 3
+    grid $wid.ccbcommand    -row 12 -rowspan 3
 
     ## Mod radius button
     grid $wid.scales.modR -row 4 -column 4;# nres asym Button
@@ -593,8 +604,9 @@ proc ::ccbtools::gui {args} {
     grid $wid.scales.asymN    -row 2 -column 4;# nres asym Button
     grid $wid.scales.asymC    -row 5 -column 4;# rpt asym Button
     grid $wid.scales.asymH    -row 6 -column 4;# rotation asym Button
-    grid $wid.scales.azymZoff -row 7 -column 4;# zoff asym Button
-    grid $wid.scales.azymZ    -row 8 -column 4;# zoff asym Button
+    grid $wid.scales.asymS    -row 7 -column 4;# square asym Button
+    grid $wid.scales.azymZoff -row 8 -column 4;# zoff asym Button
+    grid $wid.scales.azymZ    -row 9 -column 4;# z asym Button
 
     ## Traces
 

@@ -1,27 +1,27 @@
 // -*-c++-*-
 
-  // +------------------------------------------------------------------------------------+ 
-  // |  This file is part of Coiled-Coil Builder.                                         | 
-  // |                                                                                    | 
-  // |  Coiled-Coil Builder is free software: you can redistribute it and/or modify       | 
-  // |  it under the terms of the GNU General Public License as published by              | 
-  // |  the Free Software Foundation, either version 3 of the License, or                 | 
-  // |  (at your option) any later version.                                               | 
-  // |                                                                                    | 
-  // |  Coiled-Coil Builder is distributed in the hope that it will be useful,            | 
-  // |  but WITHOUT ANY WARRANTY without even the implied warranty of                     | 
-  // |  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                     | 
-  // |  GNU General Public License for more details.                                      | 
-  // |                                                                                    | 
-  // |  You should have received a copy of the GNU General Public License                 | 
-  // |  along with Coiled-Coil Builder.  If not, see <http:www.gnu.org/licenses/>.        | 
-  // |                                                                                    | 
-  // |   *cr                                                                              | 
-  // |   *cr            (C) Copyright 1995-2013 The Board of Trustees of the              | 
-  // |   *cr                        University of Pennsylvania                            | 
-  // |   *cr                         All Rights Reserved                                  | 
-  // |   *cr                                                                              | 
-  // +------------------------------------------------------------------------------------+ 
+// +------------------------------------------------------------------------------------+
+// |  This file is part of Coiled-Coil Builder.                                         |
+// |                                                                                    |
+// |  Coiled-Coil Builder is free software: you can redistribute it and/or modify       |
+// |  it under the terms of the GNU General Public License as published by              |
+// |  the Free Software Foundation, either version 3 of the License, or                 |
+// |  (at your option) any later version.                                               |
+// |                                                                                    |
+// |  Coiled-Coil Builder is distributed in the hope that it will be useful,            |
+// |  but WITHOUT ANY WARRANTY without even the implied warranty of                     |
+// |  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                     |
+// |  GNU General Public License for more details.                                      |
+// |                                                                                    |
+// |  You should have received a copy of the GNU General Public License                 |
+// |  along with Coiled-Coil Builder.  If not, see <http:www.gnu.org/licenses/>.        |
+// |                                                                                    |
+// |   *cr                                                                              |
+// |   *cr            (C) Copyright 1995-2013 The Board of Trustees of the              |
+// |   *cr                        University of Pennsylvania                            |
+// |   *cr                         All Rights Reserved                                  |
+// |   *cr                                                                              |
+// +------------------------------------------------------------------------------------+
 
 /**
  * @file   output_pdb.cpp
@@ -91,7 +91,7 @@ using namespace CCB_NS;
  */
 
 OutputPDB::OutputPDB(CCB *ccb, int narg, const char **arg) :
-    Output(ccb, narg, arg) {
+        Output(ccb, narg, arg) {
     // Check to see that we have a legit style and the format is correct.
     if (strcmp(style, "PDB") != 0 && narg < 4)
         error->one(FLERR, "Illegal output PDB command");
@@ -118,7 +118,7 @@ OutputPDB::OutputPDB(CCB *ccb, int narg, const char **arg) :
 
 int OutputPDB::init_style() {
 
-     return CCB_OK;
+    return CCB_OK;
 
 }
 
@@ -211,7 +211,7 @@ void OutputPDB::chomp(char *s, int n) {
     int i = 0;
 
     while (i < len && i < n) {
-        *s++;
+        *(s++);
         i++;
     }
 
