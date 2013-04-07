@@ -154,6 +154,10 @@ class BackboneCoiledCoil : public Backbone {
     void symmetry_axis();
     int generate_asymmetric();
 
+    // Constraint functions
+    bool fm_flag;                         /**<apply the fraser-macrae constraint?  */
+    double fraser_macrae(int idx);        /**< Constrain the pitch to rpt (Fraser & MacRae) */
+
     /**
      * Helper Functions
      *

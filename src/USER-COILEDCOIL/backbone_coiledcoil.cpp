@@ -73,7 +73,11 @@ BackboneCoiledCoil::BackboneCoiledCoil(CCB *ccb, int narg, const char **arg) :
         pitch(120.0),
         phi(-65.0),
         psi(-40.0),
-        rpr(1.495)
+        rpr(1.495),
+        asymmetric_flag(0),
+        rebuild_domain(1),
+        anti_flag(0),
+        fm_flag(0)
 {
 
     // Check to see that we have a legit style and the format is correct.
@@ -101,10 +105,6 @@ BackboneCoiledCoil::BackboneCoiledCoil(CCB *ccb, int narg, const char **arg) :
     // Fill radius array with default values
     for (int i = 0; i < MAX_RES; i++)
         radius[i] = 4.65;
-
-    anti_flag = false;
-    asymmetric_flag = false;
-    rebuild_domain = true;
 
     x = NULL;
     pp_x = NULL;
@@ -164,6 +164,10 @@ BackboneCoiledCoil::BackboneCoiledCoil(CCB *ccb, int narg, const char **arg) :
 
     // Largest number of atoms in a chain
     natomlarge = nreslarge * 4;
+
+    // Check for Fraser-MacRae Constraint
+    if (fm_flag)
+        pitch = fraser_macrae(0);
 
     // Set parameter dependent values
     // Omega is negative because coiled-coils
@@ -246,6 +250,11 @@ int BackboneCoiledCoil::set_params(int argc, const char **argv, int n) {
             }
 
             anti_flag = true;
+            continue;
+
+        } else if (strcmp(argv[n], "-frasermacrae") == 0) {
+            fm_flag = true;
+            n++;
             continue;
 
         } else if (strcmp(argv[n], "-asymmetric") == 0) {
@@ -385,6 +394,10 @@ int BackboneCoiledCoil::update_style(int argc, const char **argv, int n) {
     // set the params
     if (set_params(argc, argv, n) != CCB_OK)
         return CCB_ERROR;
+
+    // Check for FM Constraint
+    if (fm_flag)
+        pitch = fraser_macrae(0);
 
     // Update parameter dependent values
     omega = -2 * PI * rpr / pitch;
@@ -1436,6 +1449,30 @@ void BackboneCoiledCoil::terminate_asymmetric() {
     }
 }
 
+
+/**
+ * Constrains the pitch such that the global residues per turn
+ * of the alpha-helix is always 3.5
+ *
+ * @param flag designates the types of constraints to apply to
+ * @param flag the coiled-coil parameters during generation
+ * @param idx asymmetric index, if applicable, if symmetric
+ * @param idx idx = 0
+ * @return calculated value
+ */
+double BackboneCoiledCoil::fraser_macrae(int idx) {
+
+    // Check if we're near rpt = 3.5, which gives inf pitch
+    if (fabs(3.5-rpt[idx]) < fabs(rpt[idx])*0.0001)
+        rpt[idx] = 3.5001;
+
+    double a = (3.50 * rpr * rpt[idx] / (rpt[idx] - 3.5)) *
+               (3.50 * rpr * rpt[idx] / (rpt[idx] - 3.5));
+    double b = (2 * PI * radius[0]) * (2 * PI * radius[0]);
+
+    return sqrt(a - b);
+}
+
 /**
  * Passes the coordinates to ccb by creating
  * or updating the domain on the fly and adding the atoms.
@@ -1594,9 +1631,11 @@ void BackboneCoiledCoil::print_header() {
             "Z (angstroms):        %.2f\n"
             "Squareness (degrees): %.2f\n"
             "Rise per residue:     %.2f\n"
-            "Antiparallel:         %d\n\n",
+            "Antiparallel:         %d\n"
+            "Fraser-MacRae:        %d\n\n",
             nhelix, pitch, radius[0], rotation[0] * RAD2DEG,
-            rpt[0], zoff[0], z[0], square[0] * RAD2DEG, rpr, anti_flag);
+            rpt[0], zoff[0], z[0], square[0] * RAD2DEG, rpr, 
+            anti_flag, fm_flag);
 
     if (asymmetric_flag)
         fprintf(screen, "Asymmetric Parameters:\n");
@@ -1802,6 +1841,9 @@ double BackboneCoiledCoil::memory_usage() {
 
     // Coordinates of peptide plane
     bytes += 5 * 4 * sizeof(double);
+
+    // Sites
+    bytes += maxsite * sizeof(Site);
 
     return bytes;
 }

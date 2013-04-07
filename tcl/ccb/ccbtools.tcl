@@ -50,6 +50,7 @@ namespace eval ::ccbtools:: {
     set params(rpr) 1.5
     set params(antiparallel) 0
     set params(asymmetric) 0
+    set params(frasermacrae) 0
 
     ## Gui parameters
     set gui(nres_box) {1 300 1}
@@ -102,6 +103,10 @@ proc ::ccbtools::newmol { args } {
         lappend opts "-antiparallel"
     }
 
+    if {$params(frasermacrae)} {
+	lappend opts "-frasermacrae"
+    }
+
     ## The command used to generate the coiled-coil
     set sys(opts) [join $opts]
 
@@ -152,6 +157,10 @@ proc ::ccbtools::updatemol { args } {
 
     if {$params(antiparallel)} {
         lappend opts "-antiparallel"
+    }
+
+    if {$params(frasermacrae)} {
+	lappend opts "-frasermacrae"
     }
 
     # Generate structure
@@ -207,6 +216,7 @@ proc ::ccbtools::resetparams {} {
     set params(rpr) 1.5
     set params(antiparallel) 0
     set params(asymmetric) 0
+    set params(frasermacrae) 0
 
 }
 
@@ -486,6 +496,9 @@ proc ::ccbtools::gui {args} {
     checkbutton $wid.scales.asym -text "Asymmetric" -variable ::ccbtools::params(asymmetric)\
         -onvalue 1 -offvalue 0 -command [namespace code setasym]
 
+    checkbutton $wid.scales.fm -text "Fraser-MacRae" -variable ::ccbtools::params(frasermacrae)\
+        -onvalue 1 -offvalue 0 -command [namespace code updatemol]
+
     button $wid.scales.new -text NEW -command [namespace code newmol]
     button $wid.scales.reset -text RESET -command [namespace code resetmol]
     button $wid.scales.update -text UPDATE -command [namespace code updatemol]
@@ -572,6 +585,7 @@ proc ::ccbtools::gui {args} {
     grid $wid.scales.reset  -row 10  -column 3  ;# Reset Button
     grid $wid.scales.ap     -row 11  -column 1  ;# Antiparallel Checkbutton
     grid $wid.scales.asym   -row 11  -column 2  ;# asym button
+    grid $wid.scales.fm     -row 11  -column 3  ;# Fraser-MacRae Constraint
 
     ##Scales
     grid $wid.scales.scl_nhelix     -row 1 -column 1 -columnspan 2

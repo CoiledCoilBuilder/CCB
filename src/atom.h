@@ -132,8 +132,6 @@ namespace CCB_NS {
         y = ans[1];
         z = ans[2];
     }
-    
-    
 
     /**
      * @brief Apply 3x3 transformation (rotation) matrix to atoms coordinates

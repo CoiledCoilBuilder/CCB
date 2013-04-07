@@ -422,8 +422,14 @@ proc ::crick::topology { args } {
     }
 
     # Sort according to increasing angle, gives counterclockwise
-    # order
+    # order about the superhelical axis
     set order [lsort -increasing -real -index 2 $order]
+
+    # Reverse the order
+    set neworder {}
+    lappend neworder [lindex $order 0] 
+    set  neworder [concat $neworder [lreverse [lrange $order 1 end]]]
+    set order $neworder
 
     ## Assign an order index to each
     set i 0
