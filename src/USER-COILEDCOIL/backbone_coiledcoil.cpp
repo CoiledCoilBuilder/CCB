@@ -1293,7 +1293,12 @@ void BackboneCoiledCoil::symmetry() {
     norm3(r2d);
 
     moveto(c_anti, m1b);
-    axis_angle_to_mat_trans4(PI, r2d, c_anti, m1c);
+    axis_angle_to_mat_trans4(PI, r2d, c_anti, m1);
+    times4(m1, m1b, m1c);
+    
+    double z_anti[3] = { 0.0 };
+    z_anti[2] = zoff[0];
+    moveby(z_anti, m1b);
     times4(m1c, m1b, m1);
 
     }
