@@ -165,7 +165,7 @@ int tcl_ccb(ClientData UNUSED(clientdata), Tcl_Interp *interp,
                 // Get the VMD handle
                 vmd = (VMDApp *)Tcl_GetAssocData(interp, "VMDApp", NULL);
                 if (!vmd) {
-                    Tcl_AppendResult(interp, "CCB: Unable to find VMD Instace\n", NULL);
+                    Tcl_AppendResult(interp, "CCB: Unable to find VMD Instance\n", NULL);
                     return TCL_ERROR;
                 }
 

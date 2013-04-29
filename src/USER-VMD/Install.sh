@@ -18,7 +18,7 @@ if (test $1 = 1) then
     sed -i -e 's/[^ \t]*VMD[^ \t]* //g' ../Makefile.package
   fi
 
-  rm -f ../tcl_ccb.cpp 
+  rm -f ../vmd_ccb.cpp 
   rm -f ../pkgIndex.tcl
 
 fi
