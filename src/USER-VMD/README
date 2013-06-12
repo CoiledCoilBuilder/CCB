@@ -1,0 +1,24 @@
+To use the VMD plugin that accepts the atomselect directly, e.g. 
+
+vmd > ccb -sel $sel -pitch 1000 -radius 10
+
+you need to create two symbolic links in this directory:
+
+srcinc -> /path/to/vmd-source-code-directory
+include -> /path/to/lib/vmd/plugins/include
+
+on my machine:
+
+[macdercm@MinasTirith:~/projects/ccb/src/USER-VMD] VMD(+6/-65)+* ± lt
+lrwxrwxrwx 1 macdercm macdercm   36 2013-04-26 14:42 srcinc -> /home/macdercm/compile/vmd-1.9.1/src
+lrwxrwxrwx 1 macdercm macdercm   42 2013-04-26 14:43 include -> /home/macdercm/pkg/lib/vmd/plugins/include
+
+then, proceed as normal;
+
+make no-user-tcl
+make yes-user-vmd
+make makeshlib && make -f Makefile.shlib linux64 
+cp libccb_ubuntu64.so ~/.vmdplugins/ccb/.
+
+the user-vmd package should still behave as the user-tcl package
+did. We retain user-tcl for convenience.

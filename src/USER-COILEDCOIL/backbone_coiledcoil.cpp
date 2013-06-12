@@ -1248,6 +1248,8 @@ void BackboneCoiledCoil::symmetry() {
     z[2] = 1.0;
 
     double m1[4][4];
+    double m1b[4][4];
+    double m1c[4][4];
     double m2[4][4];
     double m3[4][4];
     double m4[4][4];
@@ -1256,6 +1258,8 @@ void BackboneCoiledCoil::symmetry() {
 
     // get a 4x4 identity matrix, clear others
     identity4(m1);
+    identity4(m1b);
+    identity4(m1c);
     identity4(m2);
     identity4(m3);
     identity4(m4);
@@ -1271,18 +1275,36 @@ void BackboneCoiledCoil::symmetry() {
 
     if (anti_flag) {
 
-        // antiparallel
-        // Calculate the superhelical radius
-        // vector in the xy plane, should probably
-        // interpolate this when nres/2 is odd.
+    // antiparallel
+    // Calculate the superhelical radius
+    // vector in the xy plane, should probably
+    // interpolate this when nres/2 is odd.
 
-        double r2d[3] = { 0.0 };
-        r2d[0] = axis_x[0][nres[0] / 2][0];
-        r2d[1] = axis_x[0][nres[0] / 2][1];
-        r2d[2] = 0.0;
-        norm3(r2d);
+    //HACKY FIX TO SYMMETRIC ANTIPARALLEL RADIUS MODULATION FLIPPING
+    double v_anti[3] = { 0.0 };
+    v_anti[0] = axis_x[0][nres[0]][0] - axis_x[0][0][0];
+    v_anti[1] = axis_x[0][nres[0]][1] - axis_x[0][0][1];
+    v_anti[2] = axis_x[0][nres[0]][2] - axis_x[0][0][2];
+    norm3(v_anti);
+    double c_anti[3] = { 0.0 };
+    c_anti[0] = axis_x[0][0][0] + 0.5*(axis_x[0][nres[0]][2] - axis_x[0][0][2])*v_anti[0];
+    c_anti[1] = axis_x[0][0][1] + 0.5*(axis_x[0][nres[0]][2] - axis_x[0][0][2])*v_anti[1];
+    c_anti[2] = axis_x[0][0][2] + 0.5*(axis_x[0][nres[0]][2] - axis_x[0][0][2])*v_anti[2];
+    double r2d[3] = { 0.0 };
+    r2d[0] = c_anti[0] - 0.0;
+    r2d[1] = c_anti[1] - 0.0;
+    r2d[2] = c_anti[2] - dot3(c_anti, v_anti) / v_anti[2];
+    norm3(r2d);
 
-        axis_angle_to_mat_trans4(PI, r2d, v, m1);
+    moveto(c_anti, m1b);
+    axis_angle_to_mat_trans4(PI, r2d, c_anti, m1);
+    times4(m1, m1b, m1c);
+    
+    double z_anti[3] = { 0.0 };
+    z_anti[2] = zoff[0];
+    moveby(z_anti, m1b);
+    times4(m1c, m1b, m1);
+
     }
 
     /**
@@ -1299,7 +1321,7 @@ void BackboneCoiledCoil::symmetry() {
             v[2] = 0.0;
         } else {
             if (anti_flag)
-                copy4(m4,m1);
+                copy4(m4, m1);
         }
 
         // Rotation matrix about z

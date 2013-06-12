@@ -1,4 +1,4 @@
-# linux  = Optimized compiler options, g++, 64bit
+# linux64  = Optimized compiler options, g++, 64bit
 
 SHELL = /bin/sh
 ROOT = ccb
@@ -10,7 +10,7 @@ VERSION = 1.0
 
 CC =		g++
 CCFLAGS =	-O2 -fomit-frame-pointer -fno-rtti -fno-exceptions \
-			-march=core2 -msse2 -ffast-math -mpc64 -finline-functions \
+			-march=core2 -msse3 -ffast-math -mpc64 -finline-functions \
 			-funroll-loops -fstrict-aliasing -Wall -W -Wno-uninitialized
 SHFLAGS =       -fPIC
 DEPFLAGS =      -M

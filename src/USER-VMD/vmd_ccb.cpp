@@ -1,39 +1,39 @@
 // -*-c++-*-
 
-  // +------------------------------------------------------------------------------------+ 
-  // |  This file is part of Coiled-Coil Builder.                                         | 
-  // |                                                                                    | 
-  // |  Coiled-Coil Builder is free software: you can redistribute it and/or modify       | 
-  // |  it under the terms of the GNU General Public License as published by              | 
-  // |  the Free Software Foundation, either version 3 of the License, or                 | 
-  // |  (at your option) any later version.                                               | 
-  // |                                                                                    | 
-  // |  Coiled-Coil Builder is distributed in the hope that it will be useful,            | 
-  // |  but WITHOUT ANY WARRANTY without even the implied warranty of                     | 
-  // |  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                     | 
-  // |  GNU General Public License for more details.                                      | 
-  // |                                                                                    | 
-  // |  You should have received a copy of the GNU General Public License                 | 
-  // |  along with Coiled-Coil Builder.  If not, see <http:www.gnu.org/licenses/>.        | 
-  // |                                                                                    | 
-  // |   *cr                                                                              | 
-  // |   *cr            (C) Copyright 1995-2013 The Board of Trustees of the              | 
-  // |   *cr                        University of Pennsylvania                            | 
-  // |   *cr                         All Rights Reserved                                  | 
-  // |   *cr                                                                              | 
-  // +------------------------------------------------------------------------------------+ 
+// +------------------------------------------------------------------------------------+
+// |  This file is part of Coiled-Coil Builder.                                         |
+// |                                                                                    |
+// |  Coiled-Coil Builder is free software: you can redistribute it and/or modify       |
+// |  it under the terms of the GNU General Public License as published by              |
+// |  the Free Software Foundation, either version 3 of the License, or                 |
+// |  (at your option) any later version.                                               |
+// |                                                                                    |
+// |  Coiled-Coil Builder is distributed in the hope that it will be useful,            |
+// |  but WITHOUT ANY WARRANTY without even the implied warranty of                     |
+// |  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                     |
+// |  GNU General Public License for more details.                                      |
+// |                                                                                    |
+// |  You should have received a copy of the GNU General Public License                 |
+// |  along with Coiled-Coil Builder.  If not, see <http:www.gnu.org/licenses/>.        |
+// |                                                                                    |
+// |   *cr                                                                              |
+// |   *cr            (C) Copyright 1995-2013 The Board of Trustees of the              |
+// |   *cr                        University of Pennsylvania                            |
+// |   *cr                         All Rights Reserved                                  |
+// |   *cr                                                                              |
+// +------------------------------------------------------------------------------------+
 
 /**
- * @file   tcl_ccb.cpp
- * @author Chris <chris@mount-doom.chem.upenn.edu>
- * @date   Wed Sep 26 15:26:05 2012
+ * @file   vmd_ccb.cpp
+ * @author Chris MacDermaid <macdercm@MinasTirith>
+ * @date   Thu Apr 25 21:31:50 2013
  *
- * @brief  Tcl interface for ccb plugin
+ * @brief  VMD selection interface for CCB.
  *
- * Load into tcl like:
- *
- * %load libccb.so
- * then call it using the "ccb" command
+ * Unlike the TCL version, the VMD version accepts and manipulates the
+ * atomselect DIRECTLY, saving time converting to and from TCL lists.
+ * of course all the other options are still available. If you're using
+ * this in VMD, use this.
  *
  */
 
@@ -52,6 +52,11 @@
 #include "site.h"
 #include "group.h"
 #include "atom.h"
+
+#include "AtomSel.h"
+#include "MoleculeList.h"
+#include "TclCommands.h"
+#include "VMDApp.h"
 
 /**
  * @def BLEN
@@ -117,9 +122,15 @@ int tcl_ccb(ClientData UNUSED(clientdata), Tcl_Interp *interp,
     int len = 0;
 
     // flags
-    bool pdb = 0;
-    const char *outfile;
-    bool vmd = 0;
+    bool pdb_flag = 0;
+    const char *outfile = NULL;
+
+    // VMD
+    bool vmd_flag = 0;
+    VMDApp *vmd = NULL;
+    AtomSel *sel = NULL;
+    Molecule *mol = NULL;
+    MoleculeList *mol_list = NULL;
 
     // Parse Arguments
     for (int i = 1; i < objc; ++i) {
@@ -136,19 +147,60 @@ int tcl_ccb(ClientData UNUSED(clientdata), Tcl_Interp *interp,
             if (strcmp("-pdb", argv[argc]) == 0) {
 
                 if (i + 1 == objc) {
-                    Tcl_AppendResult(interp, "Missing argument to -pdb\n", NULL);
+                    Tcl_AppendResult(interp, "CCB: Missing argument to -pdb\n", NULL);
                     return TCL_ERROR;
                 }
 
-                pdb = 1;
+                pdb_flag = 1;
                 outfile = Tcl_GetString(objv[++i]);
+
+                // Atom Selection
+            } else if (strcmp("-sel", argv[argc]) == 0) {
+
+                if (i + 1 == objc) {
+                    Tcl_AppendResult(interp, "CCB: Missing argument to -sel\n", NULL);
+                    return TCL_ERROR;
+                }
+
+                // Get the VMD handle
+                vmd = (VMDApp *)Tcl_GetAssocData(interp, "VMDApp", NULL);
+                if (!vmd) {
+                    Tcl_AppendResult(interp, "CCB: Unable to find VMD Instance\n", NULL);
+                    return TCL_ERROR;
+                }
+
+                // Get the selction
+                sel = tcl_commands_get_sel(interp, Tcl_GetStringFromObj(objv[++i],NULL));
+                if (!sel) {
+                    Tcl_AppendResult(interp, "CCB: Invalid atom selection", NULL);
+                    return TCL_ERROR;
+                }
+
+                if (sel->num_atoms < 1) {
+                    Tcl_AppendResult(interp, "CCB: Atomselection contains no atoms", NULL);
+                    return TCL_ERROR;
+                }
+
+                // Get the Molecule List
+                mol_list = vmd->moleculeList;
+                if (!mol_list) {
+                    Tcl_AppendResult(interp, "CCB: Null Molecule List", NULL);
+                    return TCL_ERROR;
+                }
+
+                // Get the associated mol
+                mol = mol_list->mol_from_id(sel->molid());
+                if (!mol) {
+                    Tcl_AppendResult(interp, "CCB: Mol associated with selection not found. Deleted?", NULL);
+                    return TCL_ERROR;
+                }
 
                 // Verbosity
             } else if (strcmp("-v", argv[argc]) == 0) {
                 int v = 0;
 
                 if (i + 1 == objc) {
-                    Tcl_AppendResult(interp, "Missing argument to -v\n", NULL);
+                    Tcl_AppendResult(interp, "CCB: Missing argument to -v\n", NULL);
                     return TCL_ERROR;
                 }
 
@@ -156,9 +208,9 @@ int tcl_ccb(ClientData UNUSED(clientdata), Tcl_Interp *interp,
                     return TCL_ERROR;
                 ccb->error->verbosity_level = v;
 
-                // VMD
+                // Return to VMD as a TCL list (backward compatability)
             } else if (strcmp("-vmd", argv[argc]) == 0) {
-                vmd = 1;
+                vmd_flag = 1;
 
             } else {
 
@@ -175,7 +227,7 @@ int tcl_ccb(ClientData UNUSED(clientdata), Tcl_Interp *interp,
     }
 
     /// Write out the coordinates to a pdb file
-    if (pdb) {
+    if (pdb_flag) {
         newarg[0] = (char *) "output";
         newarg[1] = (char *) "pdb";
         newarg[2] = (char *) "pdb1";
@@ -190,8 +242,38 @@ int tcl_ccb(ClientData UNUSED(clientdata), Tcl_Interp *interp,
         }
     }
 
+    // Populate the coordinates in the selection DIRECTLY if the user passed it.
+    // This should be faster than passing things back and forth via TCL lists.
+
+    if (sel) {
+
+        // Get a pointer to the coordinates for the mol/frame/selection
+        float *vmdcoords = sel->coordinates(mol_list);
+        int k = 0;
+        for (int i = 0; i < ccb->domain->nsite; i++)
+            for (int j = 0; j < ccb->domain->site[i]->fixed_atoms->natom; j++) {
+
+                double x[3] = { 0.0 };
+                ccb->domain->site[i]->fixed_atoms->atom[j]->get_xyz(x);
+
+                // Only populate if the atom is on;
+                if (sel->on[k]) {
+                    vmdcoords[0] = x[0];
+                    vmdcoords[1] = x[1];
+                    vmdcoords[2] = x[2];
+                }
+
+                vmdcoords += 3;
+                k++;
+            }
+
+        // Force gui redraw
+        mol->force_recalc(DrawMolItem::MOL_REGEN);
+
+    }
+
     /// Create TCL object and return coordinates if requested
-    if (vmd) {
+    if (vmd_flag) {
 
         Tcl_Obj *resultPtr;
         resultPtr = Tcl_NewListObj(0,NULL);

@@ -10,13 +10,13 @@ VERSION = 1.0
 
 CC =		g++
 CCFLAGS =	-O2 -fomit-frame-pointer -fno-rtti -fno-exceptions -g \
-			-march=native -ffast-math -mpc64 -finline-functions \
+			-march=native -msse3 -ffast-math -mpc64 -finline-functions \
 			-funroll-loops -fstrict-aliasing -Wall -W -Wno-uninitialized
 SHFLAGS =       -fPIC
 DEPFLAGS =      -M
 
 LINK =		g++
-LINKFLAGS =	-O -g -mpc64 -fno-exceptions
+LINKFLAGS =	-O -fomit-frame-pointer -march=core2 -msse3 -fno-rtti -fno-exceptions -mpc64
 LIB =           -lstdc++ -lm
 SIZE =		size
 

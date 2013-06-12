@@ -3,15 +3,6 @@
 
 if (test $1 = 1) then
 
-#  if (test -e ../angle_harmonic.cpp) then
-#    cp angle_cg_cmm.h ..
-#    cp angle_cg_cmm.cpp ..
-#
-#    cp angle_sdk.h ..
-#    cp angle_sdk.cpp ..
-#  fi
-
-
   cp backbone_coiledcoil.h ..
   cp backbone_coiledcoil.cpp ..
 

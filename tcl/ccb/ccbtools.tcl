@@ -1,27 +1,27 @@
 # -*- tcl -*-
 
-  # +------------------------------------------------------------------------------------+ 
-  # | This file is part of Coiled-Coil Builder.                                          | 
-  # |                                                                                    | 
-  # | Coiled-Coil Builder is free software: you can redistribute it and/or modify        | 
-  # | it under the terms of the GNU General Public License as published by               | 
-  # | the Free Software Foundation, either version 3 of the License, or                  | 
-  # | (at your option) any later version.                                                | 
-  # |                                                                                    | 
-  # | Coiled-Coil Builder is distributed in the hope that it will be useful,             | 
-  # | but WITHOUT ANY WARRANTY without even the implied warranty of                      | 
-  # | MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                      | 
-  # | GNU General Public License for more details.                                       | 
-  # |                                                                                    | 
-  # | You should have received a copy of the GNU General Public License                  | 
-  # | along with Coiled-Coil Builder.  If not, see <http:www.gnu.org/licenses/>.         | 
-  # |                                                                                    | 
-  # |  *cr                                                                               | 
-  # |  *cr            (C) Copyright 1995-2013 The Board of Trustees of the               | 
-  # |  *cr                        University of Pennsylvania                             | 
-  # |  *cr                         All Rights Reserved                                   | 
-  # |  *cr                                                                               | 
-  # +------------------------------------------------------------------------------------+ 
+# +------------------------------------------------------------------------------------+
+# | This file is part of Coiled-Coil Builder.                                          |
+# |                                                                                    |
+# | Coiled-Coil Builder is free software: you can redistribute it and/or modify        |
+# | it under the terms of the GNU General Public License as published by               |
+# | the Free Software Foundation, either version 3 of the License, or                  |
+# | (at your option) any later version.                                                |
+# |                                                                                    |
+# | Coiled-Coil Builder is distributed in the hope that it will be useful,             |
+# | but WITHOUT ANY WARRANTY without even the implied warranty of                      |
+# | MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                      |
+# | GNU General Public License for more details.                                       |
+# |                                                                                    |
+# | You should have received a copy of the GNU General Public License                  |
+# | along with Coiled-Coil Builder.  If not, see <http:www.gnu.org/licenses/>.         |
+# |                                                                                    |
+# |  *cr                                                                               |
+# |  *cr            (C) Copyright 1995-2013 The Board of Trustees of the               |
+# |  *cr                        University of Pennsylvania                             |
+# |  *cr                         All Rights Reserved                                   |
+# |  *cr                                                                               |
+# +------------------------------------------------------------------------------------+
 
 ## ccbtools Helper Tools and VMD GUI
 
@@ -37,6 +37,7 @@ namespace eval ::ccbtools:: {
     variable params
 
     set sys(TMPDIR) /tmp
+    set sys(directselect) 0 ;# Enable it if using "ccb -sel $sel"
 
     set params(nhelix) 2
     set params(nres) 28
@@ -91,7 +92,7 @@ proc ::ccbtools::newmol { args } {
                   -rpt $params(rpt)\
                   -rotation $params(rotation)\
                   -zoff $params(zoff)\
-		  -Z $params(z)\
+                  -Z $params(z)\
                   -square $params(square)\
                   -rpr $params(rpr)]
 
@@ -104,7 +105,7 @@ proc ::ccbtools::newmol { args } {
     }
 
     if {$params(frasermacrae)} {
-	lappend opts "-frasermacrae"
+        lappend opts "-frasermacrae"
     }
 
     ## The command used to generate the coiled-coil
@@ -139,7 +140,7 @@ proc ::ccbtools::updatemol { args } {
     if {$params(pitch) == 0.0} {set params(pitch) 0.000001}
 
     # Set Options
-    set opts [list ccb -vmd\
+    set opts [list ccb\
                   -nhelix $params(nhelix)\
                   -nres $params(nres)\
                   -pitch $params(pitch)\
@@ -147,7 +148,7 @@ proc ::ccbtools::updatemol { args } {
                   -rpt $params(rpt)\
                   -rotation $params(rotation)\
                   -zoff $params(zoff)\
-		  -Z $params(z)\
+                  -Z $params(z)\
                   -square $params(square)\
                   -rpr $params(rpr)]
 
@@ -160,20 +161,31 @@ proc ::ccbtools::updatemol { args } {
     }
 
     if {$params(frasermacrae)} {
-	lappend opts "-frasermacrae"
+        lappend opts "-frasermacrae"
     }
 
-    # Generate structure
-    if { [catch {eval $opts} coords] } {
-        vmdcon -error "ccb: Could not generate structure"
-        return -1
+    ## Check for passing the selection directly or returning through
+    ## tcl lists
+    if {$sys(directselect)} {
+        lappend opts -sel $sys(sel_ccb_all)
+    } else {
+        lappend opts "-vmd"
     }
 
     ## The command used to generate the coiled-coil
     set sys(opts) [join $opts]
 
-    ## Update the coordinates of the global selection
-    $sys(sel_ccb_all) set {x y z} $coords
+    # Generate structure
+    if { [catch {eval $opts} coords] } {
+        vmdcon -error "ccb: Could not generate structure: $coords"
+        return -1
+    }
+
+    ## Update the coordinates of the global selection if
+    ## using tcl lists
+    if {!$sys(directselect)} {
+        $sys(sel_ccb_all) set {x y z} $coords
+    }
 }
 
 proc ::ccbtools::cleanup { args } {
@@ -312,8 +324,8 @@ proc ::ccbtools::setasym {args} {
 
     } else {
 
-        ## If we're not asymmetric, only need the first value, but 
-	## all fields should match for consistency
+        ## If we're not asymmetric, only need the first value, but
+        ## all fields should match for consistency
 
         ## Set to values of first helix
         foreach x {nres rotation square rpt zoff z} {

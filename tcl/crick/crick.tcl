@@ -1,27 +1,27 @@
 # -*- tcl -*-
 
-  # +------------------------------------------------------------------------------------+ 
-  # | This file is part of Coiled-Coil Builder.                                          | 
-  # |                                                                                    | 
-  # | Coiled-Coil Builder is free software: you can redistribute it and/or modify        | 
-  # | it under the terms of the GNU General Public License as published by               | 
-  # | the Free Software Foundation, either version 3 of the License, or                  | 
-  # | (at your option) any later version.                                                | 
-  # |                                                                                    | 
-  # | Coiled-Coil Builder is distributed in the hope that it will be useful,             | 
-  # | but WITHOUT ANY WARRANTY without even the implied warranty of                      | 
-  # | MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                      | 
-  # | GNU General Public License for more details.                                       | 
-  # |                                                                                    | 
-  # | You should have received a copy of the GNU General Public License                  | 
-  # | along with Coiled-Coil Builder.  If not, see <http:www.gnu.org/licenses/>.         | 
-  # |                                                                                    | 
-  # |  *cr                                                                               | 
-  # |  *cr            (C) Copyright 1995-2013 The Board of Trustees of the               | 
-  # |  *cr                        University of Pennsylvania                             | 
-  # |  *cr                         All Rights Reserved                                   | 
-  # |  *cr                                                                               | 
-  # +------------------------------------------------------------------------------------+ 
+# +------------------------------------------------------------------------------------+
+# | This file is part of Coiled-Coil Builder.                                          |
+# |                                                                                    |
+# | Coiled-Coil Builder is free software: you can redistribute it and/or modify        |
+# | it under the terms of the GNU General Public License as published by               |
+# | the Free Software Foundation, either version 3 of the License, or                  |
+# | (at your option) any later version.                                                |
+# |                                                                                    |
+# | Coiled-Coil Builder is distributed in the hope that it will be useful,             |
+# | but WITHOUT ANY WARRANTY without even the implied warranty of                      |
+# | MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                      |
+# | GNU General Public License for more details.                                       |
+# |                                                                                    |
+# | You should have received a copy of the GNU General Public License                  |
+# | along with Coiled-Coil Builder.  If not, see <http:www.gnu.org/licenses/>.         |
+# |                                                                                    |
+# |  *cr                                                                               |
+# |  *cr            (C) Copyright 1995-2013 The Board of Trustees of the               |
+# |  *cr                        University of Pennsylvania                             |
+# |  *cr                         All Rights Reserved                                   |
+# |  *cr                                                                               |
+# +------------------------------------------------------------------------------------+
 
 package provide crick 1.0
 
@@ -70,6 +70,17 @@ proc ::crick::parse { args } {
     variable params
 
     set onearg {}
+
+    ## Single Argument Flags, remove them as they are processed
+    set n [llength $args]
+    for {set i 0} {$i < $n} {incr i} {
+        set arg [lindex $args $i]
+
+        if {$arg == "-asymmetric"} {set params(asymmetric) 1; set args [lreplace $args $i $i]; continue}
+
+        set n [llength $args]
+    }
+
     ## Two Arguments Flags
     foreach {i j} $args {
 
@@ -86,11 +97,6 @@ proc ::crick::parse { args } {
         if {$i == "-params"} {set sys(userparams) [lsort -unique $j]; continue}
         if {$i == "-tol"} {set sys(tol) $j; continue}
         if {$i == "-order"} {set sys(orderflag) 1; set params(order) $j; continue}
-    }
-
-    ## Single Argument Flags
-    foreach i $args {
-        if {$i == "-asymmetric"} {set params(asymmetric) 1; continue}
     }
 }
 
@@ -111,13 +117,13 @@ proc ::crick::newmol { args } {
                   -rpt $params(rpt)\
                   -rotation $params(rotation)\
                   -zoff $params(zoff)\
-		  -Z $params(Z)\
+                  -Z $params(Z)\
                   -square $params(square)\
                   -rpr $params(rpr)\
                   -order $params(order)]
 
     if {$params(antiparallel)} {
-        lappend opts "-antiparallel $sys(orient)"
+        lappend opts "-antiparallel"
     }
 
     if {$params(asymmetric)} {
@@ -167,7 +173,7 @@ proc ::crick::updatemol { args } {
                   -order $params(order)]
 
     if {$params(antiparallel)} {
-        lappend opts "-antiparallel $sys(orient)"
+        lappend opts "-antiparallel"
     }
 
     if {$params(asymmetric)} {
@@ -259,6 +265,8 @@ proc ::crick::veryclean { args } {
 # including the orientation, order, helices
 # and the number of residues per helix
 proc ::crick::topology { args } {
+
+    global M_PI
 
     variable sys
 
@@ -401,6 +409,7 @@ proc ::crick::topology { args } {
 
     set r1 [vecnorm [vecsub $com1 $com_avg]]
     set i 0
+    set TWO_PI [expr {2 * $M_PI}]
     foreach com2 $sys(com) segname $sys(segname) {
 
         set r2 [vecnorm [vecsub $com2 $com_avg]]
@@ -412,12 +421,17 @@ proc ::crick::topology { args } {
         set angle [expr {atan2($length, [vecdot $r1 $r2])}]
 
         # Make sure we've got the correct direction
-        if {[lindex $n 2] < 0} {
-            set angle [expr {$angle + 3.14159265}]
+        if {[vecdot $n [list 0 0 1]] < 0} {
+            set angle [expr {-1.0 * $angle}]
         }
 
-        ## Make an associated list with index, segid and angle value
+        set angle [expr {fmod($angle, $TWO_PI)}]
+
+        ## Make an associated list with index, segid, angle value,
+        ## and helix orientation w.r.t. z-axis (parallel vs. antiparallel)
         lappend order [list $i $segname $angle]
+
+        ## list index
         incr i
     }
 
@@ -425,9 +439,9 @@ proc ::crick::topology { args } {
     # order about the superhelical axis
     set order [lsort -increasing -real -index 2 $order]
 
-    # Reverse the order
+    # Reverse the order (clockwise starting at index 0)
     set neworder {}
-    lappend neworder [lindex $order 0] 
+    lappend neworder [lindex $order 0]
     set  neworder [concat $neworder [lreverse [lrange $order 1 end]]]
     set order $neworder
 
@@ -438,9 +452,9 @@ proc ::crick::topology { args } {
         incr i
     }
 
-    ## Re-sort, so we have the output order counterclockwise
+    ## Re-sort, so we have the output order clockwise, and consistent
+    ## with the order in the pdb file
     set sys(order) [lsort -increasing -real -index 0 $sys(order)]
-
 }
 
 proc ::crick::setmol { args } {
@@ -462,7 +476,7 @@ proc ::crick::setmol { args } {
     ## Set output order as determined from input structure
     ## Cool little hack to get columnwise from a list
     if {!$sys(orderflag)} {
-        set params(order) [lsearch -all -index 0 -subindices -inline $sys(order) *]
+        set params(order) [lsearch -all -index 3 -subindices -inline $sys(order) *]
     }
 
     ## Create a new mol consistent with determined topology
@@ -495,9 +509,9 @@ proc ::crick::run { args } {
     if {$params(asymmetric)} {
         set params(rotation) [lrepeat $sys(nhelix) 0.0]
         set params(zoff)     [lrepeat $sys(nhelix) 0.0]
-	set params(Z)        [lrepeat $sys(nhelix) 0.0]
+        set params(Z)        [lrepeat $sys(nhelix) 0.0]
         set params(rpt)      [lrepeat $sys(nhelix) 3.64]
-	set params(square)   [lrepeat $sys(nhelix) 0.0]
+        set params(square)   [lrepeat $sys(nhelix) 0.0]
     }
 
     # user specific minimization parameters
