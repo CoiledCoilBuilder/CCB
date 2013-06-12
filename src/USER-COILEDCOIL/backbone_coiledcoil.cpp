@@ -371,7 +371,7 @@ int BackboneCoiledCoil::set_params(int argc, const char **argv, int n) {
             }
 
             // Make sure Ri == Rf if no modulation is specified
-            if (r0_params[2] == r0_params[3]) r0_params[1] = r0_params[0];
+            if (r0_params[2] == r0_params[3]) radius[0] = r0_params[1] = r0_params[0];
 
             continue;
 
