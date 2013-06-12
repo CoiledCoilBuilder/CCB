@@ -233,14 +233,19 @@ int BackboneCoiledCoil::set_params(int argc, const char **argv, int n) {
             nhelix = atoi(argv[n]);
             rebuild_domain = true;
 
-            if (nhelix < 1) return error->one(FLERR, "nhelix must be greater than 0");
+            if (nhelix < 1 || nhelix > MAX_HELIX) {
+                char str[128];
+                sprintf(str, "CCB: nhelix must be greater than 0 and less than %d", MAX_HELIX);
+                return error->one(FLERR,str);
+            }
 
         } else if (strcmp(argv[n], "-antiparallel") == 0) {
             n++;
 
             // Set default antiparallel option, e.g. 0 1 0 1...
-            for (int i = 1; i < MAX_HELIX; i += 2) {
-                ap_order[i] = 1;
+            for (int i = 0; i < MAX_HELIX; i += 2) {
+                ap_order[i] = 0;
+                ap_order[i+1] = 1;
             }
 
             int i = 0;
@@ -335,6 +340,7 @@ int BackboneCoiledCoil::set_params(int argc, const char **argv, int n) {
             continue;
 
             // Adjust the order that the helices are written to the pdb file
+            // Useful for structural alignments
         } else if (strcmp(argv[n], "-order") == 0) {
             n++;
             if (n == argc) return error->one(FLERR, "Missing argument to -order");
@@ -345,20 +351,24 @@ int BackboneCoiledCoil::set_params(int argc, const char **argv, int n) {
             }
             continue;
 
+            // Number of residues
         } else if (strcmp(argv[n], "-nres") == 0) {
             n++;
             if (n == argc) return error->one(FLERR, "Missing argument to -nres");
             int i = 0;
             while (n < argc && isfloat(argv[n])) {
                 this->nres[i] = atoi(argv[n]);
-                if (this->nres[i] < 1) error->one(FLERR, "nres must be greater than 0");
+                if (this->nres[i] < 1 || this->nres[i] > MAX_RES) {
+                    char str[128];
+                    sprintf(str, "CCB: nres must be greater than 0 and less than %d", MAX_RES);
+                    return error->one(FLERR,str);
+                }
                 i++;
                 n++;
             }
             continue;
 
             // multiple arguments for expanding/contracting the radius over the coiled-coil
-
         } else if (strcmp(argv[n], "-radius") == 0) {
             n++;
             if (n == argc) return error->one(FLERR, "Missing argument to -radius");
@@ -371,7 +381,11 @@ int BackboneCoiledCoil::set_params(int argc, const char **argv, int n) {
             }
 
             // Make sure Ri == Rf if no modulation is specified
-            if (r0_params[2] == r0_params[3]) radius[0] = r0_params[1] = r0_params[0];
+            if (r0_params[2] == r0_params[3]) r0_params[1] = r0_params[0];
+
+            // Update the radius
+            for (int i = 0; i < MAX_RES; i++)
+                radius[0] = r0_params[0];
 
             continue;
 
@@ -575,7 +589,7 @@ int BackboneCoiledCoil::generate() {
 
     // Generate the minior-helical axis
     helix_axis();
-    
+
     // bring the plane to the first
     // helix axis point
     double m[4][4];
@@ -681,7 +695,7 @@ int BackboneCoiledCoil::generate_asymmetric() {
 
     // Generate the minior-helical axes
     helix_axis();
-    
+
     // Generate the other axes
     symmetry_axis();
 
@@ -1267,35 +1281,35 @@ void BackboneCoiledCoil::symmetry() {
 
     if (anti_flag) {
 
-    // antiparallel
-    // Calculate the superhelical radius
-    // vector in the xy plane, should probably
-    // interpolate this when nres/2 is odd.
+        // antiparallel
+        // Calculate the superhelical radius
+        // vector in the xy plane, should probably
+        // interpolate this when nres/2 is odd.
 
-    //HACKY FIX TO SYMMETRIC ANTIPARALLEL RADIUS MODULATION FLIPPING
-    double v_anti[3] = { 0.0 };
-    v_anti[0] = axis_x[0][nres[0]][0] - axis_x[0][0][0];
-    v_anti[1] = axis_x[0][nres[0]][1] - axis_x[0][0][1];
-    v_anti[2] = axis_x[0][nres[0]][2] - axis_x[0][0][2];
-    norm3(v_anti);
-    double c_anti[3] = { 0.0 };
-    c_anti[0] = axis_x[0][0][0] + 0.5*(axis_x[0][nres[0]][2] - axis_x[0][0][2])*v_anti[0];
-    c_anti[1] = axis_x[0][0][1] + 0.5*(axis_x[0][nres[0]][2] - axis_x[0][0][2])*v_anti[1];
-    c_anti[2] = axis_x[0][0][2] + 0.5*(axis_x[0][nres[0]][2] - axis_x[0][0][2])*v_anti[2];
-    double r2d[3] = { 0.0 };
-    r2d[0] = c_anti[0] - 0.0;
-    r2d[1] = c_anti[1] - 0.0;
-    r2d[2] = c_anti[2] - dot3(c_anti, v_anti) / v_anti[2];
-    norm3(r2d);
+        //HACKY FIX TO SYMMETRIC ANTIPARALLEL RADIUS MODULATION FLIPPING
+        double v_anti[3] = { 0.0 };
+        v_anti[0] = axis_x[0][nres[0]][0] - axis_x[0][0][0];
+        v_anti[1] = axis_x[0][nres[0]][1] - axis_x[0][0][1];
+        v_anti[2] = axis_x[0][nres[0]][2] - axis_x[0][0][2];
+        norm3(v_anti);
+        double c_anti[3] = { 0.0 };
+        c_anti[0] = axis_x[0][0][0] + 0.5*(axis_x[0][nres[0]][2] - axis_x[0][0][2])*v_anti[0];
+        c_anti[1] = axis_x[0][0][1] + 0.5*(axis_x[0][nres[0]][2] - axis_x[0][0][2])*v_anti[1];
+        c_anti[2] = axis_x[0][0][2] + 0.5*(axis_x[0][nres[0]][2] - axis_x[0][0][2])*v_anti[2];
+        double r2d[3] = { 0.0 };
+        r2d[0] = c_anti[0] - 0.0;
+        r2d[1] = c_anti[1] - 0.0;
+        r2d[2] = c_anti[2] - dot3(c_anti, v_anti) / v_anti[2];
+        norm3(r2d);
 
-    moveto(c_anti, m1b);
-    axis_angle_to_mat_trans4(PI, r2d, c_anti, m1);
-    times4(m1, m1b, m1c);
-    
-    double z_anti[3] = { 0.0 };
-    z_anti[2] = zoff[0];
-    moveby(z_anti, m1b);
-    times4(m1c, m1b, m1);
+        moveto(c_anti, m1b);
+        axis_angle_to_mat_trans4(PI, r2d, c_anti, m1);
+        times4(m1, m1b, m1c);
+
+        double z_anti[3] = { 0.0 };
+        z_anti[2] = zoff[0];
+        moveby(z_anti, m1b);
+        times4(m1c, m1b, m1);
 
     }
 
@@ -1652,7 +1666,7 @@ void BackboneCoiledCoil::print_header() {
             "Antiparallel:         %d\n"
             "Fraser-MacRae:        %d\n\n",
             nhelix, pitch, radius[0], rotation[0] * RAD2DEG,
-            rpt[0], zoff[0], z[0], square[0] * RAD2DEG, rpr, 
+            rpt[0], zoff[0], z[0], square[0] * RAD2DEG, rpr,
             anti_flag, fm_flag);
 
     if (asymmetric_flag)
