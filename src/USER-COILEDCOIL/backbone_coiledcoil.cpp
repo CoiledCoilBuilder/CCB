@@ -560,6 +560,10 @@ void BackboneCoiledCoil::azzero() {
 
 int BackboneCoiledCoil::generate() {
 
+    // Print Header with info
+    if (error->verbosity_level >= 4)
+        print_header();
+
     // Set initial peptide-plane coordiantes
     build_plane();
 
@@ -572,13 +576,6 @@ int BackboneCoiledCoil::generate() {
     // Generate the minior-helical axis
     helix_axis();
     
-    if (fm_flag)
-        pitch = fraser_macrae(0);
-    
-    // Print Header with info
-    if (error->verbosity_level >= 4)
-        print_header();
-
     // bring the plane to the first
     // helix axis point
     double m[4][4];
@@ -669,6 +666,10 @@ int BackboneCoiledCoil::generate() {
 
 int BackboneCoiledCoil::generate_asymmetric() {
 
+    // Print Header with info
+    if (error->verbosity_level >= 4)
+        print_header();
+
     // Set initial peptide-plane coordiantes
     build_plane();
 
@@ -681,15 +682,6 @@ int BackboneCoiledCoil::generate_asymmetric() {
     // Generate the minior-helical axes
     helix_axis();
     
-    if (fm_flag)
-        pitch = fraser_macrae(0);
-    
-    // Print Header with info
-    if (error->verbosity_level >= 4) {
-        fprintf(screen, "Asymmetric Generation\n");
-        print_header();
-    }
-
     // Generate the other axes
     symmetry_axis();
 
