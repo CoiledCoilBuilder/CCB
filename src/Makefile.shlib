@@ -1,0 +1,43 @@
+# ccb shared library multiple-machine Makefile
+
+SHELL = /bin/sh
+
+# Definitions
+
+ROOT =	ccb
+EXE =	lib$(ROOT)_$@.so
+
+SRC =	atom.cpp backbone_coiledcoil.cpp backbone.cpp backbonehandler.cpp bitmask.cpp ccb_compass.cpp ccb.cpp ccbio.cpp domain.cpp error.cpp group.cpp  math_extra.cpp memory.cpp output.cpp output_pdb.cpp plugin_baseclass.cpp site.cpp tcl_ccb.cpp universe.cpp 
+
+INC =	atom.h backbone_coiledcoil.h backbone.h backbonehandler.h bitmask.h ccb_compass.h ccb.h ccbio.h ccbtype.h constants.h domain.h error.h group.h math_extra.h memory.h output.h output_pdb.h plugin_baseclass.h plugin.h pointers.h site.h sort.h style_backbone.h style_output.h universe.h version.h 
+
+OBJ =	$(SRC:.cpp=.o)
+
+# Targets
+
+help:
+	@echo 'Type "make target" where target is one of:'
+	@echo ''
+	@files="`ls MAKE/Makefile.*`"; \
+	for file in $$files; do head -1 $$file; done
+
+clean:
+	rm -rf Obj_shlib_*
+
+.DEFAULT:
+	@test -f MAKE/Makefile.$@
+	@if [ ! -d Obj_shlib_$@ ]; then mkdir Obj_shlib_$@; fi
+	@cp -p $(SRC) $(INC) Obj_shlib_$@
+	@cp MAKE/Makefile.$@ Obj_shlib_$@/Makefile
+	@if [ ! -e Makefile.package ]; \
+	  then cp Makefile.package.empty Makefile.package; fi
+	@if [ ! -e Makefile.package.settings ]; \
+	  then cp Makefile.package.settings.empty Makefile.package.settings; fi
+	@cp Makefile.package Makefile.package.settings Obj_shlib_$@
+	@cd Obj_shlib_$@; \
+	$(MAKE) $(MFLAGS) "OBJ = $(OBJ)" \
+          "INC = $(INC)" "EXE = ../$(EXE)" shlib
+	@rm -f libccb.so
+	@ln -s $(EXE) libccb.so
+	@if [ -d Obj_shlib_$@ ]; then cd Obj_shlib_$@; \
+          rm -f $(SRC) $(INC) Makefile*; fi
