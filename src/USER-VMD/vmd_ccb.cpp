@@ -72,10 +72,6 @@
 
 #define MAX_ARGS 64
 
-//Error flags for CCB
-//#define CCB_OK 0
-//#define CCB_ERROR 1
-
 using namespace CCB_NS;
 
 /**
