@@ -7,9 +7,9 @@ SHELL = /bin/sh
 ROOT =	ccb
 EXE =	lib$(ROOT)_$@.so
 
-SRC =	atom.cpp backbone_coiledcoil.cpp backbone.cpp backbonehandler.cpp bitmask.cpp ccb_compass.cpp ccb.cpp ccbio.cpp domain.cpp error.cpp group.cpp  math_extra.cpp memory.cpp output.cpp output_pdb.cpp plugin_baseclass.cpp site.cpp tcl_ccb.cpp universe.cpp 
+SRC =	atom.cpp backbone_coiledcoil.cpp backbone.cpp backbonehandler.cpp bitmask.cpp ccb.cpp ccbio.cpp domain.cpp error.cpp group.cpp  math_extra.cpp memory.cpp output.cpp output_pdb.cpp site.cpp tcl_ccb.cpp universe.cpp 
 
-INC =	atom.h backbone_coiledcoil.h backbone.h backbonehandler.h bitmask.h ccb_compass.h ccb.h ccbio.h ccbtype.h constants.h domain.h error.h group.h math_extra.h memory.h output.h output_pdb.h plugin_baseclass.h plugin.h pointers.h site.h sort.h style_backbone.h style_output.h universe.h version.h 
+INC =	atom.h backbone_coiledcoil.h backbone.h backbonehandler.h bitmask.h ccb.h ccbio.h ccbtype.h constants.h domain.h error.h group.h math_extra.h memory.h output.h output_pdb.h pointers.h site.h sort.h style_backbone.h style_output.h universe.h version.h 
 
 OBJ =	$(SRC:.cpp=.o)
 

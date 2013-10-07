@@ -1,6 +1,4 @@
 # CCB multiple-machine Makefile
-# More or less the same as the LAMMPS makefile
-# routines
 
 # Definitions
 
@@ -51,10 +49,6 @@ help:
 	@echo 'make package-update      replace src files with package files'
 	@echo 'make package-overwrite   replace package files with src files'
 	@echo 'make package-diff        diff src files against package files'
-	@echo ''
-	@echo 'make bench               benchmark menu'
-	@echo 'make clean-bench         clean up benchmark files'
-	@echo 'make bench-machine       bench a particular build'    
 	@echo ''
 	@echo 'make machine             build CCB where machine is one of:'
 	@echo ''
@@ -189,64 +183,6 @@ package-diff:
 	@for p in $(PACKAGEUC); do $(SHELL) Package.sh $$p diff; done
 	@echo ''
 	@for p in $(PACKUSERUC); do $(SHELL) Package.sh $$p diff; done
-
-# Benchmarks
-.SUFFIXES:
-.PHONY: input clean-bench bench docs
-
-INPUTS_GCN4= gcn4.pdb ctlfile.gcn4 ctlfile.gcn4_2
-
-$(INPUTS_GCN4): 
-	ln -s ../benchmark/gcn4/$@ $@
-
-INPUTS= $(INPUTS_GCN4) 
-
-NUMTHREADS= 1 2 4 8 16 32
-
-input: $(INPUTS)
-
-clean-bench:
-	rm -f ctlfile.gcn4 ctlfile.gcn4_2 gcn4*
-
-bench:
-	@echo 'Benchmarks'
-	@echo ''
-	@echo 'make bench             this menu'
-	@echo 'make clean-bench       cleanup benchmark files'
-	@echo 'make bench-machine     benchmark a particular build where machine is'
-	@echo ''
-	@files="`ls MAKE/Makefile.*`"; \
-	  for file in $$files; do head -1 $$file; done
-	@echo ''
-
-#bench-%: $(INPUTS)
-#	@test -f MAKE/Makefile.$(@:bench-%=%)
-#	@if [ ! -d Obj_$(@:bench-%=%) ]; then mkdir Obj_$(@:bench-%=%); fi
-#	@$(SHELL) Make.sh style
-#	@cp -p *.cpp *.h Obj_$(@:bench-%=%)
-#	@cp MAKE/Makefile.$(@:bench-%=%) Obj_$(@:bench-%=%)/Makefile
-#	@if [ ! -e Makefile.package ]; \
-#	  then cp Makefile.package.empty Makefile.package; fi
-#	@if [ ! -e Makefile.package.settings ]; \
-#	  then cp Makefile.package.settings.empty Makefile.package.settings; fi
-#	@cp Makefile.package Makefile.package.settings Obj_$(@:bench-%=%)
-#	@cd Obj_$(@:bench-%=%); \
-#	$(MAKE) $(MFLAGS) "OBJ = $(OBJ)" "INC = $(INC)" \
-#	  "EXE = ../$(ROOT)_$(@:bench-%=%)" ../$(ROOT)_$(@:bench-%=%)
-#	@if [ -d Obj_$(@:bench-%=%) ]; then cd Obj_$(@:bench-%=%); rm -f $(SRC) $(INC) Makefile*; fi
-#	@echo ========================================================  > compass.gcn4.time
-#	@for p in $(NUMTHREADS); do \
-#	echo OMP_NUM_THREADS=$$p compass_$(@:bench-%=%) ctlfile.gcn4   >> compass.gcn4.time; \
-#	( time OMP_NUM_THREADS=$$p mpirun -np 1 ./compass_$(@:bench-%=%) ctlfile.gcn4 )  2>> compass.gcn4.time; \
-#	echo ======================================================== >> compass.gcn4.time; \
-#	done
-
-docs: $(ROOT)-docs.pdf
-
-$(ROOT)-docs.pdf:
-	doxygen Doxyfile.in || rm -f $@ 
-	make -C latex rm -f $@
-	cp -p latex/refman.pdf $@ || rm -f $@
 
 #Emacs on-the-fly syntax checker
 check-syntax:
