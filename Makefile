@@ -17,6 +17,7 @@ clean-%:
 	cd src; make clean-$(@:clean-%=%);
 
 makeshlib-%:
+	cd src; make yes-user-coiledcoil yes-user-tcl 
 	cd src; make makeshlib $(@:makeshlib-%=%);
 	cd src; make -f Makefile.shlib $(@:makeshlib-%=%);
 
