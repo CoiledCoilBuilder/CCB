@@ -1,0 +1,86 @@
+# mingw32-cross = Windows 32-bit, cross-compiled on Fedora 20, gcc-4.8.1, MinGW
+
+SHELL = /bin/sh
+ROOT = ccb
+VERSION = 1.0
+# ---------------------------------------------------------------------
+# compiler/linker settings
+# specify flags and libraries needed for your compiler
+ 
+CC =            i686-w64-mingw32-g++
+CCFLAGS =       -O3 -march=i686 -mtune=generic -mfpmath=387 -mpc64     \
+                -ffast-math -fstrict-aliasing -Wall -W -Wno-uninitialized
+ 
+SHFLAGS =       # -fPIC (not needed on windows, all code is PIC)
+DEPFLAGS =      -M
+ 
+LINK =          i686-w64-mingw32-g++
+LINKFLAGS =     -O2 -march=i686 -mtune=generic -mfpmath=387 -mpc64
+LIB =           -lwsock32 -static-libgcc -static-libstdc++
+SIZE =          i686-w64-mingw32-size
+ 
+ARCHIVE =       i686-w64-mingw32-ar
+ARFLAGS =       -rc
+SHLIBFLAGS =    -shared
+ 
+# name of object file subdir for libraries in lib with leading '/'
+LIBOBJDIR =     /Obj_mingw32
+
+# ---------------------------------------------------------------------
+# CCB-specific settings
+# specify settings for CCB features you will use
+# if you change any -D setting, do full re-compile after "make clean"
+
+# CCB ifdef settings, OPTIONAL, include -D
+
+CCB_INC = -DPACKAGE_NAME=\"$(ROOT)\" -DPACKAGE_VERSION=\"$(VERSION)\"\
+	  -DUSE_TCL_STUBS
+
+# TCL library, required
+# INC = 
+# PATH = 
+# LIB = 
+
+TCL_INC =
+TCL_PATH =
+TCL_LIB =  -ltcl85
+TCL_STUB_LIB = -ltclstub85
+
+# ---------------------------------------------------------------------
+# build rules and dependencies
+# no need to edit this section
+
+include	Makefile.package.settings
+include	Makefile.package
+
+EXTRA_INC = $(CCB_INC) $(PKG_INC) $(TCL_INC) $(PKG_SYSINC)
+EXTRA_PATH = $(PKG_PATH) $(TCL_PATH) $(PKG_SYSPATH)
+EXTRA_LIB =  $(PKG_LIB) $(TCL_LIB) $(TCL_STUB_LIB) $(PKG_SYSLIB)
+
+# Link target
+
+$(EXE):	$(OBJ)
+	$(LINK) $(LINKFLAGS) $(EXTRA_PATH) $(OBJ) $(EXTRA_LIB) $(LIB) -o $(EXE)
+	$(SIZE) $(EXE)
+
+# Library targets
+
+lib:    $(OBJ)
+	$(ARCHIVE) $(ARFLAGS) $(EXE) $(OBJ)
+
+shlib:  $(OBJ)
+	$(CC) $(CCFLAGS) $(SHFLAGS) $(SHLIBFLAGS) $(EXTRA_PATH) -o $(EXE) \
+	$(OBJ) $(EXTRA_LIB) $(LIB)
+
+# Compilation rules
+
+%.o:%.cpp
+	$(CC) $(CCFLAGS) $(SHFLAGS) $(EXTRA_INC) -c $<
+
+%.d:%.cpp
+	$(CC) $(CCFLAGS) $(EXTRA_INC) $(DEPFLAGS) $< > $@
+
+# Individual dependencies
+
+DEPENDS = $(OBJ:.o=.d)
+sinclude $(DEPENDS)
