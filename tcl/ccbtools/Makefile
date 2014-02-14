@@ -1,4 +1,4 @@
-.PHONY: install install-latest archive update
+.PHONY: update
 
 PLUGINDIR = ccbtools 
 VMDPLUGINS = $(addprefix $(HOME)/,.vmdplugins)
