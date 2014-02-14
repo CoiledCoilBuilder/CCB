@@ -16,7 +16,7 @@ DEPFLAGS =      -M
 
 LINK =		g++ 
 LINKFLAGS =	-Os -g -m32
-LIB =           -lstdc++ -lm
+LIB =           -lstdc++ -lm -dl
 SIZE =		size
 
 ARCHIVE =       ar
@@ -38,9 +38,9 @@ CCB_INC = -DPACKAGE_NAME=\"$(ROOT)\" -DPACKAGE_VERSION=\"$(VERSION)\"\
 # PATH = 
 # LIB = 
 
-TCL_INC =  -I/usr/include
-TCL_PATH = -L/usr/lib
-TCL_LIB =  -ltcl8.5 -dl
+TCL_INC =
+TCL_PATH =
+TCL_LIB =
 TCL_STUB_LIB = -ltclstub8.5
 
 # ---------------------------------------------------------------------

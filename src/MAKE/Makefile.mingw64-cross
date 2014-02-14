@@ -9,15 +9,15 @@ VERSION = 1.0
 # specify flags and libraries needed for your compiler
 
 CC =		x86_64-w64-mingw32-g++
-CCFLAGS =	-O3 -march=core2 -mtune=core2 -mpc64 -msse2 -fopenmp	\
+CCFLAGS =	-O3 -march=core2 -mtune=core2 -mpc64 -msse2	\
 		-ffast-math -fstrict-aliasing -Wall -W -Wno-uninitialized
 
 SHFLAGS =	# -fPIC (not needed on windows, all code is PIC)
 DEPFLAGS =	-M
 
 LINK =		x86_64-w64-mingw32-g++
-LINKFLAGS =	-O2 -march=core2 -mtune=core2 -mpc64 -msse2 -fopenmp
-LIB =           -lwsock32 -static-libgcc
+LINKFLAGS =	-O2 -march=core2 -mtune=core2 -mpc64 -msse2
+LIB =           -lwsock32 -static-libgcc -static-libstdc++ 
 SIZE =		x86_64-w64-mingw32-size
 
 ARCHIVE =	x86_64-w64-mingw32-ar
@@ -37,15 +37,10 @@ LIBOBJDIR = 	/Obj_mingw64
 CCB_INC = -DPACKAGE_NAME=\"$(ROOT)\" -DPACKAGE_VERSION=\"$(VERSION)\"\
 	  -DUSE_TCL_STUBS
 
-# TCL library, required
-# INC = 
-# PATH = 
-# LIB = 
-
-TCL_INC =  -I/usr/include/tcl8.5
-TCL_PATH = -L/usr/lib64
-TCL_LIB =  -ltcl8.5
-TCL_STUB_LIB = -ltclstub8.5
+TCL_INC =
+TCL_PATH =
+TCL_LIB =
+TCL_STUB_LIB = -ltclstub85
 
 # ---------------------------------------------------------------------
 # build rules and dependencies
