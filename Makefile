@@ -1,4 +1,4 @@
-.PHONY: clean clean-all install install-latest archive update
+.PHONY: install install-latest update
 
 VMDPLUGINS = $(addprefix $(HOME)/,.vmdplugins)
 
