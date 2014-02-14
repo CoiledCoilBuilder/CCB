@@ -5,7 +5,7 @@
 
 ## Provided by Chris MacDermaid (Saven Group, University of Pennsylvania, MAY 2009)
 ## Version 1.0
-
+## chris.macdermaid@gmail.com
 
 package provide minimize 1.0
 
