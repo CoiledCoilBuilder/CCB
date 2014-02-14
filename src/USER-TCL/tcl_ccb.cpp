@@ -1,27 +1,27 @@
 // -*-c++-*-
 
-  // +------------------------------------------------------------------------------------+ 
-  // |  This file is part of Coiled-Coil Builder.                                         | 
-  // |                                                                                    | 
-  // |  Coiled-Coil Builder is free software: you can redistribute it and/or modify       | 
-  // |  it under the terms of the GNU General Public License as published by              | 
-  // |  the Free Software Foundation, either version 3 of the License, or                 | 
-  // |  (at your option) any later version.                                               | 
-  // |                                                                                    | 
-  // |  Coiled-Coil Builder is distributed in the hope that it will be useful,            | 
-  // |  but WITHOUT ANY WARRANTY without even the implied warranty of                     | 
-  // |  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                     | 
-  // |  GNU General Public License for more details.                                      | 
-  // |                                                                                    | 
-  // |  You should have received a copy of the GNU General Public License                 | 
-  // |  along with Coiled-Coil Builder.  If not, see <http:www.gnu.org/licenses/>.        | 
-  // |                                                                                    | 
-  // |   *cr                                                                              | 
-  // |   *cr            (C) Copyright 1995-2013 The Board of Trustees of the              | 
-  // |   *cr                        University of Pennsylvania                            | 
-  // |   *cr                         All Rights Reserved                                  | 
-  // |   *cr                                                                              | 
-  // +------------------------------------------------------------------------------------+ 
+// +------------------------------------------------------------------------------------+
+// |  This file is part of Coiled-Coil Builder.                                         |
+// |                                                                                    |
+// |  Coiled-Coil Builder is free software: you can redistribute it and/or modify       |
+// |  it under the terms of the GNU General Public License as published by              |
+// |  the Free Software Foundation, either version 3 of the License, or                 |
+// |  (at your option) any later version.                                               |
+// |                                                                                    |
+// |  Coiled-Coil Builder is distributed in the hope that it will be useful,            |
+// |  but WITHOUT ANY WARRANTY without even the implied warranty of                     |
+// |  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                     |
+// |  GNU General Public License for more details.                                      |
+// |                                                                                    |
+// |  You should have received a copy of the GNU General Public License                 |
+// |  along with Coiled-Coil Builder.  If not, see <http:www.gnu.org/licenses/>.        |
+// |                                                                                    |
+// |   *cr                                                                              |
+// |   *cr            (C) Copyright 1995-2013 The Board of Trustees of the              |
+// |   *cr                        University of Pennsylvania                            |
+// |   *cr                         All Rights Reserved                                  |
+// |   *cr                                                                              |
+// +------------------------------------------------------------------------------------+
 
 /**
  * @file   tcl_ccb.cpp
@@ -232,11 +232,12 @@ int tcl_ccb(ClientData UNUSED(clientdata), Tcl_Interp *interp,
 extern "C" {
 
     /* register the plugin with the tcl interpreters */
-#if defined(CCBTCLDLL_EXPORTS) && defined(_WIN32)
+#if defined(CCBTCLDLL_EXPORTS) && (defined( _WIN32 ) || defined( _WIN64 ))
 #  undef TCL_STORAGE_CLASS
 #  define TCL_STORAGE_CLASS DLLEXPORT
 
 #define WIN32_LEAN_AND_MEAN /* Exclude rarely-used stuff from Windows headers */
+#define WIN64_LEAN_AND_MEAN /* Exclude rarely-used stuff from Windows headers */
 #include <windows.h>
 
     BOOL APIENTRY DllMain( HANDLE hModule,
@@ -271,11 +272,12 @@ extern "C" {
         return TCL_OK;
     }
 
-#if defined(CCBTCLDLL_EXPORTS) && defined(_WIN32)
+#if defined(CCBTCLDLL_EXPORTS) && (defined( _WIN32 ) || defined( _WIN64 ))
 #  undef TCL_STORAGE_CLASS
 #  define TCL_STORAGE_CLASS DLLEXPORT
 
 #define WIN32_LEAN_AND_MEAN /* Exclude rarely-used stuff from Windows headers */
+#define WIN64_LEAN_AND_MEAN /* Exclude rarely-used stuff from Windows headers */
 #include <windows.h>
 
     BOOL APIENTRY DllMain( HANDLE hModule,
@@ -296,11 +298,12 @@ extern "C" {
         return TCL_OK;
     }
 
-#if defined(CCBTCLDLL_EXPORTS) && defined(_WIN32)
+#if defined(CCBTCLDLL_EXPORTS) && (defined( _WIN32 ) || defined( _WIN64 ))
 #  undef TCL_STORAGE_CLASS
 #  define TCL_STORAGE_CLASS DLLEXPORT
 
 #define WIN32_LEAN_AND_MEAN /* Exclude rarely-used stuff from Windows headers */
+#define WIN64_LEAN_AND_MEAN /* Exclude rarely-used stuff from Windows headers */
 #include <windows.h>
 
     BOOL APIENTRY DllMain( HANDLE hModule,
@@ -321,11 +324,12 @@ extern "C" {
         return TCL_OK;
     }
 
-#if defined(CCBTCLDLL_EXPORTS) && defined(_WIN32)
+#if defined(CCBTCLDLL_EXPORTS) && (defined( _WIN32 ) || defined( _WIN64 ))
 #  undef TCL_STORAGE_CLASS
 #  define TCL_STORAGE_CLASS DLLEXPORT
 
 #define WIN32_LEAN_AND_MEAN /* Exclude rarely-used stuff from Windows headers */
+#define WIN64_LEAN_AND_MEAN /* Exclude rarely-used stuff from Windows headers */
 #include <windows.h>
 
     BOOL APIENTRY DllMain( HANDLE hModule,
