@@ -8,5 +8,5 @@
 # script is sourced, the variable $dir must contain the
 # full path name of this file's directory.
 
-package ifneeded ccb 1.0 [list load [file join $dir libccb.so ]]
+package ifneeded ccb 1.0 "[list load [file join $dir libccb.so ]] set env(CCBDIR) [list $dir]"
 
