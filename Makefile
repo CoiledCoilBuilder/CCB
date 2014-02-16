@@ -4,7 +4,7 @@ VMDPLUGINS = $(addprefix $(HOME)/,.vmdplugins)
 
 update: install
 
-install: install-ccbtools install-minimize install-crick 
+install: install-ccbtools install-minimize install-crick
 
 install-latest: install-latest-ccbtools install-latest-minimize install-latest-crick
 
@@ -27,9 +27,8 @@ install-latest-%:
 
 installshlib-%:
 	mkdir -p $(VMDPLUGINS)/ccb 2>/dev/null || :
-	cp src/libccb_$(@:installshlib-%=%).so $(VMDPLUGINS)/ccb 2>/dev/null ||:
+	cp src/libccb_$(@:installshlib-%=%).so $(VMDPLUGINS)/ccb/libccb.so 2>/dev/null ||:
 	cp src/pkgIndex.tcl $(VMDPLUGINS)/ccb 2>/dev/null ||:
-	cd $(VMDPLUGINS)/ccb; ln -s libccb_$(@:installshlib-%=%).so libccb.so 2>/dev/null ||:
 
 archive:
 	git archive --prefix=cgtools/ HEAD -o ccbtools-latest.zip 
