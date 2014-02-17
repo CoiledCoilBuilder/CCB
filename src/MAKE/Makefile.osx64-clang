@@ -9,12 +9,12 @@ VERSION = 1.0
 # compiler/linker settings
 # specify flags and libraries needed for your compiler
 
-CC =	        clang	
+CC =	        clang++
 CCFLAGS =       -Os -g -Wall -W -Wno-uninitialized -dynamic -m64
 SHFLAGS =       -fPIC
 DEPFLAGS =      -M
 
-LINK =		clang 
+LINK =		clang++
 LINKFLAGS =	-Os -g -m64
 LIB =           -lstdc++ -lm
 SIZE =		size
