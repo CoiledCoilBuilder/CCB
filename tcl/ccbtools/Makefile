@@ -1,6 +1,6 @@
 .PHONY: update
 
-PLUGINDIR = ccbtools 
+PLUGINDIR = ccb
 VMDPLUGINS = $(addprefix $(HOME)/,.vmdplugins)
 INSTALLDIR = $(addprefix $(VMDPLUGINS)/,$(PLUGINDIR))
 
