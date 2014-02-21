@@ -39,40 +39,4 @@ TCL_LIB =
 TCL_STUB_LIB = -ltclstub8.5
 
 # ---------------------------------------------------------------------
-# build rules and dependencies
-# no need to edit this section
-
-include	Makefile.package.settings
-include	Makefile.package
-
-EXTRA_INC = $(CCB_INC) $(PKG_INC) $(TCL_INC) $(PKG_SYSINC)
-EXTRA_PATH = $(PKG_PATH) $(TCL_PATH) $(PKG_SYSPATH)
-EXTRA_LIB =  $(PKG_LIB) $(TCL_LIB) $(TCL_STUB_LIB) $(PKG_SYSLIB)
-
-# Link target
-
-$(EXE):	$(OBJ)
-	$(LINK) $(LINKFLAGS) $(EXTRA_PATH) $(OBJ) $(EXTRA_LIB) $(LIB) -o $(EXE)
-	$(SIZE) $(EXE) 
-
-# Library targets
-
-lib:    $(OBJ)
-	$(ARCHIVE) $(ARFLAGS) $(EXE) $(OBJ)
-
-shlib:  $(OBJ)
-	$(CC) $(CCFLAGS) $(SHFLAGS) $(SHLIBFLAGS) $(EXTRA_PATH) -o $(EXE) \
-	$(OBJ) $(EXTRA_LIB) $(LIB)
-
-# Compilation rules
-
-%.o:%.cpp
-	$(CC) $(CCFLAGS) $(SHFLAGS) $(EXTRA_INC) -c $<
-
-%.d:%.cpp
-	$(CC) $(CCFLAGS) $(EXTRA_INC) $(DEPFLAGS) $< > $@
-
-# Individual dependencies
-
-DEPENDS = $(OBJ:.o=.d)
-sinclude $(DEPENDS)
+include Makefile.base

@@ -64,11 +64,6 @@ help:
 	@$(SHELL) Make.sh style
 	@cp -p *.cpp *.h Obj_$@
 	@cp MAKE/Makefile.$@ Obj_$@/Makefile
-	@if [ ! -e Makefile.package ]; \
-	  then cp Makefile.package.empty Makefile.package; fi
-	@if [ ! -e Makefile.package.settings ]; \
-	  then cp Makefile.package.settings.empty Makefile.package.settings; fi
-	@cp Makefile.package Makefile.package.settings Obj_$@
 	@cd Obj_$@; \
 	$(MAKE) $(MFLAGS) "OBJ = $(OBJ)" "INC = $(INC)" \
 	  "EXE = ../$(EXE)" ../$(EXE)

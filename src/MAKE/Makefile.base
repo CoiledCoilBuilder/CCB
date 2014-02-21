@@ -1,59 +1,14 @@
-# base  = minimal compiler flags, g++, 64bit
-#
-SHELL = /bin/sh
-ROOT = ccb
-VERSION = 1.0
-
-
-# ---------------------------------------------------------------------
-# compiler/linker settings
-# specify flags and libraries needed for your compiler
-
-CC =		g++ 
-CCFLAGS =       -O0 -g -mpc64 -Wall -W -Wno-uninitialized
-SHFLAGS =       -fPIC
-DEPFLAGS =      -M
-
-LINK =		g++ 
-LINKFLAGS =	-O -g -mpc64
-LIB =           -lstdc++ -lm
-SIZE =		size
-
-ARCHIVE =       ar
-ARFLAGS =       -rc
-SHLIBFLAGS =    -shared
-
-# ---------------------------------------------------------------------
-# CCB-specific settings
-# specify settings for CCB features you will use
-# if you change any -D setting, do full re-compile after "make clean"
-
-# CCB ifdef settings, OPTIONAL, include -D
-
-CCB_INC = -DPACKAGE_NAME=\"$(ROOT)\" -DPACKAGE_VERSION=\"$(VERSION)\"\
-	  -DUSE_TCL_STUBS
-
-TCL_INC =
-TCL_PATH =
-TCL_LIB =
-TCL_STUB_LIB = -ltclstub8.5
-
-# ---------------------------------------------------------------------
 # build rules and dependencies
-# no need to edit this section
 
-include	Makefile.package.settings
-include	Makefile.package
-
-EXTRA_INC = $(CCB_INC) $(PKG_INC) $(TCL_INC) $(PKG_SYSINC)
-EXTRA_PATH = $(PKG_PATH) $(TCL_PATH) $(PKG_SYSPATH)
-EXTRA_LIB =  $(PKG_LIB) $(TCL_LIB) $(TCL_STUB_LIB) $(PKG_SYSLIB)
+EXTRA_INC = $(CCB_INC) $(TCL_INC) 
+EXTRA_PATH = $(TCL_PATH)
+EXTRA_LIB =  $(TCL_LIB) $(TCL_STUB_LIB)
 
 # Link target
 
 $(EXE):	$(OBJ)
 	$(LINK) $(LINKFLAGS) $(EXTRA_PATH) $(OBJ) $(EXTRA_LIB) $(LIB) -o $(EXE)
-	$(SIZE) $(EXE) 
+	$(SIZE) $(EXE)
 
 # Library targets
 

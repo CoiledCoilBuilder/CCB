@@ -7,9 +7,9 @@ SHELL = /bin/sh
 ROOT =	ccb
 EXE =	lib$(ROOT)_$@.so
 
-SRC =	atom.cpp backbone.cpp backbone_coiledcoil.cpp backbonehandler.cpp bitmask.cpp ccb.cpp ccbio.cpp domain.cpp error.cpp group.cpp  math_extra.cpp memory.cpp output.cpp output_pdb.cpp site.cpp tcl_ccb.cpp universe.cpp 
+SRC =	atom.cpp backbone_coiledcoil.cpp backbone.cpp backbonehandler.cpp bitmask.cpp ccb.cpp ccbio.cpp domain.cpp error.cpp group.cpp  math_extra.cpp memory.cpp output.cpp output_pdb.cpp site.cpp tcl_ccb.cpp universe.cpp 
 
-INC =	atom.h backbone.h backbone_coiledcoil.h backbonehandler.h bitmask.h ccb.h ccbio.h ccbtype.h constants.h domain.h error.h group.h math_extra.h memory.h output.h output_pdb.h pointers.h site.h sort.h style_backbone.h style_output.h universe.h version.h 
+INC =	atom.h backbone_coiledcoil.h backbone.h backbonehandler.h bitmask.h ccb.h ccbio.h ccbtype.h constants.h domain.h error.h group.h math_extra.h memory.h output.h output_pdb.h pointers.h site.h sort.h style_backbone.h style_output.h universe.h version.h 
 
 OBJ =	$(SRC:.cpp=.o)
 
@@ -29,11 +29,7 @@ clean:
 	@if [ ! -d Obj_shlib_$@ ]; then mkdir Obj_shlib_$@; fi
 	@cp -p $(SRC) $(INC) Obj_shlib_$@
 	@cp MAKE/Makefile.$@ Obj_shlib_$@/Makefile
-	@if [ ! -e Makefile.package ]; \
-	  then cp Makefile.package.empty Makefile.package; fi
-	@if [ ! -e Makefile.package.settings ]; \
-	  then cp Makefile.package.settings.empty Makefile.package.settings; fi
-	@cp Makefile.package Makefile.package.settings Obj_shlib_$@
+	@cp MAKE/Makefile.base Obj_shlib_$@/Makefile.base
 	@cd Obj_shlib_$@; \
 	$(MAKE) $(MFLAGS) "OBJ = $(OBJ)" \
           "INC = $(INC)" "EXE = ../$(EXE)" shlib
