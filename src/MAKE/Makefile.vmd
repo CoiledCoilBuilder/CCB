@@ -1,0 +1,43 @@
+# vmd = Used for VMD plugins auto-compilation
+
+ROOT = ccb
+CCBVERSION = 1.0
+
+DEPFLAGS =      -M
+LIB =           -lstdc++ -lm
+
+# ---------------------------------------------------------------------
+# CCB-specific settings
+# CCB ifdef settings, OPTIONAL, include -D
+
+CCB_INC = -DPACKAGE_NAME=\"$(ROOT)\" -DPACKAGE_VERSION=\"$(CCBVERSION)\"
+
+# ---------------------------------------------------------------------
+# build rules and dependencies
+
+EXTRA_INC = $(CCB_INC) $(TCLINC) 
+EXTRA_PATH =
+EXTRA_LIB =  $(TCLLDFLAGS)
+
+# Library targets
+
+shlib:  $(OBJ)
+	if [ -n "${TCLSHLD}" ]; \
+	then $(TCLSHLD) $(CXXFLAGS) $(EXTRA_PATH) -o $(EXE) \
+	$(OBJ) $(EXTRA_LIB) $(LIB);\
+	else $(SHLD) $(CXXFLAGS) $(EXTRA_PATH) -o $(EXE) \
+	$(OBJ) $(EXTRA_LIB) $(LIB);\
+	fi
+
+# Compilation rules
+
+%.o:%.cpp
+	$(CXX) $(CXXFLAGS) $(EXTRA_INC) -c $<
+
+%.d:%.cpp
+	$(CXX) $(CXXFLAGS) $(EXTRA_INC) $(DEPFLAGS) $< > $@
+
+# Individual dependencies
+
+DEPENDS = $(OBJ:.o=.d)
+sinclude $(DEPENDS)
