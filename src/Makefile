@@ -135,10 +135,6 @@ no-user:
 	@for p in $(PACKUSER); do $(MAKE) no-$$p; done
 
 yes-%:
-	@if [ ! -e Makefile.package ]; \
-	  then cp Makefile.package.empty Makefile.package; fi
-	@if [ ! -e Makefile.package.settings ]; \
-	  then cp Makefile.package.settings.empty Makefile.package.settings; fi
 	@if [ ! -e $(YESDIR) ]; then \
 	  echo "Package $(@:yes-%=%) does not exist"; \
 	else \
