@@ -1,8 +1,5 @@
 # vmd = Used for VMD plugins auto-compilation
 
-ROOT = ccb
-CCBVERSION = 1.0
-
 DEPFLAGS =      -M
 LIB =           -lstdc++ -lm
 

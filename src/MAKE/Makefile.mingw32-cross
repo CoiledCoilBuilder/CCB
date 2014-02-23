@@ -1,8 +1,6 @@
 # mingw32-cross = Windows 32-bit, cross-compiled on Fedora 20, gcc-4.8.1, MinGW
 
 SHELL = /bin/sh
-ROOT = ccb
-VERSION = 1.0
 # ---------------------------------------------------------------------
 # compiler/linker settings
 # specify flags and libraries needed for your compiler
@@ -33,7 +31,7 @@ LIBOBJDIR =     /Obj_mingw32
 
 # CCB ifdef settings, OPTIONAL, include -D
 
-CCB_INC = -DPACKAGE_NAME=\"$(ROOT)\" -DPACKAGE_VERSION=\"$(VERSION)\"\
+CCB_INC = -DPACKAGE_NAME=\"$(ROOT)\" -DPACKAGE_VERSION=\"$(CCBVERSION)\"\
 	  -DUSE_TCL_STUBS
 
 TCL_INC =

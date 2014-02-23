@@ -1,8 +1,6 @@
 # linux64  = Optimized compiler options, g++, 64bit
 
 SHELL = /bin/sh
-ROOT = ccb
-VERSION = 1.0
 
 # ---------------------------------------------------------------------
 # compiler/linker settings
@@ -31,7 +29,7 @@ SHLIBFLAGS =    -shared -m64
 
 # CCB ifdef settings, OPTIONAL, include -D
 
-CCB_INC = -DPACKAGE_NAME=\"$(ROOT)\" -DPACKAGE_VERSION=\"$(VERSION)\"\
+CCB_INC = -DPACKAGE_NAME=\"$(ROOT)\" -DPACKAGE_VERSION=\"$(CCBVERSION)\"\
 	  -DUSE_TCL_STUBS
 
 TCL_INC =

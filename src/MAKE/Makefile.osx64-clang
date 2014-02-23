@@ -2,8 +2,6 @@
 # if you're compiling for a vmd importable .so, you need the 32-bit version
 #
 SHELL = /bin/sh
-ROOT = ccb
-VERSION = 1.0
 
 # ---------------------------------------------------------------------
 # compiler/linker settings
@@ -30,7 +28,7 @@ SHLIBFLAGS =    -bundle -m64 -L/usr/X11R6/lib/
 
 # CCB ifdef settings, OPTIONAL, include -D
 
-CCB_INC = -DPACKAGE_NAME=\"$(ROOT)\" -DPACKAGE_VERSION=\"$(VERSION)\"\
+CCB_INC = -DPACKAGE_NAME=\"$(ROOT)\" -DPACKAGE_VERSION=\"$(CCBVERSION)\"\
 	  -DUSE_TCL_STUBS
 
 TCL_INC =
