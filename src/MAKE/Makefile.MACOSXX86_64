@@ -1,26 +1,24 @@
-# linux64  = Optimized compiler options, g++, 64bit
-
+# MACOSXX86_64  = *VMD* minimal compiler flags, clang, 64-bit, Mavericks 
+#
 SHELL = /bin/sh
 
 # ---------------------------------------------------------------------
 # compiler/linker settings
 # specify flags and libraries needed for your compiler
 
-CC =		g++
-CCFLAGS =	-O2 -fomit-frame-pointer -fno-rtti -fno-exceptions \
-			-march=core2 -msse3 -ffast-math -mpc64 -finline-functions \
-			-funroll-loops -fstrict-aliasing -Wall -W -Wno-uninitialized
+CC =	        clang++
+CCFLAGS =       -Os -g -Wall -W -Wno-uninitialized -dynamic -m64
 SHFLAGS =       -fPIC
 DEPFLAGS =      -M
 
-LINK =		g++
-LINKFLAGS =	-O -fomit-frame-pointer -march=core2 -msse3 -fno-rtti -fno-exceptions -mpc64
+LINK =		clang++
+LINKFLAGS =	-Os -g -m64
 LIB =           -lstdc++ -lm
 SIZE =		size
 
 ARCHIVE =       ar
 ARFLAGS =       -rc
-SHLIBFLAGS =    -shared -m64
+SHLIBFLAGS =    -bundle -m64 -L/usr/X11R6/lib/ 
 
 # ---------------------------------------------------------------------
 # CCB-specific settings
@@ -38,4 +36,4 @@ TCL_LIB =
 TCL_STUB_LIB = -ltclstub8.5
 
 # ---------------------------------------------------------------------
-include Makefile.base  
+include Makefile.base

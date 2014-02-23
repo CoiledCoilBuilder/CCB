@@ -54,8 +54,7 @@ release-% :
 	rsync -RKL src/lib$(CCBROOT)_$$arch\.so \
 	tcl/ccbtools/pkgIndex.tcl \
 	tcl/ccbtools/ccbtools.tcl \
-	License $$dir;\
+	LICENSE $$dir \
 	Makefile $$dir;\
 	zip -r $(CCBROOT)$(CCBVERSION)_$$arch\.zip $$dir;\
 	rm -rf $$dir
-

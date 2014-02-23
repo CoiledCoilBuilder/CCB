@@ -1,4 +1,4 @@
-# linux64  = Optimized compiler options, g++, 64bit
+# linux32  = Optimized compiler options, g++, 32bit
 
 SHELL = /bin/sh
 
@@ -8,13 +8,13 @@ SHELL = /bin/sh
 
 CC =		g++
 CCFLAGS =	-O2 -fomit-frame-pointer -fno-rtti -fno-exceptions \
-			-march=core2 -msse3 -ffast-math -mpc64 -finline-functions \
+			-march=core2 -msse3 -ffast-math -mpc32 -finline-functions \
 			-funroll-loops -fstrict-aliasing -Wall -W -Wno-uninitialized
 SHFLAGS =       -fPIC
 DEPFLAGS =      -M
 
 LINK =		g++
-LINKFLAGS =	-O -fomit-frame-pointer -march=core2 -msse3 -fno-rtti -fno-exceptions -mpc64
+LINKFLAGS =	-O -fomit-frame-pointer -march=core2 -msse3 -fno-rtti -fno-exceptions -mpc32
 LIB =           -lstdc++ -lm
 SIZE =		size
 
