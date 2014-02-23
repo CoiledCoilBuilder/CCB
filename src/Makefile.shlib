@@ -4,8 +4,10 @@ SHELL = /bin/sh
 
 # Definitions
 
-ROOT =	ccb
-EXE =	lib$(ROOT)_$@.so
+CCBROOT = ccb
+CCBVERSION = 1.0
+
+EXE =	lib$(CCBROOT)_$@.so
 
 SRC =	atom.cpp backbone_coiledcoil.cpp backbone.cpp backbonehandler.cpp bitmask.cpp ccb.cpp ccbio.cpp domain.cpp error.cpp group.cpp  math_extra.cpp memory.cpp output.cpp output_pdb.cpp site.cpp tcl_ccb.cpp universe.cpp 
 
