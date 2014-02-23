@@ -7,7 +7,7 @@ LIB =           -lstdc++ -lm
 # CCB-specific settings
 # CCB ifdef settings, OPTIONAL, include -D
 
-CCB_INC = -DPACKAGE_NAME=\"$(ROOT)\" -DPACKAGE_VERSION=\"$(CCBVERSION)\"
+CCB_INC = -DPACKAGE_NAME=\"$(CCBROOT)\" -DPACKAGE_VERSION=\"$(CCBVERSION)\"
 
 # ---------------------------------------------------------------------
 # build rules and dependencies

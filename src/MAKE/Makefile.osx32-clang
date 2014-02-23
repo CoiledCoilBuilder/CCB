@@ -28,7 +28,7 @@ SHLIBFLAGS =    -bundle -m32 -L/usr/X11R6/lib/
 
 # CCB ifdef settings, OPTIONAL, include -D
 
-CCB_INC = -DPACKAGE_NAME=\"$(ROOT)\" -DPACKAGE_VERSION=\"$(CCBVERSION)\"\
+CCB_INC = -DPACKAGE_NAME=\"$(CCBROOT)\" -DPACKAGE_VERSION=\"$(CCBVERSION)\"\
 	  -DUSE_TCL_STUBS
 
 # TCL library, required
