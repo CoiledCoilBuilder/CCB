@@ -1,34 +1,56 @@
-.PHONY: install install-latest update
+## Simple master makefile for CCB. A more advanced
+## makefile is avaialable in src
 
-VMDPLUGINS = $(addprefix $(HOME)/,.vmdplugins)
+.PHONY:
 
-update: install
+#PLUGINDIR = /opt/apps/vmd-latest/lib/plugins
+PLUGINDIR = $(addprefix $(HOME)/,.vmdplugins)
 
-install: install-ccbtools install-minimize install-crick
+CCBROOT=ccb
+CCBVERSION=1.0
 
-install-latest: install-latest-ccbtools install-latest-minimize install-latest-crick
+help :
+	@echo ''
+	@echo 'make clean-all           delete all object files'
+	@echo 'make clean-arch          delete object files for particular arch'
+	@echo ''
+	@echo 'make distrib-arch        install plugin to $(PLUGINDIR); see arch list below '
+	@echo ''
+	@echo 'make arch                build libccb.so where arch is one of:'
+	@echo ''
+	@files="`ls src/MAKE/Makefile.*`"; \
+	  for file in $$files; do head -1 $$file; done
+	@echo ''
 
-clean-all:
-	cd src; make clean-all 
 
-clean-%:
-	cd src; make clean-$(@:clean-%=%);
+.DEFAULT :
+		cd src; make yes-user-coiledcoil yes-user-tcl &&\
+		make makeshlib &&\
+		make -f Makefile.shlib $@
 
-makeshlib-%:
-	cd src; make yes-user-coiledcoil yes-user-tcl 
-	cd src; make makeshlib
-	cd src; make -f Makefile.shlib $(@:makeshlib-%=%);
+clean-all :
+	cd src; $(MAKE) clean-all
 
-install-%:
-	cd $(join tcl/,$(@:install-%=%)); make install
+clean-% :
+	cd src; $(MAKE) clean-$(@:clean-%=%)
 
-install-latest-%:
-	cd $(join tcl/,$(@:install-latest-%=%)); make install-latest
+archive :
+	git archive --prefix=$(CCBROOT)$(CCBVERSION)/ HEAD -o $(CCBROOT)$(CCBVERSION).zip
 
-installshlib-%:
-	mkdir -p $(VMDPLUGINS)/ccb 2>/dev/null || :
-	cp src/libccb_$(@:installshlib-%=%).so $(VMDPLUGINS)/ccb/libccb.so 2>/dev/null ||:
-	cp src/pkgIndex.tcl $(VMDPLUGINS)/ccb 2>/dev/null ||:
+archive-% :
+	arch=$(@:archive-%=%);\
+	dir=$(CCBROOT)$(CCBVERSION)_$$arch;\
+	$(MAKE) $$arch;\
+	mkdir -p $$dir;\
+	rsync -RKL src/lib$(CCBROOT).so \
+	tcl/ccbtools/pkgIndex.tcl \
+	tcl/ccbtools/ccbtools.tcl \
+	Makefile $$dir;\
 
-archive:
-	git archive --prefix=cgtools/ HEAD -o ccbtools-latest.zip 
+distrib-% :
+	arch=$(@:distrib-%=%);\
+	dir=`dirname $(PLUGINDIR)/lib_$$arch/tcl/$(CCBROOT)$(CCBVERSION)`;\
+	mkdir -p $$dir;\
+	cp src/lib$(CCBROOT).so $$dir;\
+	cp tcl/ccbtools/pkgIndex.tcl $$dir;\
+	cp tcl/ccbtools/ccbtools.tcl $$dir;\
