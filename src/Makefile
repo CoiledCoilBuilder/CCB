@@ -2,9 +2,10 @@
 
 # Definitions
 
-ROOT =  ccb
-VERSION = 1.0
-EXE =	$(ROOT)_$@
+CCBROOT =  ccb
+CCBVERSION = 1.0
+
+EXE =	$(CCBROOT)_$@
 SRC =	$(wildcard *.cpp)
 INC =	$(wildcard *.h)
 OBJ = 	$(SRC:.cpp=.o)
@@ -76,10 +77,10 @@ clean:
 	@echo 'make clean-docs          delete documentation files'
 
 clean-all:
-	rm -rf Obj_* latex $(ROOT)-docs.pdf doxygen.log
+	rm -rf Obj_* latex $(CCBROOT)-docs.pdf doxygen.log
 
 clean-docs:	
-	rm -rf latex $(ROOT)-docs.pdf doxygen.log
+	rm -rf latex $(CCBROOT)-docs.pdf doxygen.log
 
 clean-%:
 	rm -rf Obj_$(@:clean-%=%)
