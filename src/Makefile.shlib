@@ -26,7 +26,7 @@ help:
 clean:
 	rm -rf Obj_shlib_*
 
-.DEFAULT:
+.DEFAULT : 
 	@test -f MAKE/Makefile.$@
 	@if [ ! -d Obj_shlib_$@ ]; then mkdir Obj_shlib_$@; fi
 	@cp -p $(SRC) $(INC) Obj_shlib_$@
@@ -34,7 +34,8 @@ clean:
 	@cp MAKE/Makefile.base Obj_shlib_$@/Makefile.base
 	@cd Obj_shlib_$@; \
 	$(MAKE) $(MFLAGS) "OBJ = $(OBJ)" \
-          "INC = $(INC)" "EXE = ../$(EXE)" shlib
+          "INC = $(INC)" "EXE = ../$(EXE)" \
+	  "CCBROOT = $(CCBROOT)" "CCBVERSION = $(CCBVERSION)" shlib
 	@rm -f libccb.so
 	@ln -s $(EXE) libccb.so
 	@if [ -d Obj_shlib_$@ ]; then cd Obj_shlib_$@; \
