@@ -1,5 +1,7 @@
 # CCB multiple-machine Makefile
 
+SHELL=/bin/sh 
+
 # Definitions
 
 CCBROOT =  ccb
@@ -65,9 +67,11 @@ help:
 	@$(SHELL) Make.sh style
 	@cp -p *.cpp *.h Obj_$@
 	@cp MAKE/Makefile.$@ Obj_$@/Makefile
+	@cp MAKE/Makefile.base Obj_$@/Makefile.base
 	@cd Obj_$@; \
 	$(MAKE) $(MFLAGS) "OBJ = $(OBJ)" "INC = $(INC)" \
-	  "EXE = ../$(EXE)" ../$(EXE)
+	  "EXE = ../$(EXE)" ../$(EXE) "CCBROOT = $(CCBROOT)" \
+	  "CCBVERSION = $(CCBVERSION)"
 	@if [ -d Obj_$@ ]; then cd Obj_$@; rm -f $(SRC) $(INC) Makefile*; fi
 
 # Remove machine-specific object files
