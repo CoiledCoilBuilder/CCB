@@ -36,7 +36,7 @@ namespace eval ::ccbtools:: {
     variable sys
     variable params
 
-    set sys(TMPDIR) /tmp
+    set sys(TMPDIR) $env(TMPDIR) 
     set sys(directselect) 0 ;# Enable it if using "ccb -sel $sel"
 
     set params(nhelix) 2
