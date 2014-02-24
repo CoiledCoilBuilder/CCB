@@ -4,12 +4,14 @@ SHELL = /bin/sh
 
 # Definitions
 
-ROOT =	ccb
-EXE =	lib$(ROOT)_$@.a
+CCBROOT = ccb
+CCBVERSION = 1.0
 
-SRC =	atom.cpp backbone.cpp backbone_coiledcoil.cpp backbonehandler.cpp bitmask.cpp ccb.cpp ccbio.cpp domain.cpp error.cpp group.cpp  math_extra.cpp memory.cpp output.cpp output_pdb.cpp site.cpp tcl_ccb.cpp universe.cpp 
+EXE =	lib$(CCBROOT)_$@.a
 
-INC =	atom.h backbone.h backbone_coiledcoil.h backbonehandler.h bitmask.h ccb.h ccbio.h ccbtype.h constants.h domain.h error.h group.h math_extra.h memory.h output.h output_pdb.h pointers.h site.h sort.h style_backbone.h style_output.h universe.h version.h 
+SRC =	atom.cpp backbone_coiledcoil.cpp backbone.cpp backbonehandler.cpp bitmask.cpp ccb.cpp ccbio.cpp domain.cpp error.cpp group.cpp  math_extra.cpp memory.cpp output.cpp output_pdb.cpp site.cpp universe.cpp 
+
+INC =	atom.h backbone_coiledcoil.h backbone.h backbonehandler.h bitmask.h ccb.h ccbio.h ccbtype.h constants.h domain.h error.h group.h math_extra.h memory.h output.h output_pdb.h pointers.h site.h sort.h style_backbone.h style_output.h universe.h version.h 
 
 OBJ =	$(SRC:.cpp=.o)
 
@@ -26,7 +28,11 @@ help:
 	@if [ ! -d Obj_$@ ]; then mkdir Obj_$@; fi
 	@cp -p $(SRC) $(INC) Obj_$@
 	@cp MAKE/Makefile.$@ Obj_$@/Makefile
+	@cp MAKE/Makefile.base Obj_$@/Makefile.base
 	@cd Obj_$@; \
-	$(MAKE) $(MFLAGS) "OBJ = $(OBJ)" "INC = $(INC)" "SHFLAGS =" \
-          "EXE = ../$(EXE)" lib
+	$(MAKE) $(MFLAGS) "OBJ = $(OBJ)" \
+          "INC = $(INC)" "SHFLAGS =" "EXE = ../$(EXE)" \
+           "CCBROOT = $(CCBROOT)" "CCBVERSION = $(CCBVERSION)" lib
+	@rm -f libccb.a
+	@ln -s $(EXE) libccb.a
 	@if [ -d Obj_$@ ]; then cd Obj_$@; rm -f $(SRC) $(INC) Makefile*; fi
