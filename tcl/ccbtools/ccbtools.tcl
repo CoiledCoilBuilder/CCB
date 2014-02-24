@@ -527,10 +527,10 @@ proc ::ccbtools::gui {args} {
     button $wid.scales.asymS -text Asymmetric -command [namespace code {asymwid "square"}]
 
     ## Spinboxes for main window
-    spinbox $wid.scales.box_nhelix -width 10 -textvariable ccbtools::params(nhelix) -from 1 -to 12 -increment 1\
+    spinbox $wid.scales.box_nhelix -width 10 -textvariable ccbtools::params(nhelix) -from 1 -to 10 -increment 1\
         -command [namespace code resetmol]
 
-    spinbox $wid.scales.box_nres -width 10 -from 1 -to 300 -increment 1\
+    spinbox $wid.scales.box_nres -width 10 -from 1 -to 100 -increment 1\
         -command [namespace code {symcmdwrap "nres" %s}]
 
     spinbox $wid.scales.box_pitch -width 10 -from -2000.00 -to 2000.00 -increment 10.00 -format %10.2f\
@@ -555,10 +555,10 @@ proc ::ccbtools::gui {args} {
         -command [namespace code {symcmdwrap "z" %s}]
 
     ## Scales for main window
-    scale $wid.scales.scl_nhelix -label "Number of helices:" -orient h -digit 1 -from 1 -to 12\
+    scale $wid.scales.scl_nhelix -label "Number of helices:" -orient h -digit 1 -from 1 -to 10\
         -tickinterval 0 -length 300 -command [namespace code resetmol]  -variable ccbtools::params(nhelix)
 
-    scale $wid.scales.scl_nres -label "Number of residues:" -orient h -digit 1 -from 1 -to 300\
+    scale $wid.scales.scl_nres -label "Number of residues:" -orient h -digit 1 -from 1 -to 100\
         -tickinterval 0 -length 300 -command [namespace code {symcmdwrap "nres"}]
 
     scale $wid.scales.scl_pitch -label "Pitch :" -orient h -resolution 0 -digit 5 -from -2000 -to 2000\
