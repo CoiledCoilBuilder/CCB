@@ -528,7 +528,7 @@ proc ::ccbtools::gui {args} {
     }
 
     set wid [toplevel ".ccb"]
-    wm title $wid "CCB"
+    wm title $wid "Coiled-Coil Builder"
     wm resizable $wid 0 0
 
     ##Main Window
@@ -547,12 +547,12 @@ proc ::ccbtools::gui {args} {
     checkbutton $wid.scales.fm -text "Fraser-MacRae" -variable ::ccbtools::params(frasermacrae)\
         -onvalue 1 -offvalue 0 -command [namespace code updatemol]
 
-    button $wid.scales.new -text NEW -command [namespace code newmol]
-    button $wid.scales.reset -text RESET -command [namespace code resetmol]
+    button $wid.scales.new -text NEW -background green -command [namespace code newmol]
+    button $wid.scales.reset -text RESET -background red -command [namespace code resetmol]
     button $wid.scales.update -text UPDATE -command [namespace code updatemol]
 
-    ## Button for modulated radius
-    button $wid.scales.modR -text Asymmetric -command [namespace code mod_radius]
+    ## Button for modulated radius (Currently very buggy)
+    #button $wid.scales.modR -text Asymmetric -command [namespace code mod_radius]
 
     ## Buttons for asymmetric commands
     button $wid.scales.asymN -text Asymmetric -command [namespace code {asymwid "nres"}]
@@ -660,7 +660,7 @@ proc ::ccbtools::gui {args} {
     grid $wid.ccbcommand    -row 12 -rowspan 3
 
     ## Mod radius button
-    grid $wid.scales.modR -row 4 -column 4;# nres asym Button
+    #grid $wid.scales.modR -row 4 -column 4;# nres asym Button
 
     ## Asymmetric Buttons
     grid $wid.scales.asymN    -row 2 -column 4;# nres asym Button
