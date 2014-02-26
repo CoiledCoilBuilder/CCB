@@ -25,8 +25,6 @@
 
 ## ccbtools Helper Tools and VMD GUI
 
-package provide ccbtools 1.0
-
 ## Requires the ccb package
 package require ccb
 
@@ -36,9 +34,11 @@ namespace eval ::ccbtools:: {
     variable sys
     variable params
 
-    set sys(TMPDIR) $env(TMPDIR) 
+    variable version 1.0; #Plugin Version
+
     set sys(directselect) 0 ;# Enable it if using "ccb -sel $sel"
 
+    ## Default parameters for the helix
     set params(nhelix) 2
     set params(nres) 28
     set params(pitch) 179
@@ -54,20 +54,22 @@ namespace eval ::ccbtools:: {
     set params(frasermacrae) 0
 
     ## Gui parameters
-    set gui(nres_box) {1 300 1}
+    set gui(nres_box) {1 200 1}
     set gui(rpt_box) {3.00 5.00 0.01}
     set gui(rotation_box) {-180.00 180.00 1.0}
     set gui(square_box) {-180.00 180.00 1.0}
     set gui(zoff_box) {-20.00 20.00 0.5}
     set gui(z_box) {-20.00 20.00 0.5}
 
-    set gui(nres_scl) {1 300 1}
+    set gui(nres_scl) {1 200 1}
     set gui(rpt_scl) {3.00 5.00 5}
     set gui(rotation_scl) {-180.00 180.00 5}
     set gui(square_scl) {-180.00 180.00 5}
     set gui(zoff_scl) {-20.00 20.00 5}
     set gui(z_scl) {-20.00 20.00 5}
 }
+
+package provide ccbtools $::ccbtools::version
 
 proc ccbgui { args } {
     eval ::ccbtools::gui $args
@@ -78,13 +80,10 @@ proc ::ccbtools::newmol { args } {
     variable params
     variable sys
 
-    if {$params(pitch) == 0.0} {set params(pitch) 0.0001}
-
-    ## Delete existing pdb
-    catch {file delete $sys(TMPDIR)/ccb.pdb}
+    if {$params(pitch) == 0.0} {set params(pitch) 0.000001}
 
     # Set Options
-    set opts [list ccb -pdb $sys(TMPDIR)/ccb.pdb\
+    set opts [list ccb -newmol\
                   -nhelix $params(nhelix)\
                   -nres $params(nres)\
                   -pitch $params(pitch)\
@@ -112,13 +111,15 @@ proc ::ccbtools::newmol { args } {
     set sys(opts) [join $opts]
 
     # Generate structure
-    if { [catch {eval $opts} err] } {
-        vmdcon -error "ccb: Could not generate structure:\n $err"
+    if { [catch {eval $opts} props] } {
+        vmdcon -error "ccb: Could not generate structure:\n $props"
         return -1
     }
 
-    ## Load into VMD
-    if {[catch {mol new $sys(TMPDIR)/ccb.pdb} sys(ccbid)]} {
+    set natoms [llength $props]
+
+    ## Create a new empty mol with natoms == length props
+    if {[catch {mol new atoms $natoms} sys(ccbid)]} {
         vmdcon -error "ccb: could not create new molecule: $sys(ccbid)"
         return -1
     }
@@ -129,6 +130,12 @@ proc ::ccbtools::newmol { args } {
 
     set sys(sel_ccb_all) [atomselect $sys(ccbid) "all"]
     $sys(sel_ccb_all) global
+
+    ## Set the properties for each atom
+    $sys(sel_ccb_all) set {name resid chain segname x y z} $props
+
+    ## reanalyze the mol to identify bonds
+    mol reanalyze $sys(ccbid)
 }
 
 proc ::ccbtools::updatemol { args } {
@@ -501,6 +508,16 @@ proc ::ccbtools::gui {args} {
     ##Sub Windows
     set gui(subwid) {}
     set gui(wid) $wid
+
+    $wid.menubar.help.menu add command -label "About" \ -command
+    {tk_messageBox -type ok -title "About Coiled-Coil Builder" \
+    -message "Tool for building coiled-coil structures.\n\nVersion
+    $::ccbtools::version\n\n(c) 2012-2014 \nby Chris M. MacDermaid\n
+    <chris.macdermaid@gmail.com>\nand\n Jeffery G.
+    Saven\n<saven@sas.upenn.edu>"}
+
+    $w.menubar.help.menu add command -label "Help..." \ -command
+    "vmd_open_url [string trimright [vmdinfo www] /]/plugins/coiledcoil"
 
     checkbutton $wid.scales.ap -text "Antiparallel" -variable ::ccbtools::params(antiparallel)\
         -onvalue 1 -offvalue 0 -command [namespace code updatemol]
