@@ -37,6 +37,7 @@ namespace eval ::ccbtools:: {
     variable version 1.0; #Plugin Version
 
     set sys(directselect) 0 ;# Enable it if using "ccb -sel $sel"
+    set sys(ensemble) 0; #Ensemble flag
 
     ## Default parameters for the helix
     set params(nhelix) 2
@@ -53,7 +54,7 @@ namespace eval ::ccbtools:: {
     set params(asymmetric) 0
     set params(frasermacrae) 0
 
-    ## Gui parameters
+    ## Gui parameters and options
     set gui(nres_box) {1 200 1}
     set gui(rpt_box) {3.00 5.00 0.01}
     set gui(rotation_box) {-180.00 180.00 1.0}
@@ -69,9 +70,9 @@ namespace eval ::ccbtools:: {
     set gui(z_scl) {-20.00 20.00 5}
 }
 
-
-proc ccbgui { args } {
+proc ccb_tk { args } {
     eval ::ccbtools::gui $args
+    return $::ccbtools::gui(wid)
 }
 
 proc ::ccbtools::newmol { args } {
@@ -102,8 +103,11 @@ proc ::ccbtools::newmol { args } {
         lappend opts "-antiparallel"
     }
 
+    ## Only apply FM if rpt is in a reasonable range
     if {$params(frasermacrae)} {
-        lappend opts "-frasermacrae"
+        if {$params(rpt) >= 3.4 && $params(rpt) <= 3.7} {
+            lappend opts "-frasermacrae"
+        }
     }
 
     ## The command used to generate the coiled-coil
@@ -122,7 +126,7 @@ proc ::ccbtools::newmol { args } {
         vmdcon -err "ccb: could not create new molecule: $sys(ccbid)"
         return -1
     } else {
-	animate dup $sys(ccbid)
+        animate dup $sys(ccbid)
     }
 
     ## Create a globalized selection for the entire coil
@@ -178,8 +182,11 @@ proc ::ccbtools::updatemol { args } {
         lappend opts "-antiparallel"
     }
 
+    ## Only apply FM if rpt is in a reasonable range
     if {$params(frasermacrae)} {
-        lappend opts "-frasermacrae"
+        if {$params(rpt) >= 3.4 && $params(rpt) <= 3.7} {
+            lappend opts "-frasermacrae"
+        }
     }
 
     ## Check for passing the selection directly or returning through
@@ -187,7 +194,7 @@ proc ::ccbtools::updatemol { args } {
     if {$sys(directselect)} {
         lappend opts -sel $sys(sel_ccb_all)
     } else {
-        lappend opts "-vmd"
+        lappend opts "-xyz"
     }
 
     ## The command used to generate the coiled-coil
@@ -197,6 +204,11 @@ proc ::ccbtools::updatemol { args } {
     if { [catch {eval $opts} coords] } {
         vmdcon -err "ccb: Could not generate structure: $coords"
         return -1
+    }
+
+    # Are we making an ensemble? Add a frame.
+    if {$sys(ensemble)} {
+        animate dup $sys(ccbid)
     }
 
     ## Update the coordinates of the global selection if
@@ -547,6 +559,9 @@ proc ::ccbtools::gui {args} {
     checkbutton $wid.scales.fm -text "Fraser-MacRae" -variable ::ccbtools::params(frasermacrae)\
         -onvalue 1 -offvalue 0 -command [namespace code updatemol]
 
+    checkbutton $wid.scales.ensemble -text "Ensemble Mode" -variable ::ccbtools::sys(ensemble)\
+        -onvalue 1 -offvalue 0 
+
     button $wid.scales.new -text NEW -background green -command [namespace code newmol]
     button $wid.scales.reset -text RESET -background red -command [namespace code resetmol]
     button $wid.scales.update -text UPDATE -command [namespace code updatemol]
@@ -563,7 +578,7 @@ proc ::ccbtools::gui {args} {
     button $wid.scales.asymS -text Asymmetric -command [namespace code {asymwid "square"}]
 
     ## Spinboxes for main window
-    spinbox $wid.scales.box_nhelix -width 10 -textvariable ccbtools::params(nhelix) -from 1 -to 10 -increment 1\
+    spinbox $wid.scales.box_nhelix -width 10 -textvariable ccbtools::params(nhelix) -from 1 -to 8 -increment 1\
         -command [namespace code resetmol]
 
     spinbox $wid.scales.box_nres -width 10 -from 1 -to 100 -increment 1\
@@ -591,32 +606,33 @@ proc ::ccbtools::gui {args} {
         -command [namespace code {symcmdwrap "z" %s}]
 
     ## Scales for main window
-    scale $wid.scales.scl_nhelix -label "Number of helices:" -orient h -digit 1 -from 1 -to 10\
-        -tickinterval 0 -length 300 -command [namespace code resetmol]  -variable ccbtools::params(nhelix)
+    set scale_length 200
+    scale $wid.scales.scl_nhelix -label "Number of helices:" -orient h -digit 1 -from 1 -to 8\
+        -tickinterval 0 -length $scale_length -command [namespace code resetmol]  -variable ccbtools::params(nhelix)
 
     scale $wid.scales.scl_nres -label "Number of residues:" -orient h -digit 1 -from 1 -to 100\
-        -tickinterval 0 -length 300 -command [namespace code {symcmdwrap "nres"}]
+        -tickinterval 0 -length $scale_length -command [namespace code {symcmdwrap "nres"}]
 
     scale $wid.scales.scl_pitch -label "Pitch :" -orient h -resolution 0 -digit 5 -from -2000 -to 2000\
-        -tickinterval 0 -length 300 -command [namespace code {cmdwrap "pitch"}]
+        -tickinterval 0 -length $scale_length -command [namespace code {cmdwrap "pitch"}]
 
     scale $wid.scales.scl_radius -label "Radius :" -orient h -resolution 0 -digit 5 -from 0.01 -to 40.00\
-        -tickinterval 0 -length 300 -command [namespace code {cmdwrap "radius"}]
+        -tickinterval 0 -length $scale_length -command [namespace code {cmdwrap "radius"}]
 
     scale $wid.scales.scl_rpt -label "Residue Per Turn :" -orient h -resolution 0 -digit 5 -from 3 -to 5 \
-        -tickinterval 0 -length 300 -command [namespace code {symcmdwrap "rpt"}]
+        -tickinterval 0 -length $scale_length -command [namespace code {symcmdwrap "rpt"}]
 
     scale $wid.scales.scl_rotation -label "Helical Rotation :" -orient h -resolution 0 -digit 5 -from -180.00 -to 180.00\
-        -tickinterval 0 -length 300 -command [namespace code {symcmdwrap "rotation"}]
+        -tickinterval 0 -length $scale_length -command [namespace code {symcmdwrap "rotation"}]
 
-    scale $wid.scales.scl_square -label "Square :" -orient h -resolution 0 -digit 5 -from -180.00 -to 180.00\
-        -tickinterval 0 -length 300 -command [namespace code {symcmdwrap "square"}]
+    scale $wid.scales.scl_square -label "Helical Phase :" -orient h -resolution 0 -digit 5 -from -180.00 -to 180.00\
+        -tickinterval 0 -length $scale_length -command [namespace code {symcmdwrap "square"}]
 
     scale $wid.scales.scl_zoff -label "Z-Offset (helices):" -orient h -resolution 0 -digit 5 -from -20.00 -to 20.00\
-        -tickinterval 0 -length 300 -command [namespace code {symcmdwrap "zoff"}]
+        -tickinterval 0 -length $scale_length -command [namespace code {symcmdwrap "zoff"}]
 
     scale $wid.scales.scl_z -label "Z-Offset (coiled-coil):" -orient h -resolution 0 -digit 5 -from -20.00 -to 20.00\
-        -tickinterval 0 -length 300 -command [namespace code {symcmdwrap "z"}]
+        -tickinterval 0 -length $scale_length -command [namespace code {symcmdwrap "z"}]
 
     ## Set initial params
     foreach x {nhelix nres pitch radius rpt rotation square zoff z} {
@@ -627,13 +643,14 @@ proc ::ccbtools::gui {args} {
     entry $wid.ccbcommand -textvariable ccbtools::sys(opts) -width 60
 
     ## Buttons
-    grid $wid.scales -row 0 -column 0
-    grid $wid.scales.new    -row 10  -column 1  ;# New Button
-    grid $wid.scales.update -row 10  -column 2  ;# Update Button
-    grid $wid.scales.reset  -row 10  -column 3  ;# Reset Button
-    grid $wid.scales.ap     -row 11  -column 1  ;# Antiparallel Checkbutton
-    grid $wid.scales.asym   -row 11  -column 2  ;# asym button
-    grid $wid.scales.fm     -row 11  -column 3  ;# Fraser-MacRae Constraint
+    grid $wid.scales -row 0   -column 0
+    grid $wid.scales.new      -row 10  -column 1  ;# New Button
+    grid $wid.scales.update   -row 10  -column 2  ;# Update Button
+    grid $wid.scales.reset    -row 10  -column 3  ;# Reset Button
+    grid $wid.scales.ap       -row 11  -column 1  ;# Antiparallel Checkbutton
+    grid $wid.scales.asym     -row 11  -column 2  ;# asym button
+    grid $wid.scales.fm       -row 11  -column 3  ;# Fraser-MacRae Constraint
+    grid $wid.scales.ensemble -row 11  -column 4  ;# Ensemble Mode
 
     ##Scales
     grid $wid.scales.scl_nhelix     -row 1 -column 1 -columnspan 2
@@ -678,13 +695,13 @@ proc ::ccbtools::gui {args} {
     $wid.scales.menubar.help config -width 5
     pack $wid.scales.menubar.help -side right
     menu $wid.scales.menubar.help.menu -tearoff no
-     
+
     $wid.scales.menubar.help.menu add command -label "About" \
-    -command {tk_messageBox -type ok -title "About Coiled-Coil Builder" \
-    -message "Tool for building coiled-coil structures.\n\nVersion $::ccbtools::version\n\n(c) 2012-2014 \nby Chris M. MacDermaid\n <chris.macdermaid@gmail.com>\nand\n Jeffery G. Saven\n<saven@sas.upenn.edu>"}
-     
+        -command {tk_messageBox -type ok -title "About Coiled-Coil Builder" \
+                      -message "Tool for building coiled-coil structures.\n\nVersion $::ccbtools::version\n\n(c) 2012-2014 \nby Chris M. MacDermaid\n <chris.macdermaid@gmail.com>\nand\n Jeffery G. Saven\n<saven@sas.upenn.edu>"}
+
     $wid.scales.menubar.help.menu add command -label "Help..." \
-    -command "vmd_open_url [string trimright [vmdinfo www] /]/plugins/coiledcoil"
+        -command "vmd_open_url [string trimright [vmdinfo www] /]/plugins/coiledcoil"
 
     # Traces
 
@@ -697,4 +714,4 @@ proc ::ccbtools::gui {args} {
 package provide ccbtools $::ccbtools::version
 
 ## Add the plugin to the extensions menu
-catch {vmd_install_extension ccb ::ccbgui "Modeling/Coiled-Coil Builder"} msg
+catch {vmd_install_extension ccb ::ccb_tk "Modeling/Coiled-Coil Builder"} msg
