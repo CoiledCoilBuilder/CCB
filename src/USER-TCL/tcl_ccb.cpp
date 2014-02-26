@@ -121,6 +121,7 @@ int tcl_ccb(ClientData UNUSED(clientdata), Tcl_Interp *interp,
     bool pdb = 0;
     const char *outfile;
     bool vmd = 0;
+    bool newmol = 0;
 
     // Parse Arguments
     for (int i = 1; i < objc; ++i) {
@@ -159,7 +160,10 @@ int tcl_ccb(ClientData UNUSED(clientdata), Tcl_Interp *interp,
 
                 // VMD
             } else if (strcmp("-vmd", argv[argc]) == 0) {
-                vmd = 1;
+              vmd = 1;
+
+            } else if (strcmp("-newmol", argv[argc]) == 0) {
+              newmol = 1;
 
             } else {
 
@@ -194,27 +198,66 @@ int tcl_ccb(ClientData UNUSED(clientdata), Tcl_Interp *interp,
     /// Create TCL object and return coordinates if requested
     if (vmd) {
 
-        Tcl_Obj *resultPtr;
-        resultPtr = Tcl_NewListObj(0,NULL);
+      Tcl_Obj *resultPtr;
+      resultPtr = Tcl_NewListObj(0,NULL);
 
-        for (int i = 0; i < ccb->domain->nsite; i++)
-            for (int j = 0; j < ccb->domain->site[i]->fixed_atoms->natom; j++) {
+      for (int i = 0; i < ccb->domain->nsite; i++)
+        for (int j = 0; j < ccb->domain->site[i]->fixed_atoms->natom; j++) {
 
-                Tcl_Obj *xyz;
+          Tcl_Obj *xyz;
 
-                double coords[3] = { 0.0 };
-                ccb->domain->site[i]->fixed_atoms->atom[j]->get_xyz(coords);
+          double coords[3] = { 0.0 };
+          ccb->domain->site[i]->fixed_atoms->atom[j]->get_xyz(coords);
 
-                xyz = Tcl_NewListObj(0,NULL);
+          xyz = Tcl_NewListObj(0,NULL);
 
-                for (int k = 0; k < 3; k++)
-                    Tcl_ListObjAppendElement(interp,xyz,Tcl_NewDoubleObj(coords[k]));
+          for (int k = 0; k < 3; k++)
+            Tcl_ListObjAppendElement(interp,xyz,Tcl_NewDoubleObj(coords[k]));
 
-                Tcl_ListObjAppendElement(interp,resultPtr,xyz);
-            }
+          Tcl_ListObjAppendElement(interp,resultPtr,xyz);
+        }
 
-        Tcl_SetObjResult(interp, resultPtr);
+      Tcl_SetObjResult(interp, resultPtr);
     }
+
+    /**
+     * Return a list to vmd for a new empty molecule so that 
+     * we no longer need to write out an initial PDB file
+     * {{name1 resid1 chain1 segname x1 y1 z1}{name2 resid1 chain1 segname x2 y2 z2}....}
+     */
+
+    if (newmol) {
+
+      Tcl_Obj *resultPtr;
+      resultPtr = Tcl_NewListObj(0,NULL);
+
+      for (int i = 0; i < ccb->domain->nsite; i++)
+        for (int j = 0; j < ccb->domain->site[i]->fixed_atoms->natom; j++) {
+
+          Tcl_Obj *nxyz;
+
+          double coords[3] = { 0.0 };
+          ccb->domain->site[i]->fixed_atoms->atom[j]->get_xyz(coords);
+          Atom *a = ccb->domain->site[i]->fixed_atoms->atom[j];
+
+          nxyz = Tcl_NewListObj(0,NULL);
+
+          //Append name of atom, resid chain, segname
+          Tcl_ListObjAppendElement(interp,nxyz, Tcl_NewStringObj(a->name,-1));
+          Tcl_ListObjAppendElement(interp,nxyz, Tcl_NewIntObj(a->site->resid));
+          Tcl_ListObjAppendElement(interp,nxyz, Tcl_NewStringObj(a->site->chain,-1));
+          Tcl_ListObjAppendElement(interp,nxyz, Tcl_NewStringObj(a->site->seg,-1));
+
+          // Append coordinates
+          for (int k = 0; k < 3; k++)
+            Tcl_ListObjAppendElement(interp,nxyz,Tcl_NewDoubleObj(coords[k]));
+
+          Tcl_ListObjAppendElement(interp,resultPtr,nxyz);
+        }
+
+      Tcl_SetObjResult(interp, resultPtr);
+    }
+
 
     // Delete argv
     delete [] argv;
