@@ -148,6 +148,12 @@ proc ::ccbtools::updatemol { args } {
     variable params
     variable sys
 
+    ## Make sure the mol still exists
+    if {[lsearch [molinfo list] $sys(ccbid)] < 0} {
+        vmdcon -err "ccb: Coiled-coil deleted."
+        return -1
+    }
+
     ## Make sure the pitch is never exactly zero
     if {$params(pitch) == 0.0} {set params(pitch) 0.000001}
 
