@@ -509,16 +509,6 @@ proc ::ccbtools::gui {args} {
     set gui(subwid) {}
     set gui(wid) $wid
 
-    $wid.menubar.help.menu add command -label "About" \ -command
-    {tk_messageBox -type ok -title "About Coiled-Coil Builder" \
-    -message "Tool for building coiled-coil structures.\n\nVersion
-    $::ccbtools::version\n\n(c) 2012-2014 \nby Chris M. MacDermaid\n
-    <chris.macdermaid@gmail.com>\nand\n Jeffery G.
-    Saven\n<saven@sas.upenn.edu>"}
-
-    $w.menubar.help.menu add command -label "Help..." \ -command
-    "vmd_open_url [string trimright [vmdinfo www] /]/plugins/coiledcoil"
-
     checkbutton $wid.scales.ap -text "Antiparallel" -variable ::ccbtools::params(antiparallel)\
         -onvalue 1 -offvalue 0 -command [namespace code updatemol]
 
@@ -650,6 +640,25 @@ proc ::ccbtools::gui {args} {
     grid $wid.scales.asymS    -row 7 -column 4;# square asym Button
     grid $wid.scales.azymZoff -row 8 -column 4;# zoff asym Button
     grid $wid.scales.azymZ    -row 9 -column 4;# z asym Button
+
+    ## Help Menu
+    frame $wid.scales.menubar -relief raised -bd 2 -padx 10
+    grid  $wid.scales.menubar -padx 1 -column 0 -columnspan 4 -row 0 -sticky ew
+    menubutton $wid.scales.menubar.help -text "Help" -underline 0 \
+        -menu $wid.scales.menubar.help.menu
+    $wid.scales.menubar.help config -width 5
+    pack $wid.scales.menubar.help -side right
+    menu $wid.scales.menubar.help.menu -tearoff no
+
+    $wid.scales.menubar.help.menu add command -label "About" \ -command
+    {tk_messageBox -type ok -title "About Coiled-Coil Builder" \
+    -message "Tool for building coiled-coil structures.\n\nVersion
+    $::ccbtools::version\n\n(c) 2012-2014 \nby Chris M. MacDermaid\n
+    <chris.macdermaid@gmail.com>\nand\n Jeffery G.
+    Saven\n<saven@sas.upenn.edu>"}
+
+    $wid.scales.menubar.help.menu add command -label "Help..." \ -command
+    "vmd_open_url [string trimright [vmdinfo www] /]/plugins/coiledcoil"
 
     ## Traces
 
