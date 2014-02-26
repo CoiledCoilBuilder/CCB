@@ -223,13 +223,16 @@ int tcl_ccb(ClientData UNUSED(clientdata), Tcl_Interp *interp,
     /**
      * Return a list to vmd for a new empty molecule so that 
      * we no longer need to write out an initial PDB file
-     * {{name1 resid1 chain1 segname x1 y1 z1}{name2 resid1 chain1 segname x2 y2 z2}....}
+     * {{serial1 name1 resid1 resname1 chain1 segname1 x1 y1 z1}
+     *  {serial2 name2 resid1 resname1 chain1 segname1 x2 y2 z2}....}
      */
 
     if (newmol) {
 
       Tcl_Obj *resultPtr;
       resultPtr = Tcl_NewListObj(0,NULL);
+
+      int serial = 0;
 
       for (int i = 0; i < ccb->domain->nsite; i++)
         for (int j = 0; j < ccb->domain->site[i]->fixed_atoms->natom; j++) {
@@ -243,8 +246,10 @@ int tcl_ccb(ClientData UNUSED(clientdata), Tcl_Interp *interp,
           nxyz = Tcl_NewListObj(0,NULL);
 
           //Append name of atom, resid chain, segname
+          Tcl_ListObjAppendElement(interp,nxyz, Tcl_NewIntObj(serial++));
           Tcl_ListObjAppendElement(interp,nxyz, Tcl_NewStringObj(a->name,-1));
           Tcl_ListObjAppendElement(interp,nxyz, Tcl_NewIntObj(a->site->resid));
+          Tcl_ListObjAppendElement(interp,nxyz, Tcl_NewStringObj(a->group->resname,-1));
           Tcl_ListObjAppendElement(interp,nxyz, Tcl_NewStringObj(a->site->chain,-1));
           Tcl_ListObjAppendElement(interp,nxyz, Tcl_NewStringObj(a->site->seg,-1));
 
