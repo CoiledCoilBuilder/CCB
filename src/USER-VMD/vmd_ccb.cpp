@@ -124,6 +124,7 @@ int tcl_ccb(ClientData UNUSED(clientdata), Tcl_Interp *interp,
 
     // VMD
     bool vmd_flag = 0;
+    bool newmol_flag = 0;
     VMDApp *vmd = NULL;
     AtomSel *sel = NULL;
     Molecule *mol = NULL;
@@ -207,7 +208,10 @@ int tcl_ccb(ClientData UNUSED(clientdata), Tcl_Interp *interp,
 
                 // Return to VMD as a TCL list (backward compatability)
             } else if (strcmp("-vmd", argv[argc]) == 0) {
-                vmd_flag = 1;
+              vmd_flag = 1;
+
+            } else if (strcmp("-newmol", argv[argc]) == 0) {
+              newmol_flag = 1;
 
             } else {
 
@@ -292,6 +296,46 @@ int tcl_ccb(ClientData UNUSED(clientdata), Tcl_Interp *interp,
             }
 
         Tcl_SetObjResult(interp, resultPtr);
+    }
+
+    /**
+     * Return a list to vmd for a new empty molecule so that 
+     * we no longer need to write out an initial PDB file
+     * {{name1 resid1 resname1 chain1 segname1 x1 y1 z1}
+     *  {name2 resid1 resname1 chain1 segname1 x2 y2 z2}....}
+     */
+
+    if (newmol_flag) {
+
+      Tcl_Obj *resultPtr;
+      resultPtr = Tcl_NewListObj(0,NULL);
+
+      for (int i = 0; i < ccb->domain->nsite; i++)
+        for (int j = 0; j < ccb->domain->site[i]->fixed_atoms->natom; j++) {
+
+          Tcl_Obj *nxyz;
+
+          double coords[3] = { 0.0 };
+          ccb->domain->site[i]->fixed_atoms->atom[j]->get_xyz(coords);
+          Atom *a = ccb->domain->site[i]->fixed_atoms->atom[j];
+
+          nxyz = Tcl_NewListObj(0,NULL);
+
+          //Append name of atom, resid chain, segname
+          Tcl_ListObjAppendElement(interp,nxyz, Tcl_NewStringObj(a->name,-1));
+          Tcl_ListObjAppendElement(interp,nxyz, Tcl_NewIntObj(a->site->resid));
+          Tcl_ListObjAppendElement(interp,nxyz, Tcl_NewStringObj(a->group->type,-1));
+          Tcl_ListObjAppendElement(interp,nxyz, Tcl_NewStringObj(a->site->chain,-1));
+          Tcl_ListObjAppendElement(interp,nxyz, Tcl_NewStringObj(a->site->seg,-1));
+
+          // Append coordinates
+          for (int k = 0; k < 3; k++)
+            Tcl_ListObjAppendElement(interp,nxyz,Tcl_NewDoubleObj(coords[k]));
+
+          Tcl_ListObjAppendElement(interp,resultPtr,nxyz);
+        }
+
+      Tcl_SetObjResult(interp, resultPtr);
     }
 
     // Delete argv
