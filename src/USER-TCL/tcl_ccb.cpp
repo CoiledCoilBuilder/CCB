@@ -249,7 +249,7 @@ int tcl_ccb(ClientData UNUSED(clientdata), Tcl_Interp *interp,
           Tcl_ListObjAppendElement(interp,nxyz, Tcl_NewIntObj(serial++));
           Tcl_ListObjAppendElement(interp,nxyz, Tcl_NewStringObj(a->name,-1));
           Tcl_ListObjAppendElement(interp,nxyz, Tcl_NewIntObj(a->site->resid));
-          Tcl_ListObjAppendElement(interp,nxyz, Tcl_NewStringObj(a->group->resname,-1));
+          Tcl_ListObjAppendElement(interp,nxyz, Tcl_NewStringObj(a->group->type,-1));
           Tcl_ListObjAppendElement(interp,nxyz, Tcl_NewStringObj(a->site->chain,-1));
           Tcl_ListObjAppendElement(interp,nxyz, Tcl_NewStringObj(a->site->seg,-1));
 
