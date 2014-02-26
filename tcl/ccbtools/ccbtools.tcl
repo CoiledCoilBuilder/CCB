@@ -132,10 +132,13 @@ proc ::ccbtools::newmol { args } {
     $sys(sel_ccb_all) global
 
     ## Set the properties for each atom
-    $sys(sel_ccb_all) set {name resid chain segname x y z} $props
+    $sys(sel_ccb_all) set {serial name resid resname chain segname x y z} $props
 
     ## reanalyze the mol to identify bonds
     mol reanalyze $sys(ccbid)
+
+    ## Set a default representation
+    adddefaultrep $sys(ccbid)
 }
 
 proc ::ccbtools::updatemol { args } {
@@ -345,6 +348,24 @@ proc ::ccbtools::setasym {args} {
         }
         set gui(subwid) {}
     }
+}
+
+# emulate the behavior of loading a molecule through
+# the regular "mol new" command. the options $selmod
+# argument allows to append an additional modified to
+# the selection, e.g. 'user > 0.1' for variable number
+# particle xyz trajectories. (Thanks Axel!)
+proc ::ccbtools::adddefaultrep {mol {selmod none}} {
+    mol color [mol default color]
+    mol rep [mol default style]
+    if {[string equal $selmod none]} {
+        mol selection [mol default selection]
+    } else {
+        mol selection "([mol default selection]) and $selmod"
+    }
+    mol material [mol default material]
+    mol addrep $mol
+    display resetview
 }
 
 ## Actual GUI Stuff
@@ -643,7 +664,7 @@ proc ::ccbtools::gui {args} {
 
     ## Help Menu
     frame $wid.scales.menubar -relief raised -bd 2 -padx 10
-    grid  $wid.scales.menubar -padx 1 -column 0 -columnspan 4 -row 0 -sticky ew
+    grid  $wid.scales.menubar -padx 1 -column 0 -columnspan 5 -row 0 -sticky ew
     menubutton $wid.scales.menubar.help -text "Help" -underline 0 \
         -menu $wid.scales.menubar.help.menu
     $wid.scales.menubar.help config -width 5
