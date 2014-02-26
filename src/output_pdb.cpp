@@ -199,23 +199,15 @@ int OutputPDB::write_style() {
  * Assume ths string isn't null terminated
  *
  * @param s string to be shortened
- * @param n length to shortned string s to
+ * @param n length of shortened string  
  */
 
 void OutputPDB::chomp(char *s, int n) {
 
     int len = strlen(s);
 
-    if (len == 0)
-        return;
+    if (n > len || len == 0)
+      return;
 
-    int i = 0;
-
-    while (i < len && i < n) {
-        *(s++);
-        i++;
-    }
-
-    *s++ = '\0';
+      s[n] = '\0';
 }
-
