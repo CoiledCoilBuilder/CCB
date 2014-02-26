@@ -69,7 +69,6 @@ namespace eval ::ccbtools:: {
     set gui(z_scl) {-20.00 20.00 5}
 }
 
-package provide ccbtools $::ccbtools::version
 
 proc ccbgui { args } {
     eval ::ccbtools::gui $args
@@ -112,7 +111,7 @@ proc ::ccbtools::newmol { args } {
 
     # Generate structure
     if { [catch {eval $opts} props] } {
-        vmdcon -error "ccb: Could not generate structure:\n $props"
+        vmdcon -err "ccb: Could not generate structure:\n $props"
         return -1
     }
 
@@ -120,8 +119,10 @@ proc ::ccbtools::newmol { args } {
 
     ## Create a new empty mol with natoms == length props
     if {[catch {mol new atoms $natoms} sys(ccbid)]} {
-        vmdcon -error "ccb: could not create new molecule: $sys(ccbid)"
+        vmdcon -err "ccb: could not create new molecule: $sys(ccbid)"
         return -1
+    } else {
+	animate dup $sys(ccbid)
     }
 
     ## Create a globalized selection for the entire coil
@@ -187,7 +188,7 @@ proc ::ccbtools::updatemol { args } {
 
     # Generate structure
     if { [catch {eval $opts} coords] } {
-        vmdcon -error "ccb: Could not generate structure: $coords"
+        vmdcon -err "ccb: Could not generate structure: $coords"
         return -1
     }
 
