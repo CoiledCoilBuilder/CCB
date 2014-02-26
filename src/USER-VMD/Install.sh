@@ -10,7 +10,6 @@ if (test $1 = 1) then
   fi
   
   cp vmd_ccb.cpp ..
-  cp pkgIndex.tcl ..
 
  elif (test $1 = 0) then
 
@@ -19,6 +18,5 @@ if (test $1 = 1) then
   fi
 
   rm -f ../vmd_ccb.cpp 
-  rm -f ../pkgIndex.tcl
 
 fi
