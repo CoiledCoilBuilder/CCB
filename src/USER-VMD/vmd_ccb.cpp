@@ -123,7 +123,7 @@ int tcl_ccb(ClientData UNUSED(clientdata), Tcl_Interp *interp,
     const char *outfile = NULL;
 
     // VMD
-    bool vmd_flag = 0;
+    bool xyz_flag = 0;
     bool newmol_flag = 0;
     VMDApp *vmd = NULL;
     AtomSel *sel = NULL;
@@ -207,8 +207,8 @@ int tcl_ccb(ClientData UNUSED(clientdata), Tcl_Interp *interp,
                 ccb->error->verbosity_level = v;
 
                 // Return to VMD as a TCL list (backward compatability)
-            } else if (strcmp("-vmd", argv[argc]) == 0) {
-              vmd_flag = 1;
+            } else if (strcmp("-xyz", argv[argc]) == 0) {
+              xyz_flag = 1;
 
             } else if (strcmp("-newmol", argv[argc]) == 0) {
               newmol_flag = 1;
@@ -274,7 +274,7 @@ int tcl_ccb(ClientData UNUSED(clientdata), Tcl_Interp *interp,
     }
 
     /// Create TCL object and return coordinates if requested
-    if (vmd_flag) {
+    if (xyz_flag) {
 
         Tcl_Obj *resultPtr;
         resultPtr = Tcl_NewListObj(0,NULL);

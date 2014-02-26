@@ -120,7 +120,7 @@ int tcl_ccb(ClientData UNUSED(clientdata), Tcl_Interp *interp,
     // flags
     bool pdb = 0;
     const char *outfile;
-    bool vmd = 0;
+    bool xyz = 0;
     bool newmol = 0;
 
     // Parse Arguments
@@ -158,9 +158,9 @@ int tcl_ccb(ClientData UNUSED(clientdata), Tcl_Interp *interp,
                     return TCL_ERROR;
                 ccb->error->verbosity_level = v;
 
-                // VMD
-            } else if (strcmp("-vmd", argv[argc]) == 0) {
-              vmd = 1;
+                // XYZ
+            } else if (strcmp("-xyz", argv[argc]) == 0) {
+              xyz = 1;
 
             } else if (strcmp("-newmol", argv[argc]) == 0) {
               newmol = 1;
@@ -196,7 +196,7 @@ int tcl_ccb(ClientData UNUSED(clientdata), Tcl_Interp *interp,
     }
 
     /// Create TCL object and return coordinates if requested
-    if (vmd) {
+    if (xyz) {
 
       Tcl_Obj *resultPtr;
       resultPtr = Tcl_NewListObj(0,NULL);
