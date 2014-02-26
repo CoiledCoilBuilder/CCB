@@ -133,9 +133,10 @@ proc ::ccbtools::newmol { args } {
     $sys(sel_ccb_all) global
 
     ## Set the properties for each atom
-    $sys(sel_ccb_all) set {serial name resid resname chain segname x y z} $props
+    $sys(sel_ccb_all) set {name resid resname chain segname x y z} $props
 
-    ## reanalyze the mol to identify bonds
+    ## identify bonds and reanalyze
+    mol bondsrecalc $sys(ccbid)
     mol reanalyze $sys(ccbid)
 
     ## Set a default representation
