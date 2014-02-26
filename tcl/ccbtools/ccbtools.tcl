@@ -680,11 +680,8 @@ proc ::ccbtools::gui {args} {
     menu $wid.scales.menubar.help.menu -tearoff no
      
     $wid.scales.menubar.help.menu add command -label "About" \
-    -command {tk_messageBox -type ok -title "About Coiled-Coil
-    Builder" \ -message "Tool for building coiled-coil
-    structures.\n\nVersion $::ccbtools::version\n\n(c) 2012-2014 \nby
-    Chris M. MacDermaid\n <chris.macdermaid@gmail.com>\nand\n Jeffery
-    G. Saven\n<saven@sas.upenn.edu>"}
+    -command {tk_messageBox -type ok -title "About Coiled-Coil Builder" \
+    -message "Tool for building coiled-coil structures.\n\nVersion $::ccbtools::version\n\n(c) 2012-2014 \nby Chris M. MacDermaid\n <chris.macdermaid@gmail.com>\nand\n Jeffery G. Saven\n<saven@sas.upenn.edu>"}
      
     $wid.scales.menubar.help.menu add command -label "Help..." \
     -command "vmd_open_url [string trimright [vmdinfo www] /]/plugins/coiledcoil"
@@ -700,4 +697,4 @@ proc ::ccbtools::gui {args} {
 package provide ccbtools $::ccbtools::version
 
 ## Add the plugin to the extensions menu
-catch {vmd_install_extension ccb ::ccbgui "Modeling/CCB"}
+catch {vmd_install_extension ccb ::ccbgui "Modeling/Coiled-Coil Builder"} msg
