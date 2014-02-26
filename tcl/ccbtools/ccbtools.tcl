@@ -670,7 +670,7 @@ proc ::ccbtools::gui {args} {
     grid $wid.scales.azymZoff -row 8 -column 4;# zoff asym Button
     grid $wid.scales.azymZ    -row 9 -column 4;# z asym Button
 
-    ## Help Menu
+    # Help Menu
     frame $wid.scales.menubar -relief raised -bd 2 -padx 10
     grid  $wid.scales.menubar -padx 1 -column 0 -columnspan 5 -row 0 -sticky ew
     menubutton $wid.scales.menubar.help -text "Help" -underline 0 \
@@ -678,24 +678,26 @@ proc ::ccbtools::gui {args} {
     $wid.scales.menubar.help config -width 5
     pack $wid.scales.menubar.help -side right
     menu $wid.scales.menubar.help.menu -tearoff no
+     
+    $wid.scales.menubar.help.menu add command -label "About" \
+    -command {tk_messageBox -type ok -title "About Coiled-Coil
+    Builder" \ -message "Tool for building coiled-coil
+    structures.\n\nVersion $::ccbtools::version\n\n(c) 2012-2014 \nby
+    Chris M. MacDermaid\n <chris.macdermaid@gmail.com>\nand\n Jeffery
+    G. Saven\n<saven@sas.upenn.edu>"}
+     
+    $wid.scales.menubar.help.menu add command -label "Help..." \
+    -command "vmd_open_url [string trimright [vmdinfo www] /]/plugins/coiledcoil"
 
-    $wid.scales.menubar.help.menu add command -label "About" \ -command
-    {tk_messageBox -type ok -title "About Coiled-Coil Builder" \
-    -message "Tool for building coiled-coil structures.\n\nVersion
-    $::ccbtools::version\n\n(c) 2012-2014 \nby Chris M. MacDermaid\n
-    <chris.macdermaid@gmail.com>\nand\n Jeffery G.
-    Saven\n<saven@sas.upenn.edu>"}
+    # Traces
 
-    $wid.scales.menubar.help.menu add command -label "Help..." \ -command
-    "vmd_open_url [string trimright [vmdinfo www] /]/plugins/coiledcoil"
-
-    ## Traces
-
-    ## Put a trace on the nhelix param to update the asymmetric
-    ## elements when the number of helices changes
+    # Put a trace on the nhelix param to update the asymmetric
+    # elements when the number of helices changes
     catch {trace vdelete ::ccbtools::params(nhelix) w ::ccbtools::setasym}
     trace var ::ccbtools::params(nhelix) w ::ccbtools::setasym
 }
 
+package provide ccbtools $::ccbtools::version
+
 ## Add the plugin to the extensions menu
-vmd_install_extension ccb ::ccbgui "Modeling/CCB"
+catch {vmd_install_extension ccb ::ccbgui "Modeling/CCB"}
