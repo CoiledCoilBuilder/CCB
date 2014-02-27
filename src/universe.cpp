@@ -36,7 +36,6 @@
  */
 
 #include "universe.h"
-#include "version.h"
 
 using namespace CCB_NS;
 
@@ -48,14 +47,11 @@ using namespace CCB_NS;
 
 Universe::Universe(CCB *ccb) : Pointers(ccb)
 {
-     version = (char *) CCB_VERSION; 
-
 	//Figure out how many threads running with
  	nthreads = 1;
 
         // Always rank 0 wrt the universe 
         me = 0;
-
 }
 
 /** 
