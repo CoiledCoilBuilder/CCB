@@ -1,0 +1,60 @@
+* Installation
+
+  There are two install options for usage within VMD:
+
+** Library
+
+*** Option A: Install to VMD's plugin location on your machine
+
+    After downloading the appropriate shared library for your system
+    (Windows, Mac OS, Linux), unpack the .zip file in your
+    plugins/${ARCH}/tcl directory where ${ARCH} is WIN32, LINUXAMD64 or
+    MACOSXX86. The precise location of your plugins directory may vary:
+
+    Linux: /lib/vmd/plugins/LINUXAMD64/tcl
+    MacOS: /Applications/VMD\ 1.9.1.app/Contents/vmd/plugins/MACOSXX86/tcl
+    Windows: C:\Program Files (x86)\University of Illinois\VMD\plugins\WIN32\tcl
+
+
+*** Option B: Install to a directory of your choosing
+
+    After downloading the appropriate library for your system (Windows,
+    Mac OS, Linux), unpack the .zip file to the directory of your choice
+    (vmdplugins, for example). Then edit your vmd start-up file:
+
+    For Linux and MacOS add the following to $HOME/.vmdrc:
+
+    set auto_path [linsert $auto_path 0 [file join $env(HOME) vmdplugins]]
+
+    For Windows add the following to %USERPROFILE%/vmd.rc
+    (%USERPROFILE%, at least in Windows XP, is C:\Documents and
+    Settings\User; you can also just use %USERPROFILE% in Windows
+    Explorer):
+
+    set auto_path [linsert $auto_path 0 {C:\vmdplugins}]
+
+** Compiling on Linux, MacOS, cross-compile for Windows
+
+   CCB requires at the minimum a compiler such as gcc or clang. To use
+   the tcl interface, tcl headers/libraries are required. These are
+   usually available via your distributions package manager, e.g. yum
+   install tcl-devel or apt-get install tcl8.5-dev.
+
+   You can download directly or clone the source code from github using
+   git: git clone git@github.com:chrismacdermaid/ccb.git change to the
+   newly created ccb directory and issue the appropriate make command:
+
+   cd git
+   make archive-LINUXAMD64
+
+   or for MacOS
+   make archive-MACOSXX86
+
+   Windows binaries/libraries can be compiled using the MinGW cross-compiler on linux:
+   make archive-WIN32
+
+   After compilation, use the created archive (ccb1.0_LINUXAMD64.zip, for
+   example) and complete the library installation instructions above.
+
+   Issuing make will provide you with additional options and
+   architectures such as 64-bit windows and OSX libraries.
