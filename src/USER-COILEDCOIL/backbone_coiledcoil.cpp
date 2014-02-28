@@ -390,6 +390,11 @@ int BackboneCoiledCoil::set_params(int argc, const char **argv, int n) {
 
             continue;
 
+        } else if (strcmp(argv[n], "-help") == 0) {
+            n++;
+            print_help();
+            return 1;
+
         } else {
             char str[128];
             sprintf(str, "CCB: unknown option: %s", argv[n]);
@@ -1690,6 +1695,13 @@ void BackboneCoiledCoil::print_header() {
                 i+1, ap_order[i]);
     fprintf(screen, "\n\n");
 }
+
+void BackboneCoiledCoil::print_help() {
+
+    fprintf(screen, "ccb -nhelix <# helices> -nres <# residues/helix> [-rpr <length>] [-pitch <length>] [-radius <length>] [-rpt <#>] [-rotation <angle>] [-square <angle>] [-zoff <length>] [-Z <length>] [-pdb <file name>] [-antiparallel 0 1 0 1] [-asymmetric] [-frasermacrae] [-xyz] [-newmol] [-v] [-help]\n");
+
+}
+
 
 /* ---------------------------------------------------------
    Helper Functions

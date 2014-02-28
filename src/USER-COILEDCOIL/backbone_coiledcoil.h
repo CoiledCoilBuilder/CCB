@@ -164,6 +164,7 @@ class BackboneCoiledCoil : public Backbone {
      *
      */
 
+    void print_help();
     void print_plane();
     void print_coordinates();
     void print_axis();      /**< Print the helix axis coodinates to screen */

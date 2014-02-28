@@ -91,25 +91,10 @@ int tcl_ccb(ClientData UNUSED(clientdata), Tcl_Interp *interp,
             int objc, Tcl_Obj *const objv[])
 {
 
-    //Fire up a ccb  instance
-    CCB *ccb = new CCB(objc, NULL);
-
-    const char **newarg = new const char*[5];
-
-    /// Add the coiled-coil plugin
-    newarg[0] = (char *) "backbone";
-    newarg[1] = (char *) "add";
-    newarg[2] = (char *) "coiledcoil";
-    newarg[3] = (char *) "bbcc1";
-
-    if (ccb->backbone->add_backbone(4,newarg) != CCB_OK ||
-        ccb->backbone->init_backbone(newarg[3]) != CCB_OK) {
-        delete ccb;
-        return TCL_ERROR;
-    }
-
     // Parse the commandline options
     int argc = 0;
+    int v = 0;
+    const char *outfile;
 
     const char **argv = new const char*[MAX_ARGS];
 
@@ -119,7 +104,7 @@ int tcl_ccb(ClientData UNUSED(clientdata), Tcl_Interp *interp,
 
     // flags
     bool pdb = 0;
-    const char *outfile;
+
     bool xyz = 0;
     bool newmol = 0;
 
@@ -147,7 +132,6 @@ int tcl_ccb(ClientData UNUSED(clientdata), Tcl_Interp *interp,
 
                 // Verbosity
             } else if (strcmp("-v", argv[argc]) == 0) {
-                int v = 0;
 
                 if (i + 1 == objc) {
                     Tcl_AppendResult(interp, "Missing argument to -v\n", NULL);
@@ -156,14 +140,13 @@ int tcl_ccb(ClientData UNUSED(clientdata), Tcl_Interp *interp,
 
                 if(Tcl_GetIntFromObj(interp,objv[++i], &v) != TCL_OK)
                     return TCL_ERROR;
-                ccb->error->verbosity_level = v;
 
                 // XYZ
             } else if (strcmp("-xyz", argv[argc]) == 0) {
                 xyz = 1;
 
             } else if (strcmp("-newmol", argv[argc]) == 0) {
-                newmol = 1;
+              newmol = 1;
 
             } else {
 
@@ -171,6 +154,26 @@ int tcl_ccb(ClientData UNUSED(clientdata), Tcl_Interp *interp,
             }
         }
     }
+
+    //Fire up a ccb  instance
+    CCB *ccb = new CCB(objc, NULL);
+
+    const char **newarg = new const char*[5];
+
+    /// Add the coiled-coil plugin
+    newarg[0] = (char *) "backbone";
+    newarg[1] = (char *) "add";
+    newarg[2] = (char *) "coiledcoil";
+    newarg[3] = (char *) "bbcc1";
+
+    if (ccb->backbone->add_backbone(4,newarg) != CCB_OK ||
+        ccb->backbone->init_backbone(newarg[3]) != CCB_OK) {
+      delete ccb;
+      return TCL_ERROR;
+    }
+
+    // Set Verbosity
+    ccb->error->verbosity_level = v;
 
     //Pass parsed commands to the style
     if (ccb->backbone->update_backbone(newarg[3],argc,argv,0) != CCB_OK ||
