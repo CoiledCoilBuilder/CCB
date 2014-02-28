@@ -6,8 +6,10 @@ Coiled-Coil Builder
 The offical CCB page is located
 [Here](http://goo.gl/3JE8Xg)
 
-The author of this package is Chris MacDermaid, please direct
+The main author of this package is Chris MacDermaid, please direct
 inquiries or bug reports to <chris.macdermaid@gmail.com>.
+
+Installation instructions are available in the "INSTALL" file.
 
 Coiled-Coil Builder generates all-atom backbone structures by
 manipulating their topologies via the well known Crick

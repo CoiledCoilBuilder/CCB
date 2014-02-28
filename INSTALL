@@ -41,20 +41,24 @@
    install tcl-devel or apt-get install tcl8.5-dev.
 
    You can download directly or clone the source code from github using
-   git: git clone git@github.com:chrismacdermaid/ccb.git change to the
-   newly created ccb directory and issue the appropriate make command:
+   git:
 
-   cd git
-   make archive-LINUXAMD64
+   % git clone git@github.com:chrismacdermaid/ccb.git
+
+   change to the newly created ccb directory and issue the appropriate
+   make command:
+
+   % cd git
+   % make archive-LINUXAMD64
 
    or for MacOS
-   make archive-MACOSXX86
+   % make archive-MACOSXX86
 
    Windows binaries/libraries can be compiled using the MinGW cross-compiler on linux:
-   make archive-WIN32
+   % make archive-WIN32
 
    After compilation, use the created archive (ccb1.0_LINUXAMD64.zip, for
    example) and complete the library installation instructions above.
 
-   Issuing make will provide you with additional options and
+   Issuing 'make' will provide you with additional options and
    architectures such as 64-bit windows and OSX libraries.

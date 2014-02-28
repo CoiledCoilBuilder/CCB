@@ -48,6 +48,7 @@ distrib :
 		cp tcl/ccbtools/ccbtools.tcl $$dir;\
 	done
 
+# Make installable archive via copy/paste into VMD plugins directory
 archive-% :
 	arch=$(@:archive-%=%);\
 	dir=$(CCBROOT)$(CCBVERSION);\
@@ -57,9 +58,12 @@ archive-% :
 	cp tcl/ccbtools/pkgIndex.tcl $$dir;\
 	cp tcl/ccbtools/ccbtools.tcl $$dir;\
 	cp LICENSE $$dir;\
+	cp README.md $$dir;\
+	cp INSTALL $$dir;\
 	zip -r $(CCBROOT)$(CCBVERSION)_$$arch\.zip $$dir;\
 	rm -rf $$dir
 
+# Make installable archive for use with make distrib directly
 release-% :
 	arch=$(@:release-%=%);\
 	dir=$(CCBROOT)$(CCBVERSION)_$$arch;\
@@ -69,6 +73,8 @@ release-% :
 	tcl/ccbtools/pkgIndex.tcl \
 	tcl/ccbtools/ccbtools.tcl \
 	LICENSE $$dir \
+	README.md $$dir \
+    INSTALL $$dir \
 	Makefile $$dir;\
 	zip -r $(CCBROOT)$(CCBVERSION)_$$arch\.zip $$dir;\
 	rm -rf $$dir
