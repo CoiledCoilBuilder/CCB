@@ -34,6 +34,7 @@ namespace eval ::crick:: {
 
     variable sys
     variable params
+
 }
 
 proc crick { args } {
@@ -100,95 +101,6 @@ proc ::crick::parse { args } {
     }
 }
 
-proc ::crick::newmol { args } {
-
-    variable params
-    variable sys
-
-    ## Delete existing pdb
-    catch {file delete $sys(TMPDIR)/ccb.pdb}
-
-    # Set Options
-    set opts [list ccb -pdb $sys(TMPDIR)/ccb.pdb\
-                  -nhelix $params(nhelix)\
-                  -nres $params(nres)\
-                  -pitch $params(pitch)\
-                  -radius $params(radius)\
-                  -rpt $params(rpt)\
-                  -rotation $params(rotation)\
-                  -zoff $params(zoff)\
-                  -Z $params(Z)\
-                  -square $params(square)\
-                  -rpr $params(rpr)\
-                  -order $params(order)]
-
-    if {$params(antiparallel)} {
-        lappend opts "-antiparallel"
-    }
-
-    if {$params(asymmetric)} {
-        lappend opts "-asymmetric"
-    }
-
-    # Generate structure
-    if { [catch {eval $opts} err] } {
-        vmdcon -error "ccb: Could not generate structure:\n $err"
-        return -1
-    }
-
-    ## Load into VMD
-    if {[catch {mol new $sys(TMPDIR)/ccb.pdb} sys(ccbid)]} {
-        vmdcon -error "ccb: could not create new molecule: $mol"
-        return -1
-    }
-
-    ## Create a globalized selection for the entire coil
-    catch {$sys(sel_ccb_all) delete}
-    set sys(sel_ccb_all) [atomselect $sys(ccbid) "all"]
-    $sys(sel_ccb_all) global
-
-    ## Create a globalized selection for the atoms to align
-    catch {$sys(sel_ccb_align) delete}
-    set sys(sel_ccb_align) [atomselect $sys(ccbid) $sys(aligntext)]
-    $sys(sel_ccb_align) global
-}
-
-proc ::crick::updatemol { args } {
-
-    variable params
-    variable sys
-
-    # Set Options
-    set opts [list ccb -vmd\
-                  -nhelix $params(nhelix)\
-                  -nres $params(nres)\
-                  -pitch $params(pitch)\
-                  -radius $params(radius)\
-                  -rpt $params(rpt)\
-                  -rotation $params(rotation)\
-                  -zoff $params(zoff)\
-                  -Z $params(Z)\
-                  -square $params(square)\
-                  -rpr $params(rpr)\
-                  -order $params(order)]
-
-    if {$params(antiparallel)} {
-        lappend opts "-antiparallel"
-    }
-
-    if {$params(asymmetric)} {
-        lappend opts "-asymmetric"
-    }
-
-    # Generate structure
-    if { [catch {eval $opts} coords] } {
-        vmdcon -error "ccb: Could not generate structure"
-        return -1
-    }
-
-    $sys(sel_ccb_all) set {x y z} $coords
-}
-
 proc ::crick::cleanup { args } {
 
     variable params
@@ -218,7 +130,7 @@ proc ::crick::clearparams { args } {
 
     variable params
 
-    catch {array unset params}
+    catch {array unset params *}
 
     set params(nhelix) 2
     set params(nres) 28
@@ -227,14 +139,13 @@ proc ::crick::clearparams { args } {
     set params(rpt) 3.64
     set params(rotation) 0.0
     set params(zoff) 0.0
-    set params(Z) 0.0
+    set params(z) 0.0
     set params(square) 0.0
     set params(rpr) 1.5
     set params(antiparallel) 0
     set params(asymmetric) 0
     set params(order) {0 1}
     set params(orient) {0 0}
-
 }
 
 proc ::crick::clearsys { args } {
@@ -245,11 +156,12 @@ proc ::crick::clearsys { args } {
 
     set sys(aligntext) "name CA"; # The atoms to align for RMSD
     set sys(usertext) "backbone"; # optional user text
-    set sys(userparams) {pitch radius rotation zoff Z rpt square rpr}; #params to fit
+    set sys(userparams) {pitch radius rotation zoff z rpt square rpr}; #params to fit
     set sys(tol) 0.0001; # CG Tollerance
     set sys(orderflag) 0;
     set sys(TMPDIR) /tmp
 
+    set sys(directselect) 0; ## Removed from the ccb library
 }
 
 ## Reset everything to vanilla
@@ -259,14 +171,140 @@ proc ::crick::veryclean { args } {
     clearparams
 }
 
+## Create a mol and globalized selections
+proc ::crick::newmol { args } {
 
+    variable params
+    variable sys
+
+    if {$params(pitch) == 0.0} {set params(pitch) 0.000001}
+
+    # Set Options
+    set opts [list ccb -newmol\
+                  -nhelix $params(nhelix)\
+                  -nres $params(nres)\
+                  -pitch $params(pitch)\
+                  -radius $params(radius)\
+                  -rpt $params(rpt)\
+                  -rotation $params(rotation)\
+                  -zoff $params(zoff)\
+                  -Z $params(z)\
+                  -square $params(square)\
+                  -rpr $params(rpr)]
+
+    if {$params(asymmetric)} {
+        lappend opts "-asymmetric"
+    }
+
+    if {$params(antiparallel)} {
+        lappend opts "-antiparallel"
+    }
+
+    ## The command used to generate the coiled-coil
+    set sys(opts) [join $opts]
+
+    # Generate structure
+    if { [catch {eval $opts} props] } {
+        vmdcon -err "ccb: Could not generate structure:\n $props"
+        return -1
+    }
+
+    set natoms [llength $props]
+
+    ## Create a new empty mol with natoms == length props
+    if {[catch {mol new atoms $natoms} sys(ccbid)]} {
+        vmdcon -err "ccb: could not create new molecule: $sys(ccbid)"
+        return -1
+    } else {
+        animate dup $sys(ccbid)
+    }
+
+    ## Create a globalized selection for the entire coil
+    ## delete the old one if it exists
+    catch {$sys(sel_ccb_all) delete}
+
+    set sys(sel_ccb_all) [atomselect $sys(ccbid) "all"]
+    $sys(sel_ccb_all) global
+
+    ## Set the properties for each atom
+    $sys(sel_ccb_all) set {name resid resname chain segname x y z} $props
+
+    ## identify bonds and reanalyze
+    mol bondsrecalc $sys(ccbid)
+    mol reanalyze $sys(ccbid)
+
+    ## Set a default representation
+    adddefaultrep $sys(ccbid)
+
+    ## Create a globalized selection for the atoms to align
+    catch {$sys(sel_ccb_align) delete}
+    set sys(sel_ccb_align) [atomselect $sys(ccbid) $sys(aligntext)]
+    $sys(sel_ccb_align) global
+}
+
+proc ::crick::updatemol { args } {
+
+    variable params
+    variable sys
+
+    ## Make sure the mol still exists
+    if {[lsearch [molinfo list] $sys(ccbid)] < 0} {
+        vmdcon -err "ccb: Coiled-coil deleted."
+        return -1
+    }
+
+    ## Make sure the pitch is never exactly zero
+    if {$params(pitch) == 0.0} {set params(pitch) 0.000001}
+
+    # Set Options
+    set opts [list ccb\
+                  -nhelix $params(nhelix)\
+                  -nres $params(nres)\
+                  -pitch $params(pitch)\
+                  -radius $params(radius)\
+                  -rpt $params(rpt)\
+                  -rotation $params(rotation)\
+                  -zoff $params(zoff)\
+                  -Z $params(z)\
+                  -square $params(square)\
+                  -rpr $params(rpr)]
+
+    if {$params(asymmetric)} {
+        lappend opts "-asymmetric"
+    }
+
+    if {$params(antiparallel)} {
+        lappend opts "-antiparallel"
+    }
+
+    ## Check for passing the selection directly or returning through
+    ## tcl lists
+    if {$sys(directselect)} {
+        lappend opts -sel $sys(sel_ccb_all)
+    } else {
+        lappend opts "-xyz"
+    }
+
+    ## The command used to generate the coiled-coil
+    set sys(opts) [join $opts]
+
+    # Generate structure
+    if { [catch {eval $opts} coords] } {
+        vmdcon -err "ccb: Could not generate structure: $coords"
+        return -1
+    }
+
+    ## Update the coordinates of the global selection if
+    ## using tcl lists
+    if {!$sys(directselect)} {
+        $sys(sel_ccb_all) set {x y z} $coords
+    }
+}
 
 # Determine the inputted coiled-coil topology
 # including the orientation, order, helices
 # and the number of residues per helix
 proc ::crick::topology { args } {
-
-    global M_PI
 
     variable sys
 
@@ -281,7 +319,6 @@ proc ::crick::topology { args } {
     ## of unique chains. Assume there is at least 1 chain
     ## Looking for a break in C-N Connectivity
     ## This may not be completely robust
-    ## Perhaps use VMDs "fragment" option
 
     ## list is {nter cter nter cter nter cter ...}
     set ter_index [lindex $BL {0 0}]
@@ -304,39 +341,6 @@ proc ::crick::topology { args } {
     set sys(order) {}
     set sys(com) {}
     set sys(nhelix) 0
-    set sys(orient) 0
-
-    ## Unique segment identifier index
-    set segid 0
-
-    ## Move the coiled-coil to the origin, and point the first
-    ## helix's axis along +z, this is necessary so we
-    ## we have a global frame of reference, e.g. coiled-coil
-    ## axis along the Z-ordinate
-    set sel [atomselect $sys(molid) "name CA"]
-    set all [atomselect $sys(molid) "all"]
-    set com [measure center $sel weight mass]
-    $all moveby [vecinvert $com]
-    $sel delete
-
-    lassign $ter_index nter cter
-    set sel [atomselect $sys(molid)\
-                 "($sys(usertext)) and index >= $nter and index <= $cter and name CA"]
-
-    set xyz [$sel get {x y z}]
-    set nter_xyz [lindex $xyz 0]
-    set cter_xyz [lindex $xyz end]
-    $sel delete
-
-    ## Move along x-axis
-    set R [transvecinv [vecsub $cter_xyz $nter_xyz]]
-    $all move $R
-
-    ## Rotate about +y +90 to bring along +z
-    set R [transaxis y 90 deg]
-    $all move $R
-
-    $all delete
 
     foreach {nter cter} $ter_index {
         set sel [atomselect $sys(molid)\
@@ -349,8 +353,7 @@ proc ::crick::topology { args } {
 
         ## Chains
         set chain [$sel get chain]
-        set chain [lsort -unique $chain]
-        lappend sys(chain) $chain
+        lappend sys(chain) [lsort -unique $chain]
 
         ## Residues per
         lappend sys(nres) [llength $resids]
@@ -367,14 +370,6 @@ proc ::crick::topology { args } {
         ## Number of helices
         incr sys(nhelix)
 
-        ## Assign a unique segname for chain identification
-        ## always consistent with the program, e.g. not
-        ## dependent on how the user lettered the chains
-        set segname "$chain$segid"
-        $sel set segname $segname
-        lappend sys(segname) $segname
-        incr segid
-
         $sel delete
     }
 
@@ -389,72 +384,46 @@ proc ::crick::topology { args } {
         if {$angle > 1.000} {set angle [expr {$angle - 0.0001}]}
         if {$angle < -1.000} {set angle [expr {$angle + 0.0001}]}
 
-        ## Check for parallel vs. antiparallel and specify
-        ## if necessary in the orient list
-        if {$angle < 0} {
-            lappend sys(orient) 1
-        } else {
-            lappend sys(orient) 0
-        }
-
         lappend sys(crossangle) [expr {acos($angle)/3.14159*180}]
     }
 
     ## Calculate how the bundles are arranged
-    ## when looking down the coild coil axis counterclockwise
+    ## when looking down the z-axis counterclockwise
     ## Calculate the angles between the centers of mass
     ## of the helices, the com of the bundle and com of helix 1
     set com1 [lindex $sys(com) 0]
     set com_avg [vecscale [vecadd {*}$sys(com)] [expr {1.0 / $sys(nhelix)}]]
-
-    set r1 [vecnorm [vecsub $com1 $com_avg]]
+    set r1 [vecnorm [vecsub $com_avg $com1]]
     set i 0
-    set TWO_PI [expr {2 * $M_PI}]
-    foreach com2 $sys(com) segname $sys(segname) {
+    foreach com2 $sys(com) chain $sys(chain) {
 
-        set r2 [vecnorm [vecsub $com2 $com_avg]]
+        set r2 [vecnorm [vecsub $com_avg $com2]]
 
+        # Angle between r1_r2
+        set angle [vecdot $r1 $r2]
+
+        ## Watch out for floatng point error
+        if {$angle > 1.000} {set angle [expr {$angle - 0.0001}]}
+        if {$angle < -1.000} {set angle [expr {$angle + 0.0001}]}
+
+        ## Angle between coms
+        set angle [expr {acos($angle)}]
+
+        ## Angle Direction
         set n [veccross $r1 $r2]
-        set length [veclength $n]
+        set orient [vecdot $n [list 0 0 1]]
 
-        ## Get the angle with the correct direction
-        set angle [expr {atan2($length, [vecdot $r1 $r2])}]
-
-        # Make sure we've got the correct direction
-        if {[vecdot $n [list 0 0 1]] < 0} {
-            set angle [expr {-1.0 * $angle}]
+        if {$orient > 0.0} {
+            set angle [expr {$angle + 3.1415926}]
         }
 
-        set angle [expr {fmod($angle, $TWO_PI)}]
-
-        ## Make an associated list with index, segid, angle value,
-        ## and helix orientation w.r.t. z-axis (parallel vs. antiparallel)
-        lappend order [list $i $segname $angle]
-
-        ## list index
+        lappend sys(order) [list $i $chain $angle]
         incr i
     }
 
-    # Sort according to increasing angle, gives counterclockwise
-    # order about the superhelical axis
-    set order [lsort -increasing -real -index 2 $order]
-
-    # Reverse the order (clockwise starting at index 0)
-    set neworder {}
-    lappend neworder [lindex $order 0]
-    set  neworder [concat $neworder [lreverse [lrange $order 1 end]]]
-    set order $neworder
-
-    ## Assign an order index to each
-    set i 0
-    foreach x $order {
-        lappend sys(order) [concat $x $i]
-        incr i
-    }
-
-    ## Re-sort, so we have the output order clockwise, and consistent
-    ## with the order in the pdb file
-    set sys(order) [lsort -increasing -real -index 0 $sys(order)]
+    # Sort according to increasing angle, gives counterclockwisenn
+    # order
+    set sys(order) [lsort -increasing -real -index 2 $sys(order)]
 }
 
 proc ::crick::setmol { args } {
@@ -476,7 +445,7 @@ proc ::crick::setmol { args } {
     ## Set output order as determined from input structure
     ## Cool little hack to get columnwise from a list
     if {!$sys(orderflag)} {
-        set params(order) [lsearch -all -index 3 -subindices -inline $sys(order) *]
+        set params(order) [lsearch -all -index 2 -subindices -inline $sys(order) *]
     }
 
     ## Create a new mol consistent with determined topology
@@ -491,6 +460,9 @@ proc ::crick::run { args } {
 
     # Get the topology of the inputted coiled-coil
     topology
+
+    parray params
+    parray sys
 
     # Create new molecule consistent
     # with inputted coiled-coil
@@ -509,7 +481,7 @@ proc ::crick::run { args } {
     if {$params(asymmetric)} {
         set params(rotation) [lrepeat $sys(nhelix) 0.0]
         set params(zoff)     [lrepeat $sys(nhelix) 0.0]
-        set params(Z)        [lrepeat $sys(nhelix) 0.0]
+        set params(z)        [lrepeat $sys(nhelix) 0.0]
         set params(rpt)      [lrepeat $sys(nhelix) 3.64]
         set params(square)   [lrepeat $sys(nhelix) 0.0]
     }
@@ -597,4 +569,22 @@ proc ::crick::compare x {
 
     ## Calculate the RMSD
     return [rmsd]
+}
+
+# emulate the behavior of loading a molecule through
+# the regular "mol new" command. the options $selmod
+# argument allows to append an additional modified to
+# the selection, e.g. 'user > 0.1' for variable number
+# particle xyz trajectories. (Thanks Axel!)
+proc ::crick::adddefaultrep {mol {selmod none}} {
+    mol color [mol default color]
+    mol rep [mol default style]
+    if {[string equal $selmod none]} {
+        mol selection [mol default selection]
+    } else {
+        mol selection "([mol default selection]) and $selmod"
+    }
+    mol material [mol default material]
+    mol addrep $mol
+    display resetview
 }
